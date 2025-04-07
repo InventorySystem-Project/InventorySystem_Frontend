@@ -5,8 +5,14 @@ const ListRoles = () => {
   const [roles, setRoles] = useState([]);
 
   useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      console.warn('Token no encontrado. Usuario no autenticado.');
+      return;
+    }
+
     axios.get('http://localhost:8080/roles/Listar', {
-      headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+      headers: { Authorization: `Bearer ${token}` }
     })
     .then(response => setRoles(response.data))
     .catch(error => console.error('Error al obtener roles:', error));
@@ -16,7 +22,9 @@ const ListRoles = () => {
     <div>
       <h2>Lista de Roles</h2>
       <ul>
-        {roles.map(role => <li key={role.id}>{role.rol}</li>)}
+        {roles.map(role => (
+          <li key={role.id}>{role.rol}</li>
+        ))}
       </ul>
     </div>
   );

@@ -5,8 +5,14 @@ const RegisterRole = () => {
   const [rol, setRol] = useState('');
 
   const handleRegister = () => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      console.warn('Token no encontrado. Usuario no autenticado.');
+      return;
+    }
+
     axios.post('http://localhost:8080/roles/Registrar', { rol }, {
-      headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+      headers: { Authorization: `Bearer ${token}` }
     })
     .then(() => {
       alert('Rol registrado exitosamente');

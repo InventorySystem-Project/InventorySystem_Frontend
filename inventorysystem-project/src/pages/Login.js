@@ -12,7 +12,12 @@ const Login = () => {
     e.preventDefault();
     axios.post('http://localhost:8080/authenticate', { username, password })
       .then(response => {
-        localStorage.setItem('token', response.data.token);
+        const token = response.data.token;
+        localStorage.setItem('token', token);
+
+        // Configura Axios para incluir automáticamente el token en futuras peticiones
+        axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+
         navigate('/menu');  // Redirige al menú
       })
       .catch(error => {
@@ -25,8 +30,18 @@ const Login = () => {
     <div>
       <h2>Login</h2>
       <form onSubmit={handleSubmit}>
-        <input type="text" placeholder="Username" value={username} onChange={e => setUsername(e.target.value)} />
-        <input type="password" placeholder="Password" value={password} onChange={e => setPassword(e.target.value)} />
+        <input 
+          type="text" 
+          placeholder="Username" 
+          value={username} 
+          onChange={e => setUsername(e.target.value)} 
+        />
+        <input 
+          type="password" 
+          placeholder="Password" 
+          value={password} 
+          onChange={e => setPassword(e.target.value)} 
+        />
         <button type="submit">Login</button>
       </form>
     </div>
