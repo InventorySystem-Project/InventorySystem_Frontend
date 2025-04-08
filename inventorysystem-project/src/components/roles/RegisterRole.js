@@ -22,16 +22,16 @@ const RegisterRole = () => {
   };
 
   return (
-    <div>
-      <h2>Registrar Rol</h2>
+    <div className="register-role-container">
+      <h2 className="register-role-heading">Registrar Rol</h2>
       <input 
         type="text" 
         placeholder="Nombre del rol" 
-        value={rol}
+        value={rol} 
         onChange={(e) => setRol(e.target.value)} 
+        className="register-role-input"
       />
-      <br />
-      <button onClick={handleRegister}>Registrar Rol</button>
+      <button className="register-role-button" onClick={handleRegister}>Registrar Rol</button>
     </div>
   );
 };

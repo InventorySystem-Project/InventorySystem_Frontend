@@ -21,11 +21,22 @@ const ListUsers = () => {
   return (
     <div>
       <h2>Lista de Usuarios</h2>
-      <ul>
-        {users.map(user => (
-          <li key={user.id}>{user.username}</li>
-        ))}
-      </ul>
+      <table className="table">
+        <thead>
+          <tr>
+            <th className="th">ID</th>
+            <th className="th">Username</th>
+          </tr>
+        </thead>
+        <tbody>
+          {users.map(user => (
+            <tr key={user.id} className="tr">
+              <td className="td">{user.id}</td>
+              <td className="td">{user.username}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </div>
   );
 };

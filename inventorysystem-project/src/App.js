@@ -5,7 +5,7 @@ import Login from './pages/Login';
 import Menu from './pages/Menu';
 import Roles from './pages/Roles';
 import Users from './pages/Users';
-
+import './App.css';  // Importa el archivo CSS global
 function App() {
   return (
     <Router>

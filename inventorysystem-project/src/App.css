@@ -36,3 +36,169 @@
     transform: rotate(360deg);
   }
 }
+
+/* Estilos para el contenedor del menú */
+.menu-container {
+  text-align: center;
+  padding-top: 50px;
+}
+
+.menu-heading {
+  font-size: 28px;
+  margin-bottom: 20px;
+}
+
+.menu-list {
+  list-style: none;
+  padding: 0;
+}
+
+.menu-list-item {
+  margin-bottom: 10px;
+}
+
+.menu-link {
+  text-decoration: none;
+  color: #4CAF50;
+  font-size: 18px;
+  font-weight: bold;
+  transition: color 0.3s;
+}
+
+.menu-link:hover {
+  color: #45a049;
+}
+
+/* Estilos para el formulario de registro de usuario */
+.register-user-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 50px;
+}
+
+.register-user-input {
+  padding: 10px;
+  margin: 10px;
+  width: 300px;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+}
+
+.register-user-button {
+  padding: 10px;
+  width: 320px;
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.register-user-button:hover {
+  background-color: #45a049;
+}
+
+/* Estilos para la tabla de usuarios y roles */
+.table {
+  width: 80%;
+  border-collapse: collapse;
+}
+
+.th, .td {
+  padding: 10px;
+  border: 1px solid #ddd;
+}
+
+.th {
+  background-color: #4CAF50;
+  color: white;
+  text-align: left;
+}
+
+.tr:hover {
+  background-color: #f1f1f1;
+}
+/* Estilos para el formulario de registrar rol */
+.register-role-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 50px;
+}
+
+.register-role-heading {
+  font-size: 24px;
+  margin-bottom: 20px;
+  color: #333;
+}
+
+.register-role-input {
+  padding: 10px;
+  margin: 10px;
+  width: 300px;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+  font-size: 16px;
+}
+
+.register-role-button {
+  padding: 10px;
+  width: 320px;
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: background-color 0.3s;
+}
+
+.register-role-button:hover {
+  background-color: #45a049;
+}
+/* Estilos para el formulario de login */
+.login-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 100px;
+}
+
+.login-heading {
+  font-size: 28px;
+  margin-bottom: 30px;
+  color: #333;
+}
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.login-input {
+  padding: 10px;
+  margin: 10px;
+  width: 300px;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+  font-size: 16px;
+}
+
+.login-button {
+  padding: 10px;
+  width: 320px;
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: background-color 0.3s;
+}
+
+.login-button:hover {
+  background-color: #45a049;
+}

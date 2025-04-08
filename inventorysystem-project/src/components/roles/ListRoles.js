@@ -21,11 +21,22 @@ const ListRoles = () => {
   return (
     <div>
       <h2>Lista de Roles</h2>
-      <ul>
-        {roles.map(role => (
-          <li key={role.id}>{role.rol}</li>
-        ))}
-      </ul>
+      <table className="table">
+        <thead>
+          <tr>
+            <th className="th">ID</th>
+            <th className="th">Rol</th>
+          </tr>
+        </thead>
+        <tbody>
+          {roles.map(role => (
+            <tr key={role.id} className="tr">
+              <td className="td">{role.id}</td>
+              <td className="td">{role.rol}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </div>
   );
 };
