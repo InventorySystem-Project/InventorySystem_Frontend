@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 
-const ListUsers = () => {
-  const [users, setUsers] = useState([]);
+const ListRoles = () => {
+  const [roles, setRoles] = useState([]);
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -11,28 +11,28 @@ const ListUsers = () => {
       return;
     }
 
-    axios.get('http://localhost:8080/users', {
+    axios.get('http://localhost:8080/roles/Listar', {
       headers: { Authorization: `Bearer ${token}` }
     })
-    .then(response => setUsers(response.data))
-    .catch(error => console.error("Error al obtener usuarios: ", error));
+    .then(response => setRoles(response.data))
+    .catch(error => console.error('Error al obtener roles:', error));
   }, []);
 
   return (
-    <div>
-      <h2>Lista de Usuarios</h2>
+    <div className="panel-container">
+      <h2>Lista de Roles</h2>
       <table className="table">
         <thead>
           <tr>
             <th className="th">ID</th>
-            <th className="th">Username</th>
+            <th className="th">Rol</th>
           </tr>
         </thead>
         <tbody>
-          {users.map(user => (
-            <tr key={user.id} className="tr">
-              <td className="td">{user.id}</td>
-              <td className="td">{user.username}</td>
+          {roles.map(role => (
+            <tr key={role.id} className="tr">
+              <td className="td">{role.id}</td>
+              <td className="td">{role.rol}</td>
             </tr>
           ))}
         </tbody>
@@ -41,4 +41,4 @@ const ListUsers = () => {
   );
 };
 
-export default ListUsers;
+export default ListRoles;

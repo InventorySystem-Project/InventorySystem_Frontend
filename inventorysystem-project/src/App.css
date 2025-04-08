@@ -75,6 +75,15 @@
   flex-direction: column;
   align-items: center;
   padding-top: 50px;
+  background-color: white;
+  padding: 30px;
+  margin-left: 40px;
+  width: 90%;
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  color: black;
+  /*transition: transform 0.2s ease-in-out;*/
+  min-height: 80vh; /* para que no se vea en blanco al hacer zoom */
 }
 
 .register-user-input {
@@ -125,7 +134,17 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding-top: 50px;
+  background-color: #ffffff; /* rojo vibrante */
+  padding: 30px;
+  margin-left: 40px;
+  width: 90%;
+  /*max-width: 1000px;*/
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  color: black;
+  /*transition: transform 0.2s ease-in-out;*/
+  min-height: 80vh; /* para que no se vea en blanco al hacer zoom */
+
 }
 
 .register-role-heading {
@@ -137,7 +156,7 @@
 .register-role-input {
   padding: 10px;
   margin: 10px;
-  width: 300px;
+  width: 19%;
   border-radius: 4px;
   border: 1px solid #ccc;
   font-size: 16px;
@@ -202,3 +221,116 @@
 .login-button:hover {
   background-color: #45a049;
 }
+
+
+/*SIDE MENU***************************/
+/* Estilos para el menú lateral */
+.side-menu {
+  width: 250px;
+  height: 100vh;
+  background-color: #333;
+  color: white;
+  padding-top: 20px;
+  position: fixed;
+  transition: all 0.3s ease;
+}
+
+/* Estilos para el encabezado del menú lateral */
+.menu-heading {
+  color: #fff;
+  text-align: center;
+}
+
+/* Estilos para los elementos del menú */
+.menu-item {
+  padding: 15px;
+  text-decoration: none;
+  color: white;
+  font-size: 18px;
+  display: block;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.menu-item:hover {
+  background-color: #444;
+}
+
+/* Estilos para los íconos */
+.menu-icon {
+  margin-right: 10px;
+}
+
+.icon {
+  float: right;
+}
+
+/* Estilos para los submenús */
+.sub-menu {
+  padding-left: 20px;
+  padding-top: 10px;
+  display: block;
+  overflow: hidden; /* Ocultar cualquier contenido fuera del submenú */
+  transition: max-height 0.1s ease-out, padding-top 0.3s ease;  /* Animación para la altura y el deslizamiento */
+  max-height: 0;
+  padding-top: 0; /* Empezamos con el padding-top en 0 */
+}
+
+/* Mostrar el submenú cuando esté activo */
+.sub-menu.show {
+  max-height: 500px; /* Control de la altura máxima */
+  padding-top: 10px; /* Agregar padding al submenú cuando se despliega */
+}
+
+/* Estilos para los enlaces de los submenús */
+.sub-menu-item {
+  padding: 10px;
+  text-decoration: none;
+  color: white;
+  display: block;
+  font-size: 16px;
+  transition: background-color 0.3s ease;
+}
+
+.sub-menu-item:hover {
+  background-color: #444;
+}
+
+/*REGISTER ROLE*/
+
+.register-role-select {
+  width: 20%;
+  padding: 10px;
+  margin-top: 12px;
+  margin-bottom: 12px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+/*SIDE MENU************************/
+
+
+
+/*********/
+
+/* Contenedor general para los paneles (listar usuarios, registrar, etc.) */
+.panel-container {
+  background-color: #ffffff; /* rojo vibrante */
+  padding: 30px;
+  margin-left: 40px;
+  width: 90%;
+  /*max-width: 1000px;*/
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  color: black;
+  /*transition: transform 0.2s ease-in-out;*/
+  min-height: 80vh; /* para que no se vea en blanco al hacer zoom */
+
+}
+/*
+.panel-container:hover {
+  transform: scale(1.01);
+}*/
+
+
+

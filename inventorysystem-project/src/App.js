@@ -1,24 +1,29 @@
-// src/App.js
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import Login from './pages/Login';
+import { Route, BrowserRouter as Router, Routes } from 'react-router-dom';
+import MainLayout from './components/MainLayout'; // << Asegúrate de importar correctamente
 import Menu from './pages/Menu';
-import Roles from './pages/Roles';
-import Users from './pages/Users';
-import './App.css';  // Importa el archivo CSS global
-function App() {
+import RegisterUser from './components/users/RegisterUser';
+import ListUsers from './components/users/ListUsers';
+import RegisterRole from './components/roles/RegisterRole';
+import ListRoles from './components/roles/ListRoles';
+import Login from './pages/Login';
+import './App.css';
+
+const App = () => {
   return (
     <Router>
-      <div className="App">
+      <MainLayout>
         <Routes>
           <Route path="/" element={<Login />} />
           <Route path="/menu" element={<Menu />} />
-          <Route path="/roles/*" element={<Roles />} />
-          <Route path="/users/*" element={<Users />} />
+          <Route path="/roles/registrar" element={<RegisterRole />} />
+          <Route path="/roles" element={<ListRoles />} />
+          <Route path="/users/registrar" element={<RegisterUser />} />
+          <Route path="/users" element={<ListUsers />} />
         </Routes>
-      </div>
+      </MainLayout>
     </Router>
   );
-}
+};
 
 export default App;

@@ -15,7 +15,9 @@ const Login = () => {
         const token = response.data.jwttoken;
         if (token) {
           localStorage.setItem('token', token);
+          localStorage.setItem('username', username); // <-- ESTA LÍNEA ES LA CLAVE
           axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+          
           navigate('/menu');
         } else {
           alert('Error: No se obtuvo el token');
@@ -26,7 +28,7 @@ const Login = () => {
         console.error(error);
       });
   };
-
+  
   return (
     <motion.div 
       className="login-container"
