@@ -21,7 +21,7 @@ const RegisterUser = () => {
       setEnabled(true);
     }
 
-    axios.post('http://localhost:8080/users', { username, password, enabled }, {
+    axios.post('http://localhost:8080/users/Registrar', { username, password, enabled }, {
       headers: { Authorization: `Bearer ${token}` }
     })
     .then(() => {
@@ -34,7 +34,7 @@ const RegisterUser = () => {
   };
 
   return (
-    <div className="register-user-container">
+    <div className="container-general">
       <h2>Registrar Usuario</h2>
       <input 
         type="text" 

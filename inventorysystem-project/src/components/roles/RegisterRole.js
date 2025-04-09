@@ -14,10 +14,13 @@ const RegisterRole = () => {
       return;
     }
 
-    axios.get('http://localhost:8080/users', {
+    axios.get('http://localhost:8080/users/Listar', {
       headers: { Authorization: `Bearer ${token}` }
     })
-    .then(response => setUsers(response.data))
+    .then(response => {
+      console.log('Usuarios obtenidos:', response.data);  // Verifica los datos obtenidos
+      setUsers(response.data);
+    })
     .catch(error => console.error('Error al obtener usuarios:', error));
   }, []);
 
@@ -45,7 +48,7 @@ const RegisterRole = () => {
   };
 
   return (
-    <div className="register-role-container">
+    <div className="container-general">
       <h2 className="register-role-heading">Registrar Rol</h2>
 
       <input 

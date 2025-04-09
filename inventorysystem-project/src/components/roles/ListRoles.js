@@ -19,7 +19,7 @@ const ListRoles = () => {
   }, []);
 
   return (
-    <div className="panel-container">
+    <div className="container-general">
       <h2>Lista de Roles</h2>
       <table className="table">
         <thead>
