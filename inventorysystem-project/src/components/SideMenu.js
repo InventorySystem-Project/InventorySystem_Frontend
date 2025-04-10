@@ -4,6 +4,8 @@ import { FaAngleDown, FaAngleUp } from 'react-icons/fa'; // Íconos para despleg
 import { GoPulse } from "react-icons/go";
 import { FaUser } from "react-icons/fa";
 import { FaUserGear } from "react-icons/fa6";
+import { AiFillHome } from "react-icons/ai";
+
 
 const SideMenu = () => {
   const [showRoles, setShowRoles] = useState(false);
@@ -14,7 +16,10 @@ const SideMenu = () => {
 
   const toggleRoles = () => setShowRoles(!showRoles);
   const toggleUsers = () => setShowUsers(!showUsers);
-
+  const handleHomeClick = () => {
+    navigate('/menu');
+  };
+  
   const handleLogout = () => {
     localStorage.removeItem('username');
     localStorage.removeItem('token');
@@ -24,19 +29,16 @@ const SideMenu = () => {
   return (
     <div
       className="side-menu"
-      style={{
-        width: '250px',
-        height: '100vh',
-        background: '#134ac1',
-        color: 'white',
-        display: 'flex',
-        flexDirection: 'column',
-        justifyContent: 'space-between',
-      }}
+  
     >
       {/* Contenido principal */}
       <div>
         <h2 className="menu-heading">Menú Lateral</h2>
+        <hr></hr>
+        {/* Pestaña de Roles */}
+        <div className="menu-item" onClick={handleHomeClick}>
+  <span className="menu-icon"><AiFillHome /></span> Inicio
+</div>
 
         {/* Pestaña de Roles */}
         <div className="menu-item" onClick={toggleRoles}>

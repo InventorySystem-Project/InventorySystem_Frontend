@@ -1,3 +1,11 @@
+html, body, #root, .App {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  background-color: #134ac1;
+}
+iframe#webpack-dev-server-client-overlay{display:none!important}
+
 .App {
   text-align: center;
 }
@@ -81,10 +89,13 @@
   color: black;
   /*transition: transform 0.2s ease-in-out;*/
   min-height: 90vh; /* para que no se vea en blanco al hacer zoom */
+  margin-right: 20px;
 }
 
+/* =========================================== */
+/*         REGISTRAR USUARIOS                  */
+/* =========================================== */
 
-/* Estilos para el formulario de registro de usuario */
 .register-user-container {
   display: flex;
   flex-direction: column;
@@ -95,8 +106,7 @@
   border-radius: 16px;
   box-shadow: 0 4px 12px rgba(0,0,0,0.2);
   color: black;
-  /*transition: transform 0.2s ease-in-out;*/
-  min-height: 90vh; /* para que no se vea en blanco al hacer zoom */
+  min-height: 90vh; 
 }
 
 .register-user-input {
@@ -142,22 +152,21 @@
 .tr:hover {
   background-color: #f1f1f1;
 }
-/* Estilos para el formulario de registrar rol */
+/* ============================================ */
+/*               REGISTRAR ROL                  */
+/* ============================================ */
 .register-role-container {
   display: flex;
   flex-direction: column;
   align-items: center;
-  background-color: #ffffff; /* rojo vibrante */
+  background-color: #ffffff; 
   padding: 30px;
   margin-left: 40px;
   width: 90%;
-  /*max-width: 1000px;*/
   border-radius: 16px;
   box-shadow: 0 4px 12px rgba(0,0,0,0.2);
   color: black;
-  /*transition: transform 0.2s ease-in-out;*/
-  min-height: 80vh; /* para que no se vea en blanco al hacer zoom */
-
+  min-height: 80vh; 
 }
 
 .register-role-heading {
@@ -191,17 +200,19 @@
   background-color: #45a049;
 }
 
-/* Estilos para el formulario de login */
-
-html, body, #root, .App {
-  height: 100%;
-  margin: 0;
-  padding: 0;
-  background-color: #134ac1;
+.register-role-select {
+  width: 20%;
+  padding: 10px;
+  margin-top: 12px;
+  margin-bottom: 12px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
 }
 
-/*-----------------------------------------------*/
-/* Contenedor para la lista de usuarios */
+/* =========================================== */
+/*         LISTAR USUARIOS                     */
+/* =========================================== */
+
 .list-users-container {
   display: flex;
   flex-direction: column;
@@ -281,17 +292,17 @@ html, body, #root, .App {
   background-color: #9b1c29;
 }
 
-/*-----------------------------------------------------------------------------------*/
-/* Contenedor específico para la página de login */
+/* =============================== */
+/*             LOGIN               */
+/* =============================== */
 .login-page {
   display: flex;
   justify-content: center;
   align-items: center;
-  min-height: 100vh; /* Usar viewport height para asegurar altura completa */
+  min-height: 100vh; 
   background-color: #f5f7fa;
 }
 
-/* Contenedor del formulario */
 .login-container {
   display: flex;
   flex-direction: column;
@@ -302,7 +313,7 @@ html, body, #root, .App {
   max-width: 90%;
   border-radius: 12px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  margin: auto; /* Ayuda al centrado */
+  margin: auto; 
 }
 
 .login-heading {
@@ -346,61 +357,21 @@ html, body, #root, .App {
 }
 
 
-
-/*REGISTER ROLE*/
-
-.register-role-select {
-  width: 20%;
-  padding: 10px;
-  margin-top: 12px;
-  margin-bottom: 12px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-}
-
-/*SIDE MENU************************/
-
-
-
-/*********/
-
-/* Contenedor general para los paneles (listar usuarios, registrar, etc.) */
-.panel-container {
-  background-color: #ffffff; /* rojo vibrante */
-  padding: 30px;
-  margin-left: 40px;
-  width: 90%;
-  /*max-width: 1000px;*/
-  border-radius: 16px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-  color: black;
-  /*transition: transform 0.2s ease-in-out;*/
-  min-height: 80vh; /* para que no se vea en blanco al hacer zoom */
-
-}
-/*
-.panel-container:hover {
-  transform: scale(1.01);
-}*/
-
-
-
-
-
-/*----------------------------------------------------------------*/
-/* Layout con el menú lateral */
+/* ========================================*/
+/* Layout con el menú lateral - SIDE MENU  */
+/* ========================================*/
 .layout-container {
   display: flex;
-  height: 100%; /* Esto asegura que ocupe toda la altura disponible */
+  height: 100%;
 }
 
 .side-menu {
-  width: 250px;
-  background-color: #333;
+  width: 230px;
+  background-color: #134ac1;
   color: white;
-  
+  padding: 0 20px;
   position: fixed;
-  height: 100vh; /* Asegura que el menú ocupe toda la altura de la pantalla */
+  height: 100vh;
   transition: all 0.3s ease;
 }
 
@@ -418,7 +389,8 @@ html, body, #root, .App {
 }
 
 .menu-item:hover {
-  background-color: #444;
+  background-color: #1235a8c4;
+  border-radius: 8px;
 }
 
 .icon {
@@ -449,77 +421,189 @@ html, body, #root, .App {
 }
 
 .sub-menu-item:hover {
-  background-color: #444;
+  background-color: #1235a8c4;
+  border-radius: 8px;
 }
 
+/* =================================*/
 /* Contenido principal */
+/* =================================*/
 .content {
   flex: 1;
-  margin-left: 250px; /* Ajusta el espacio cuando el menú lateral esté visible */
-  
+  margin-left: 250px;
   background-color: #134ac1;
   overflow-y: auto;
-  height: 100vh; /* Esto hace que el contenido ocupe toda la altura */
+  height: 100vh;
 }
 
-/*###################################*/
+/* =================================*/
 /* Estilos generales para el TopBar */
+/* =================================*/
 .top-bar {
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-end; /* Alinea todos los elementos a la derecha */
   align-items: center;
   margin-top: 20px;
-  background-color: #ebedff;  /* Fondo blanco */
-  box-shadow: 0px 2px 10px rgba(0, 0, 0, 0.1); /* Sombra ligera */
+  background-color: #ebedff;
+  box-shadow: 0px 2px 10px rgba(0, 0, 0, 0.1);
   margin-left: 270px;
   margin-right: 20px;
-  
-  left: 2500px; /* Asegúrate de que empuje el contenido a la derecha cuando el menú esté abierto */
-  
-  z-index: 10; /* Asegura que quede por encima del SideMenu */
+  left: 2500px;
+  z-index: 10;
   transition: all 0.3s ease;
   padding: 10px;
-  
   border-top-right-radius: 16px;
   border-top-left-radius: 16px;
 }
 
-/* Contenedor de la barra de búsqueda */
-.search-container {
-  display: flex;
-  align-items: center;
-  width: 300px;
-}
-
-.search-container input {
-  width: 100%;
-  padding: 8px 15px;
-  border-radius: 4px;
-  border: 1px solid #ccc;
-  font-size: 14px;
-  outline: none;
-  transition: border-color 0.3s;
-}
-
-.search-container input:focus {
-  border-color: #2563eb; /* Resaltar el borde al enfocarse */
-}
-
-/* Contenedor del perfil de usuario y notificaciones */
 .user-profile {
   display: flex;
   align-items: center;
   gap: 20px;
 }
 
-/* Icono de notificaciones */
+.profile-circle {
+  cursor: pointer;
+  font-size: 30px;
+  color: #333;
+}
+
+.user-menu {
+  position: absolute;
+  top: 75px; /* Justo debajo del perfil */
+  right: 40px;
+  width: 200px;
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0px 2px 10px rgba(0, 0, 0, 0.2);
+  padding: 10px;
+  text-align: left;
+  opacity: 0; /* Comienza invisible */
+  transform: translateY(-20px); /* Comienza ligeramente hacia arriba */
+  transition: opacity 0.3s ease, transform 0.3s ease; /* Animación suave para aparecer */
+}
+
+.user-menu.show {
+  opacity: 1; /* Aparece con opacidad */
+  transform: translateY(0); /* Se mueve hacia abajo */
+  background-color: #2563eb;
+  pointer-events: auto; /* Permite interacciones cuando el menú está visible */
+
+  
+}
+.user-info p {
+  margin: 5px 0;
+  color: white;
+}
+
+.logout-button {
+  width: 100%;
+  padding: 10px;
+  background-color: #ef4444;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: background-color 0.3s ease;
+}
+
+.logout-button:hover {
+  background-color: #9b1c29;
+}
+
+.notification-icon {
+  font-size: 25px;
+  color: #333;
+}
+/* Asegurar que el hover no se active cuando el menú está oculto */
+.user-menu:not(.show) .logout-button {
+  pointer-events: none; /* Desactiva el hover cuando el menú no está visible */
+  background-color: #ef4444; /* Mantiene el color original */
+}
+
+
+/* ===================================*/
+/* Estilos para la leyenda de navegación */
+/* ===================================*/
+.breadcrumbs {
+  font-size: 14px;
+  font-weight: bold;
+  color: #333;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start; /* Alinea los elementos a la izquierda */
+  margin-right: auto; /* Esto ayuda a que el contenido quede alineado a la izquierda */
+  gap: 5px; /* Espacio entre los elementos del breadcrumb */
+  margin-top: 10px; /* Agregar un pequeño margen superior */
+}
+
+.breadcrumbs span {
+  color: #2563eb;
+  
+}
+
+.breadcrumbs span:hover {
+  text-decoration: underline;
+}
+
+.breadcrumbs span:last-child {
+  color: #666; /* Color más suave para la última parte */
+}
+
+
+/* ===================================*/
+/* Contenedor de la barra de búsqueda */
+/* ===================================*/
+.search-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  max-width: 300px;
+  padding: auto;
+  margin-right: 20px;
+}
+
+.search-container input {
+  width: 100%;
+  padding: 8px 15px;
+  border-radius: 15px;
+  border: 1px solid #ccc;
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.3s;
+}
+
+.search-icon {
+  position: absolute;
+  top: 50%;
+  right: 10px;
+  transform: translateY(-50%);
+  font-size: 18px;
+  color: #aaa;
+  pointer-events: none;
+}
+
+.search-container input:focus {
+  border-color: #87a3e4;
+}
+
+/* ==================================================*/
+/* Contenedor del perfil de usuario y notificaciones */
+/* ==================================================*/
+.user-profile {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
 .notification-icon {
   font-size: 20px;
   cursor: pointer;
   color: #333;
 }
 
-/* Círculo de perfil */
 .profile-circle {
   width: 40px;
   height: 40px;
@@ -531,6 +615,8 @@ html, body, #root, .App {
   color: white;
   cursor: pointer;
 }
+
+
 
 /* Media query para dispositivos pequeños */
 @media screen and (max-width: 768px) {
