@@ -21,7 +21,7 @@ const RegisterUser = () => {
       setEnabled(true);
     }
 
-    axios.post('http://localhost:8080/users/Registrar', { username, password, enabled }, {
+    axios.post('http://localhost:8080/users/registrar', { username, password, enabled }, {
       headers: { Authorization: `Bearer ${token}` }
     })
     .then(() => {
