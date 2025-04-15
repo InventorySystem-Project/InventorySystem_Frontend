@@ -58,7 +58,13 @@ const Proveedores = () => {
 
     const handleAgregarProveedor = async () => {
         // Verificar si todos los campos están completos
-        if (!nuevoProveedor.nombreEmpresaProveedor || !nuevoProveedor.nombreContacto || !nuevoProveedor.telefono || !nuevoProveedor.ruc) {
+        if (
+            !nuevoProveedor.nombreEmpresaProveedor || 
+            !nuevoProveedor.nombreContacto || 
+            !nuevoProveedor.telefono || 
+            !nuevoProveedor.ruc
+        ) 
+            {
             alert('Por favor complete los campos obligatorios');
             return;
         }
@@ -207,7 +213,7 @@ const Proveedores = () => {
                     <TextField label="Nombre de Contacto" name="nombreContacto" value={nuevoProveedor.nombreContacto} onChange={handleInputChange} fullWidth />
                     <TextField label="Teléfono" name="telefono" value={nuevoProveedor.telefono} onChange={handleInputChange} fullWidth />
                     <TextField label="Correo" name="correo" value={nuevoProveedor.correo} onChange={handleInputChange} fullWidth />
-                    
+
                     <TextField
                         label="País"
                         name="pais"
