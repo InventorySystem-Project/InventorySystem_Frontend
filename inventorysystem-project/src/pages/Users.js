@@ -12,7 +12,7 @@ const Users = () => {
       <ul>
         <li><Link to="list">Listar Usuarios</Link></li>
         <li><Link to="register">Registrar Usuario</Link></li>
-        <li><Link to="/menu">Volver al Menú</Link></li>
+        
       </ul>
 
       <Routes>

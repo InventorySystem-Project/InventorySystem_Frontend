@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 
-const Menu = () => {
+const Dashboard = () => {
   return (
     <div className="container-general">
       <h1 className="menu-heading">Inicio</h1>
@@ -12,4 +12,4 @@ const Menu = () => {
   );
 };
 
-export default Menu;
+export default Dashboard;

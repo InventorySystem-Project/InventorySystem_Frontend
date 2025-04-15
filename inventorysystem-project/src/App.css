@@ -65,24 +65,15 @@ iframe#webpack-dev-server-client-overlay{display:none!important}
   margin-bottom: 10px;
 }
 
-.menu-link {
-  text-decoration: none;
-  color: #4CAF50;
-  font-size: 18px;
-  font-weight: bold;
-  transition: color 0.3s;
-}
 
-.menu-link:hover {
-  color: #45a049;
-}
+
 
 .container-general {
   display: flex;
   flex-direction: column;
   align-items: center;
   background-color: white;
-  padding: 30px;
+  padding: 50px;
   border-bottom-left-radius: 16px;
   border-bottom-right-radius: 16px;
   box-shadow: 0 4px 12px rgba(0,0,0,0.2);
@@ -132,26 +123,6 @@ iframe#webpack-dev-server-client-overlay{display:none!important}
   background-color: #45a049;
 }
 
-/* Estilos para la tabla de usuarios y roles */
-.table {
-  width: 80%;
-  border-collapse: collapse;
-}
-
-.th, .td {
-  padding: 10px;
-  border: 1px solid #ddd;
-}
-
-.th {
-  background-color: #4CAF50;
-  color: white;
-  text-align: left;
-}
-
-.tr:hover {
-  background-color: #f1f1f1;
-}
 /* ============================================ */
 /*               REGISTRAR ROL                  */
 /* ============================================ */
@@ -231,20 +202,87 @@ iframe#webpack-dev-server-client-overlay{display:none!important}
   margin-bottom: 20px;
   color: #333;
 }
-
-/* Contenedor para la tabla */
+/* TABLA------------------------------------*/
+/* Contenedor de la tabla */
 .table-container {
   width: 100%;
-  overflow-x: auto;
-  border-radius: 12px;
+  overflow-x: auto; /* Permite desplazamiento horizontal si la tabla es más ancha que el contenedor */
 }
 
 /* Estilos para la tabla */
 .table {
   width: 100%;
-  border-collapse: collapse;
+  border-collapse: separate; /* Usamos 'separate' para evitar que los bordes se colapsen */
+  background-color: white;
+  border: 1px solid rgb(211, 211, 211); /* Borde exterior de la tabla */
+  border-radius: 10px; /* Bordes redondeados */
+  overflow: hidden; /* Asegura que no se vean los bordes fuera del radio */
+}
+
+/* Estilos de las celdas (th y td) */
+.table th, .table td {
+  padding: 10px;
+  text-align: left;
+  background-color: #ffffff; /* Fondo suave para las celdas */
+  border-left: none; /* Eliminar las líneas verticales */
+  border-right: none; /* Eliminar las líneas verticales */
   
 }
+
+/* Estilo para las filas */
+.tr {
+  transition: background-color 0.3s ease;
+}
+
+/* Hover en toda la fila (tanto en el encabezado como en el cuerpo de la tabla) */
+.tr:hover {
+  background-color: #f0f0f0; /* Color de fondo para la fila completa */
+  color: #000000; /* Color del texto */
+}
+
+/* Estilo para el encabezado */
+.table th {
+  background-color: #ffffff; /* Fondo blanco para el encabezado */
+  color: #647fa0; /* Color gris para el texto */
+  text-align: left;
+  transition: background-color 0.3s ease; /* Añadido para la transición en el hover */
+}
+
+/* Hover para todo el encabezado */
+.table thead tr:hover {
+  background-color: #f0f0f0; /* Cambiar el color de fondo de toda la fila del encabezado */
+  color: #000000; /* Color del texto al pasar el ratón */
+}
+
+/* Hover para las celdas dentro del encabezado */
+.table thead tr:hover th {
+  background-color: #f0f0f0; /* Color de fondo para las celdas del encabezado */
+
+}
+
+/* Centrar el contenido de las celdas de datos */
+.td {
+  text-align: center;
+  
+}
+
+/* Hover para las celdas dentro de la fila */
+.tr:hover td {
+  background-color: #f0f0f0; /* Color de fondo para las celdas dentro de la fila */
+  color: #000000; /* Color del texto */
+  }
+
+
+/* Estilo para el selector de cantidad de filas por página */
+.table-container select {
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+
 
 .pagination {
   display: flex;
@@ -256,37 +294,9 @@ iframe#webpack-dev-server-client-overlay{display:none!important}
 
 .pagination-info {
   font-size: 16px;
-  font-weight: bold;
   color: #333;
 }
 
-.table-container select {
-  padding: 6px 10px;
-  border-radius: 6px;
-  border: 1px solid #ccc;
-  font-size: 14px;
-  cursor: pointer;
-}
-
-
-.th, .td {
-  padding: 12px;
-  border: 1px solid #ddd;
-}
-
-.th {
-  background-color: #2755d4;
-  color: white;
-  text-align: left;
-}
-
-.tr:hover {
-  background-color: #f1f1f1;
-}
-
-.td {
-  text-align: center;
-}
 
 /* Estilos para los botones de acción */
 .btn {
@@ -316,6 +326,132 @@ iframe#webpack-dev-server-client-overlay{display:none!important}
 .btn-delete:hover {
   background-color: #9b1c29;
 }
+
+*/
+/* FIN TABLA------------------------------------*/
+
+
+/* Contenedor principal */
+
+
+/* Título */
+h2 {
+  font-size: 24px;
+  color: #333;
+  margin-bottom: 20px;
+  display: inline-block;
+}
+
+.MuiButtonBase-root{
+background-color: #ffffff;
+}
+
+button:hover {
+  background-color: #5a4ae1;
+  color: white;
+}
+
+/* Tabla */
+.MuiTable-root {
+  margin-top: 20px;
+}
+
+.MuiPagination-root {
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+.table-container {
+  margin-top: 20px;
+  right: 20px;
+  left: 20px;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  border: 1px solid #dfdfdf;
+}
+
+.MuiTableCell-root {
+  padding: 12px;
+  text-align: center;
+  margin: 50px;
+}
+
+.MuiTableRow-root:hover {
+  background-color: #f5f5f5;
+}
+
+/* Estilo para el contenedor del botón "Nuevo Proveedor" */
+.button-container {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 20px;
+}
+
+/* Modal de formulario */
+/* Estilos para el popup del formulario */
+/* Modal de formulario */
+/* Estilos para el popup del formulario */
+/* Mejoras para el formulario dentro del modal */
+.MuiTextField-root {
+  margin-bottom: 20px;  /* Aumentar el espacio entre los inputs */
+  width: 100%;
+}
+
+textarea {
+  padding: 14px;
+  margin-bottom: 20px;  /* Aumentar el espacio entre los campos de texto */
+  font-size: 16px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  width: 100%;
+  min-height: 5px;  /* Hacer el área de texto más grande */
+  margin: 20px;
+}
+
+/* Modificar el espacio dentro del modal */
+.MuiBox-root {
+  background: #fff;
+  padding: 30px;
+  border-radius: 10px;
+  min-width: 400px;
+  width: 60%;
+  max-width: 600px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;  /* Añadido espacio entre los elementos dentro del modal */
+}
+
+.MuiModal-root {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5); /* Fondo oscuro */
+  z-index: 1000;
+}
+
+h3 {
+  font-size: 24px;
+  color: #333;
+  margin-bottom: 20px;
+  text-align: center; /* Alineación centrada del título */
+  font-weight: bold;
+}
+
+/*---------------------------------------------*/
+
+
+
+
+
 
 /* =============================== */
 /*             LOGIN               */
@@ -406,10 +542,19 @@ iframe#webpack-dev-server-client-overlay{display:none!important}
 }
 
 .menu-item {
+  display: flex;
+  justify-content: flex-start;
   padding: 15px;
   color: white;
   font-size: 18px;
   cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.menu-item .menu-link {
+
+  color: white;
+  text-decoration: none; /* Elimina subrayado */
   transition: background-color 0.3s ease;
 }
 
@@ -419,7 +564,11 @@ iframe#webpack-dev-server-client-overlay{display:none!important}
 }
 
 .icon {
-  float: right;
+  margin-left: auto; /* Empuja el icono hacia la derecha */
+}
+
+.menu-icon{
+  margin-right: 10px;
 }
 
 .sub-menu {

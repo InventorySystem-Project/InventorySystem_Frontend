@@ -18,7 +18,7 @@ const Login = () => {
           localStorage.setItem('username', username); // <-- ESTA LÍNEA ES LA CLAVE
           axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
           
-          navigate('/menu');
+          navigate('/dashboard');
         } else {
           alert('Error: No se obtuvo el token');
         }
