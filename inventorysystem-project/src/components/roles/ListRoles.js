@@ -13,7 +13,7 @@ const ListRoles = () => {
       return;
     }
 
-    axios.get('http://localhost:8080/roles/Listar', {
+    axios.get('http://localhost:8080/roles/listar', {
       headers: { Authorization: `Bearer ${token}` }
     })
     .then(response => setRoles(response.data))

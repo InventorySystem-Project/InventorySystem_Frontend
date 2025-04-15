@@ -26,7 +26,7 @@ const getAuthToken = () => {
 // Obtener todos los proveedores
 export const getProveedores = async () => {
     try {
-      const response = await axios.get(`${API_URL}/Listar`, {  // Cambiado a la ruta correcta
+      const response = await axios.get(`${API_URL}/listar`, {  // Cambiado a la ruta correcta
         headers: getAuthHeaders(), 
       });
       return response.data;
@@ -39,7 +39,7 @@ export const getProveedores = async () => {
   // Agregar un nuevo proveedor
   export const addProveedor = async (proveedor) => {
     try {
-      const response = await axios.post(`${API_URL}/Registrar`, proveedor, {  // Cambiado a la ruta correcta
+      const response = await axios.post(`${API_URL}/registrar`, proveedor, {  // Cambiado a la ruta correcta
         headers: getAuthHeaders(),
       });
       return response.data;

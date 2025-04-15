@@ -25,7 +25,7 @@ const getAuthHeaders = () => {
 // Obtener todas las materias primas
 export const getMateriasPrimas = async () => {
     try {
-        const response = await axios.get(`${API_URL}/Listar`, {  // Ruta para obtener lista de materias primas
+        const response = await axios.get(`${API_URL}/listar`, {  // Ruta para obtener lista de materias primas
             headers: getAuthHeaders(),
         });
         return response.data;
@@ -38,7 +38,7 @@ export const getMateriasPrimas = async () => {
 // Agregar una nueva materia prima
 export const addMateriaPrima = async (materiaPrima) => {
     try {
-        const response = await axios.post(`${API_URL}/Registrar`, materiaPrima, {  // Ruta para registrar una nueva materia prima
+        const response = await axios.post(`${API_URL}/registrar`, materiaPrima, {  // Ruta para registrar una nueva materia prima
             headers: getAuthHeaders(),
         });
         return response.data;

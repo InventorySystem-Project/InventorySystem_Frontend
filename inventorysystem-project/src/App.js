@@ -8,12 +8,14 @@ import Dashboard from './pages/Dashboard';
 import Proveedor from './pages/Proveedor';
 import OrdenesCompra from './pages/OrdenesCompra';
 import Producto from './pages/Producto';
+import Rol from './pages/Rol';
+import Usuario from './pages/Usuario';
+
+
 import MateriasPrimas from './pages/MateriasPrima';
 
 import RegisterUser from './components/users/RegisterUser';
 import ListUsers from './components/users/ListUsers';
-import RegisterRole from './components/roles/RegisterRole';
-import ListRoles from './components/roles/ListRoles';
 import Login from './pages/Login';
 import './App.css';
 
@@ -25,10 +27,12 @@ const App = () => {
           <Routes>
             <Route path="/" element={<Login />} />
             <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/roles/registrar" element={<RegisterRole />} />
-            <Route path="/roles" element={<ListRoles />} />
-            <Route path="/users/registrar" element={<RegisterUser />} />
-            <Route path="/users" element={<ListUsers />} />
+
+            <Route path="/roles" element={<Rol />} />
+            <Route path="/usuarios" element={<Usuario />} />
+
+
+
             <Route path="/proveedores" element={<Proveedor />} />
             <Route path="/orden-compras" element={<OrdenesCompra />} />
             <Route path="/productos" element={<Producto />} />

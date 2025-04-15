@@ -26,7 +26,7 @@ const getAuthHeaders = () => {
 // Obtener todos los productos terminados
 export const getProductos = async () => {
     try {
-        const response = await axios.get(`${API_URL}/Listar`, {  // Cambiado a la ruta correcta
+        const response = await axios.get(`${API_URL}/listar`, {  // Cambiado a la ruta correcta
             headers: getAuthHeaders(), 
         });
         return response.data;
@@ -39,7 +39,7 @@ export const getProductos = async () => {
 // Agregar un nuevo producto terminado
 export const addProducto = async (producto) => {
     try {
-        const response = await axios.post(`${API_URL}/Registrar`, producto, {  // Cambiado a la ruta correcta
+        const response = await axios.post(`${API_URL}/registrar`, producto, {  // Cambiado a la ruta correcta
             headers: getAuthHeaders(),
         });
         return response.data;

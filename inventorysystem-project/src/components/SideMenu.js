@@ -60,6 +60,22 @@ const SideMenu = () => {
   <Link to="/users/registrar" className="sub-menu-item"> <GoPulse /> Registrar Usuario</Link>
 </div>
 
+
+{/* Menú de Roles */}
+<div className="menu-item">
+  <Link to="/roles" className="menu-link">
+    <span className="menu-icon"><Package /></span> Roles
+  </Link>
+</div>
+
+
+{/* Menú de Usuarios */}
+<div className="menu-item">
+  <Link to="/usuarios" className="menu-link">
+    <span className="menu-icon"><Package /></span> Usuarios
+  </Link>
+</div>
+
 {/* Menú de Productos */}
 <div className="menu-item">
   <Link to="/productos" className="menu-link">

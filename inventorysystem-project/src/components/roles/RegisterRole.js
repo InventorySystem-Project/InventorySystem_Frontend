@@ -14,7 +14,7 @@ const RegisterRole = () => {
       return;
     }
 
-    axios.get('http://localhost:8080/users/Listar', {
+    axios.get('http://localhost:8080/users/listar', {
       headers: { Authorization: `Bearer ${token}` }
     })
     .then(response => {
@@ -36,7 +36,7 @@ const RegisterRole = () => {
       user: { id: selectedUserId }  // Esto es lo que ModelMapper necesita
     };
 
-    axios.post('http://localhost:8080/roles/Registrar', requestBody, {
+    axios.post('http://localhost:8080/roles/registrar', requestBody, {
       headers: { Authorization: `Bearer ${token}` }
     })
     .then(() => {
