@@ -175,12 +175,8 @@ const Producto = () => {
                                     <TableCell>{producto.precioUnitario}</TableCell>
                                     <TableCell>{producto.pieza}</TableCell>
                                     <TableCell>
-                                        <Button onClick={() => handleEditarProducto(producto)}>
-                                            <Pencil />
-                                        </Button>
-                                        <Button onClick={() => handleEliminarProducto(producto.id)}>
-                                            <Trash2 />
-                                        </Button>
+<Button color="primary" onClick={() => handleEditarProducto(producto)}><Pencil size={18} /></Button>
+                                        <Button color="error" onClick={() => handleEliminarProducto(producto.id)}><Trash2 size={18} /></Button>
                                     </TableCell>
                                 </TableRow>
                             ))}

@@ -151,12 +151,8 @@ const Rol = () => {
                                     {/* Muestra el nombre del usuario asociado al rol */}
                                     <TableCell>{rol.user ? `${rol.user.nombre} ${rol.user.apellido}` : 'No asignado'}</TableCell>
                                     <TableCell>
-                                        <Button onClick={() => handleEditarRol(rol)}>
-                                            <Pencil />
-                                        </Button>
-                                        <Button onClick={() => handleEliminarRol(rol.id)}>
-                                            <Trash2 />
-                                        </Button>
+                                        <Button color="primary" onClick={() => handleEditarRol(rol)}><Pencil size={18} /></Button>
+                                        <Button color="error" onClick={() => handleEliminarRol(rol.id)}><Trash2 size={18} /></Button>
                                     </TableCell>
                                 </TableRow>
                             ))}

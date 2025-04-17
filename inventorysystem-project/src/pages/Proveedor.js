@@ -193,8 +193,8 @@ const Proveedores = () => {
                                     <TableCell>{proveedor.telefono}</TableCell>
                                     <TableCell>{proveedor.correo}</TableCell>
                                     <TableCell>
-                                        <Button onClick={() => handleEditarProveedor(proveedor)}><Pencil /></Button>
-                                        <Button onClick={() => handleEliminarProveedor(proveedor.id)}><Trash2 /></Button>
+                                        <Button color="primary" onClick={() => handleEditarProveedor(proveedor)}><Pencil size={18} /></Button>
+                                        <Button color="error" onClick={() => handleEliminarProveedor(proveedor.id)}><Trash2 size={18} /></Button>
                                     </TableCell>
                                 </TableRow>
                             ))}

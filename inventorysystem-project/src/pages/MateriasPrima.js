@@ -1,71 +1,67 @@
 import React, { useState, useEffect } from 'react';
-import { TextField, Button, Modal, Box, Pagination, Table, TableBody, TableCell, TableHead, TableRow } from '@mui/material';
-import { Plus, Pencil, Trash2 } from "lucide-react";
+import {
+    Button,
+    Modal,
+    Box,
+    TextField,
+    MenuItem,
+    Table,
+    TableHead,
+    TableRow,
+    TableCell,
+    TableBody,
+    Pagination
+  } from '@mui/material';import { Plus, Pencil, Trash2 } from "lucide-react";
 import { getMateriasPrimas, addMateriaPrima, updateMateriaPrima, deleteMateriaPrima } from '../services/MateriaPrimaService';
 
 const MateriaPrima = () => {
     const [materiasPrimas, setMateriasPrimas] = useState([]);
-    const [nuevaMateriaPrima, setNuevaMateriaPrima] = useState({
-        nombre: "",
-        descripcion: "",
-        precioUnitario: "",
-        unidad: "",
-        imagen: ""
-    });
+    const [nuevaMateriaPrima, setNuevaMateriaPrima] = useState({ nombre: "", unidad: "" });
     const [mostrarFormulario, setMostrarFormulario] = useState(false);
     const [materiaPrimaEditando, setMateriaPrimaEditando] = useState(null);
     const [paginaActual, setPaginaActual] = useState(1);
     const [materiasPrimasPorPagina, setMateriasPrimasPorPagina] = useState(5);
 
+    // Función para obtener materias primas desde el backend
+    const fetchMateriasPrimas = async () => {
+        try {
+            const materiasPrimas = await getMateriasPrimas();
+            setMateriasPrimas(materiasPrimas);
+        } catch (error) {
+            console.error('Error al obtener materias primas', error);
+        }
+    };
+
+    // useEffect inicial
     useEffect(() => {
-        const fetchMateriasPrimas = async () => {
-            try {
-                const materiasPrimas = await getMateriasPrimas();
-                setMateriasPrimas(materiasPrimas);
-            } catch (error) {
-                console.error('Error al obtener materias primas', error);
-            }
-        };
         fetchMateriasPrimas();
     }, []);
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
-        setNuevaMateriaPrima(prev => ({
-            ...prev,
-            [name]: value
-        }));
+        setNuevaMateriaPrima(prev => ({ ...prev, [name]: value }));
     };
 
     const handleAgregarMateriaPrima = async () => {
-        // Verificar si todos los campos están completos
-        if (!nuevaMateriaPrima.nombre || !nuevaMateriaPrima.precioUnitario || !nuevaMateriaPrima.unidad) {
+        if (!nuevaMateriaPrima.nombre || !nuevaMateriaPrima.unidad) {
             alert('Por favor complete los campos obligatorios');
             return;
         }
 
         try {
             if (materiaPrimaEditando) {
-                // Si estamos editando una materia prima, la actualizamos
                 await updateMateriaPrima(materiaPrimaEditando.id, nuevaMateriaPrima);
-                setMateriasPrimas(prev => prev.map(m => m.id === materiaPrimaEditando.id ? { ...nuevaMateriaPrima, id: materiaPrimaEditando.id } : m));
             } else {
-                // Si es una nueva materia prima, la agregamos
-                const materiaPrima = await addMateriaPrima(nuevaMateriaPrima);
-                setMateriasPrimas(prev => [materiaPrima, ...prev]);
+                await addMateriaPrima(nuevaMateriaPrima);
             }
 
-            // Limpiar los campos después de agregar o editar la materia prima
-            setNuevaMateriaPrima({
-                nombre: "",
-                descripcion: "",
-                precioUnitario: "",
-                unidad: "",
-                imagen: ""
-            });
+            // Refrescar lista desde backend después de agregar o actualizar
+            await fetchMateriasPrimas();
 
+            // Limpiar formulario
+            setNuevaMateriaPrima({ nombre: "", unidad: "" });
             setMateriaPrimaEditando(null);
-            setMostrarFormulario(false);  // Cerrar el formulario
+            setMostrarFormulario(false);
         } catch (error) {
             console.error('Error al agregar o actualizar materia prima', error);
         }
@@ -74,13 +70,7 @@ const MateriaPrima = () => {
     const handleCancelar = () => {
         setMostrarFormulario(false);
         setMateriaPrimaEditando(null);
-        setNuevaMateriaPrima({
-            nombre: "",
-            descripcion: "",
-            precioUnitario: "",
-            unidad: "",
-            imagen: ""
-        });
+        setNuevaMateriaPrima({ nombre: "", unidad: "" });
     };
 
     const handleEditarMateriaPrima = (materiaPrima) => {
@@ -104,19 +94,13 @@ const MateriaPrima = () => {
 
     const handleChangeMateriasPrimasPorPagina = (event) => {
         const value = event.target.value;
-        if (value === "all") {
-            setMateriasPrimasPorPagina(materiasPrimas.length);
-            setPaginaActual(1);
-        } else {
-            setMateriasPrimasPorPagina(Number(value));
-            setPaginaActual(1);
-        }
+        setMateriasPrimasPorPagina(value === "all" ? materiasPrimas.length : Number(value));
+        setPaginaActual(1);
     };
 
-    const indexOfLastMateriaPrima = paginaActual * materiasPrimasPorPagina;
-    const indexOfFirstMateriaPrima = indexOfLastMateriaPrima - materiasPrimasPorPagina;
-    const materiasPrimasPaginadas = materiasPrimas.slice(indexOfFirstMateriaPrima, indexOfLastMateriaPrima);
-
+    const indexOfLast = paginaActual * materiasPrimasPorPagina;
+    const indexOfFirst = indexOfLast - materiasPrimasPorPagina;
+    const materiasPrimasPaginadas = materiasPrimas.slice(indexOfFirst, indexOfLast);
     const totalPages = Math.ceil(materiasPrimas.length / materiasPrimasPorPagina);
 
     return (
@@ -139,8 +123,6 @@ const MateriaPrima = () => {
                         <TableHead>
                             <TableRow>
                                 <TableCell style={{ fontWeight: 'bold' }}>Nombre</TableCell>
-                                <TableCell style={{ fontWeight: 'bold' }}>Descripción</TableCell>
-                                <TableCell style={{ fontWeight: 'bold' }}>Precio Unitario</TableCell>
                                 <TableCell style={{ fontWeight: 'bold' }}>Unidad</TableCell>
                                 <TableCell style={{ fontWeight: 'bold' }}>Acciones</TableCell>
                             </TableRow>
@@ -149,19 +131,24 @@ const MateriaPrima = () => {
                             {materiasPrimasPaginadas.map((materiaPrima) => (
                                 <TableRow key={materiaPrima.id}>
                                     <TableCell>{materiaPrima.nombre}</TableCell>
-                                    <TableCell>{materiaPrima.descripcion}</TableCell>
-                                    <TableCell>{materiaPrima.precioUnitario}</TableCell>
                                     <TableCell>{materiaPrima.unidad}</TableCell>
                                     <TableCell>
-                                        <Button onClick={() => handleEditarMateriaPrima(materiaPrima)}><Pencil /></Button>
-                                        <Button onClick={() => handleEliminarMateriaPrima(materiaPrima.id)}><Trash2 /></Button>
+                                        <Button color="primary" onClick={() => handleEditarMateriaPrima(materiaPrima)}><Pencil size={18}/></Button>
+                                        <Button color="error" onClick={() => handleEliminarMateriaPrima(materiaPrima.id)}><Trash2 size={18}/></Button>
                                     </TableCell>
                                 </TableRow>
                             ))}
                         </TableBody>
                     </Table>
 
-                    <Pagination count={totalPages} page={paginaActual} onChange={handleChangePage} color="primary" showFirstButton showLastButton />
+                    <Pagination
+                        count={totalPages}
+                        page={paginaActual}
+                        onChange={handleChangePage}
+                        color="primary"
+                        showFirstButton
+                        showLastButton
+                    />
                 </div>
             </div>
 
@@ -169,10 +156,26 @@ const MateriaPrima = () => {
                 <Box style={{ background: '#fff', padding: '20px', borderRadius: '10px', minWidth: '400px' }}>
                     <h3>{materiaPrimaEditando ? 'Editar Materia Prima' : 'Nueva Materia Prima'}</h3>
                     <TextField label="Nombre" name="nombre" value={nuevaMateriaPrima.nombre} onChange={handleInputChange} fullWidth />
-                    <TextField label="Descripción" name="descripcion" value={nuevaMateriaPrima.descripcion} onChange={handleInputChange} fullWidth />
-                    <TextField label="Precio Unitario" name="precioUnitario" value={nuevaMateriaPrima.precioUnitario} onChange={handleInputChange} fullWidth />
-                    <TextField label="Unidad" name="unidad" value={nuevaMateriaPrima.unidad} onChange={handleInputChange} fullWidth />
-                    <TextField label="Imagen" name="imagen" value={nuevaMateriaPrima.imagen} onChange={handleInputChange} fullWidth />
+                    <TextField
+  select
+  label="Unidad"
+  name="unidad"
+  value={nuevaMateriaPrima.unidad}
+  onChange={handleInputChange}
+  fullWidth
+>
+  <MenuItem value="m²">Metro cuadrado (m²)</MenuItem>
+  <MenuItem value="cm²">Centímetro cuadrado (cm²)</MenuItem>
+  <MenuItem value="m">Metro lineal (m)</MenuItem>
+  <MenuItem value="cm">Centímetro lineal (cm)</MenuItem>
+  <MenuItem value="kg">Kilogramo (kg)</MenuItem>
+  <MenuItem value="g">Gramo (g)</MenuItem>
+  <MenuItem value="L">Litro (L)</MenuItem>
+  <MenuItem value="mL">Mililitro (mL)</MenuItem>
+  <MenuItem value="unid.">Unidad (unid.)</MenuItem>
+  <MenuItem value="rollo">Rollo</MenuItem>
+  <MenuItem value="par">Par</MenuItem>
+</TextField>
                     <div style={{ display: 'flex', justifyContent: 'center', gap: '10px' }}>
                         <Button variant="outlined" color="primary" onClick={handleCancelar}>Cancelar</Button>
                         <Button variant="contained" color="primary" onClick={handleAgregarMateriaPrima}>Guardar</Button>
