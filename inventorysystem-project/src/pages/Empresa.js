@@ -1,21 +1,22 @@
 import React, { useState, useEffect } from 'react';
 import { TextField, Button, Modal, Box, Pagination, Table, TableBody, TableCell, TableHead, TableRow } from '@mui/material';
 import { Plus, Pencil, Trash2 } from "lucide-react";
-import {
-    getEmpresas,
-    addEmpresa,
-    updateEmpresa,
-    deleteEmpresa
-} from '../services/EmpresaService';
+import Flag from 'react-world-flags'; // Para mostrar banderas
+import { getEmpresas, addEmpresa, updateEmpresa, deleteEmpresa } from '../services/EmpresaService';
 
 const Empresa = () => {
     const [empresas, setEmpresas] = useState([]);
-    const [nuevaEmpresa, setNuevaEmpresa] = useState({ nombre: "", ruc: "", direccion: "" });
+    const [nuevaEmpresa, setNuevaEmpresa] = useState({
+        nombre: "", ruc: "", direccion: "", telefono: "", correo: "", pais: "", enabled: true
+    });
     const [mostrarFormulario, setMostrarFormulario] = useState(false);
     const [empresaEditando, setEmpresaEditando] = useState(null);
     const [paginaActual, setPaginaActual] = useState(1);
     const [empresasPorPagina, setEmpresasPorPagina] = useState(5);
+    const [paises, setPaises] = useState([]);  // Nuevo estado para los países
+    const [paisesNombreCompleto, setPaisesNombreCompleto] = useState({});  // Mapa de códigos ISO a nombres completos de países
 
+    // Obtener la lista de empresas
     const fetchEmpresas = async () => {
         try {
             const data = await getEmpresas();
@@ -25,8 +26,29 @@ const Empresa = () => {
         }
     };
 
+    // Obtener la lista de países
+    const fetchPaises = async () => {
+        try {
+            const response = await fetch('https://restcountries.com/v3.1/all');
+            const data = await response.json();
+            const paisesOrdenados = data.sort((a, b) => a.name.common.localeCompare(b.name.common)); // Ordenar por nombre
+
+            // Crear un mapa que relacione los códigos ISO con los nombres completos
+            const paisesMap = {};
+            data.forEach(pais => {
+                paisesMap[pais.cca2] = pais.name.common;  // "cca2" es el código ISO y "name.common" es el nombre del país
+            });
+
+            setPaises(paisesOrdenados);
+            setPaisesNombreCompleto(paisesMap);  // Guardar el mapa de países
+        } catch (error) {
+            console.error('Error al obtener los países', error);
+        }
+    };
+
     useEffect(() => {
         fetchEmpresas();
+        fetchPaises();  // Llamar a la función para obtener los países
     }, []);
 
     const handleInputChange = (e) => {
@@ -35,7 +57,7 @@ const Empresa = () => {
     };
 
     const handleGuardarEmpresa = async () => {
-        if (!nuevaEmpresa.nombre || !nuevaEmpresa.ruc || !nuevaEmpresa.direccion) {
+        if (!nuevaEmpresa.nombre || !nuevaEmpresa.ruc || !nuevaEmpresa.direccion || !nuevaEmpresa.telefono || !nuevaEmpresa.correo || !nuevaEmpresa.pais) {
             alert('Por favor complete todos los campos');
             return;
         }
@@ -48,7 +70,7 @@ const Empresa = () => {
             }
 
             await fetchEmpresas();
-            setNuevaEmpresa({ nombre: "", ruc: "", direccion: "" });
+            setNuevaEmpresa({ nombre: "", ruc: "", direccion: "", telefono: "", correo: "", pais: "", enabled: true });
             setEmpresaEditando(null);
             setMostrarFormulario(false);
         } catch (error) {
@@ -59,7 +81,7 @@ const Empresa = () => {
     const handleCancelar = () => {
         setMostrarFormulario(false);
         setEmpresaEditando(null);
-        setNuevaEmpresa({ nombre: "", ruc: "", direccion: "" });
+        setNuevaEmpresa({ nombre: "", ruc: "", direccion: "", telefono: "", correo: "", pais: "", enabled: true });
     };
 
     const handleEditarEmpresa = (empresa) => {
@@ -108,6 +130,9 @@ const Empresa = () => {
                                 <TableCell style={{ fontWeight: 'bold' }}>Nombre</TableCell>
                                 <TableCell style={{ fontWeight: 'bold' }}>RUC</TableCell>
                                 <TableCell style={{ fontWeight: 'bold' }}>Dirección</TableCell>
+                                <TableCell style={{ fontWeight: 'bold' }}>Teléfono</TableCell>
+                                <TableCell style={{ fontWeight: 'bold' }}>Correo</TableCell>
+                                <TableCell style={{ fontWeight: 'bold' }}>País</TableCell>
                                 <TableCell style={{ fontWeight: 'bold' }}>Acciones</TableCell>
                             </TableRow>
                         </TableHead>
@@ -117,6 +142,26 @@ const Empresa = () => {
                                     <TableCell>{empresa.nombre}</TableCell>
                                     <TableCell>{empresa.ruc}</TableCell>
                                     <TableCell>{empresa.direccion}</TableCell>
+                                    <TableCell>{empresa.telefono}</TableCell>
+                                    <TableCell>{empresa.correo}</TableCell>
+                                    {/* Mostrar la bandera del país con el código ISO */}
+                                    <TableCell>
+                                        {/* Contenedor para la bandera y el nombre del país */}
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                            <img
+                                                src={`https://flagcdn.com/w320/${empresa.pais.toLowerCase()}.png`}
+                                                alt={empresa.pais}
+                                                style={{
+                                                    width: '24px',
+                                                    height: '16px',
+                                                    borderRadius: '2px',  // Borde redondeado solo en la imagen
+                                                }}
+                                            />
+                                            <span>{paisesNombreCompleto[empresa.pais] || empresa.pais}</span> {/* Aquí mostramos el nombre completo del país */}
+                                        </div>
+                                    </TableCell>
+
+
                                     <TableCell>
                                         <Button color="primary" onClick={() => handleEditarEmpresa(empresa)}><Pencil size={18} /></Button>
                                         <Button color="error" onClick={() => handleEliminarEmpresa(empresa.id)}><Trash2 size={18} /></Button>
@@ -126,14 +171,7 @@ const Empresa = () => {
                         </TableBody>
                     </Table>
 
-                    <Pagination
-                        count={totalPages}
-                        page={paginaActual}
-                        onChange={handleChangePage}
-                        color="primary"
-                        showFirstButton
-                        showLastButton
-                    />
+                    <Pagination count={totalPages} page={paginaActual} onChange={handleChangePage} color="primary" showFirstButton showLastButton />
                 </div>
             </div>
 
@@ -143,6 +181,26 @@ const Empresa = () => {
                     <TextField label="Nombre" name="nombre" value={nuevaEmpresa.nombre} onChange={handleInputChange} fullWidth />
                     <TextField label="RUC" name="ruc" value={nuevaEmpresa.ruc} onChange={handleInputChange} fullWidth />
                     <TextField label="Dirección" name="direccion" value={nuevaEmpresa.direccion} onChange={handleInputChange} fullWidth />
+                    <TextField label="Teléfono" name="telefono" value={nuevaEmpresa.telefono} onChange={handleInputChange} fullWidth />
+                    <TextField label="Correo" name="correo" value={nuevaEmpresa.correo} onChange={handleInputChange} fullWidth />
+
+                    {/* Desplegable de países */}
+                    <TextField
+                        label="País"
+                        name="pais"
+                        value={nuevaEmpresa.pais}
+                        onChange={handleInputChange}
+                        select
+                        fullWidth
+                        SelectProps={{ native: true }}
+                    >
+                        {paises.map((pais) => (
+                            <option key={pais.cca2} value={pais.cca2}> {/* Usamos el código ISO del país aquí */}
+                                {pais.name.common}
+                            </option>
+                        ))}
+                    </TextField>
+
                     <div style={{ display: 'flex', justifyContent: 'center', gap: '10px' }}>
                         <Button variant="outlined" color="primary" onClick={handleCancelar}>Cancelar</Button>
                         <Button variant="contained" color="primary" onClick={handleGuardarEmpresa}>Guardar</Button>

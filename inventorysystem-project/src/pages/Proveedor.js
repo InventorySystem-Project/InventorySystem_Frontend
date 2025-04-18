@@ -21,6 +21,7 @@ const Proveedores = () => {
     const [paginaActual, setPaginaActual] = useState(1);
     const [proveedoresPorPagina, setProveedoresPorPagina] = useState(5);
     const [paises, setPaises] = useState([]);  // Nuevo estado para los países
+    const [paisesNombreCompleto, setPaisesNombreCompleto] = useState({});  // Mapa de códigos ISO a nombres completos de países
 
     useEffect(() => {
         const fetchProveedores = async () => {
@@ -36,9 +37,16 @@ const Proveedores = () => {
             try {
                 const response = await fetch('https://restcountries.com/v3.1/all');
                 const data = await response.json();
-                // Ordenar los países alfabéticamente por nombre común
-                const paisesOrdenados = data.sort((a, b) => a.name.common.localeCompare(b.name.common));
-                setPaises(paisesOrdenados);  // Guardar la lista de países ordenados en el estado
+                const paisesOrdenados = data.sort((a, b) => a.name.common.localeCompare(b.name.common)); // Ordenar por nombre
+    
+                // Crear un mapa que relacione los códigos ISO con los nombres completos
+                const paisesMap = {};
+                data.forEach(pais => {
+                    paisesMap[pais.cca2] = pais.name.common;  // "cca2" es el código ISO y "name.common" es el nombre del país
+                });
+    
+                setPaises(paisesOrdenados);
+                setPaisesNombreCompleto(paisesMap);  // Guardar el mapa de países
             } catch (error) {
                 console.error('Error al obtener los países', error);
             }
@@ -189,7 +197,21 @@ const Proveedores = () => {
                                     <TableCell>{proveedor.nombreEmpresaProveedor}</TableCell>
                                     <TableCell>{proveedor.ruc}</TableCell>
                                     <TableCell>{proveedor.nombreContacto}</TableCell>
-                                    <TableCell>{proveedor.pais}</TableCell>
+                                     <TableCell>
+                                                                            {/* Contenedor para la bandera y el nombre del país */}
+                                                                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                                                                <img
+                                                                                    src={`https://flagcdn.com/w320/${proveedor.pais.toLowerCase()}.png`}
+                                                                                    alt={proveedor.pais}
+                                                                                    style={{
+                                                                                        width: '24px',
+                                                                                        height: '16px',
+                                                                                        borderRadius: '2px',  // Borde redondeado solo en la imagen
+                                                                                    }}
+                                                                                />
+                                                                                <span>{paisesNombreCompleto[proveedor.pais] || proveedor.pais}</span> {/* Aquí mostramos el nombre completo del país */}
+                                                                            </div>
+                                                                        </TableCell>
                                     <TableCell>{proveedor.telefono}</TableCell>
                                     <TableCell>{proveedor.correo}</TableCell>
                                     <TableCell>
@@ -213,20 +235,17 @@ const Proveedores = () => {
                     <TextField label="Nombre de Contacto" name="nombreContacto" value={nuevoProveedor.nombreContacto} onChange={handleInputChange} fullWidth />
                     <TextField label="Teléfono" name="telefono" value={nuevoProveedor.telefono} onChange={handleInputChange} fullWidth />
                     <TextField label="Correo" name="correo" value={nuevoProveedor.correo} onChange={handleInputChange} fullWidth />
-
-                    <TextField
+<TextField
                         label="País"
                         name="pais"
                         value={nuevoProveedor.pais}
                         onChange={handleInputChange}
                         select
                         fullWidth
-                        SelectProps={{
-                            native: true,
-                        }}
+                        SelectProps={{ native: true }}
                     >
                         {paises.map((pais) => (
-                            <option key={pais.cca2} value={pais.name.common}>
+                            <option key={pais.cca2} value={pais.cca2}> {/* Usamos el código ISO del país aquí */}
                                 {pais.name.common}
                             </option>
                         ))}
