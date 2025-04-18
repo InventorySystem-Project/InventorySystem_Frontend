@@ -73,7 +73,7 @@ const Producto = () => {
                 setProductos((prev) => [producto, ...prev]);  // Actualizamos inmediatamente el estado
                 await addProducto(nuevoProducto);  // Ahora sincronizamos con el backend
             }
-            
+
 
             setNuevoProducto({
                 nombre: '',
@@ -175,7 +175,7 @@ const Producto = () => {
                                     <TableCell>{producto.precioUnitario}</TableCell>
                                     <TableCell>{producto.pieza}</TableCell>
                                     <TableCell>
-<Button color="primary" onClick={() => handleEditarProducto(producto)}><Pencil size={18} /></Button>
+                                        <Button color="primary" onClick={() => handleEditarProducto(producto)}><Pencil size={18} /></Button>
                                         <Button color="error" onClick={() => handleEliminarProducto(producto.id)}><Trash2 size={18} /></Button>
                                     </TableCell>
                                 </TableRow>

@@ -27,19 +27,21 @@ const Usuario = () => {
     const [paginaActual, setPaginaActual] = useState(1);
     const [usuariosPorPagina, setUsuariosPorPagina] = useState(5);
 
+
     // Obtener usuarios
     useEffect(() => {
-        const fetchUsuarios = async () => {
-            try {
-                const usuarios = await getUsuarios();
-                setUsuarios(usuarios);
-            } catch (error) {
-                console.error('Error al obtener usuarios', error);
-            }
-        };
-
         fetchUsuarios();
     }, []);
+
+    const fetchUsuarios = async () => {
+        try {
+            const usuarios = await getUsuarios();
+            setUsuarios(usuarios);
+        } catch (error) {
+            console.error('Error al obtener usuarios', error);
+        }
+    };
+
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;

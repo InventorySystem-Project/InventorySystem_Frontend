@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
-import { FileText, Trash2, Plus, Clock, CheckCircle2, Loader2 } from "lucide-react";
+import { FileText, Trash2, Plus, Clock, CheckCircle2, Loader2, XCircle, Pencil } from "lucide-react";
 import {
   Button,
   Modal,
@@ -15,7 +15,7 @@ import {
   TableBody,
   Pagination
 } from '@mui/material';
-import { getOrdenesCompra, addOrdenCompra, deleteOrdenCompra } from '../services/OrdenCompraService';
+import { getOrdenesCompra, addOrdenCompra, deleteOrdenCompra, updateOrdenCompra } from '../services/OrdenCompraService';
 import { getMateriasPrimas } from '../services/MateriaPrimaService';
 import { getEmpresas } from '../services/EmpresaService';
 import { getProveedores } from '../services/ProveedorService';
@@ -36,9 +36,10 @@ const OrdenCompra = () => {
   const [mostrarModal, setMostrarModal] = useState(false);
   const [paginaActual, setPaginaActual] = useState(1);
   const [productoActual, setProductoActual] = useState({ materiaPrimaId: '', cantidad: 1 });
+  const [ordenEditando, setOrdenEditando] = useState(null); // Estado para orden en edición
 
-  const [pdfPreview, setPdfPreview] = useState(null);   // 🆕 Nuevo estado para previsualizar
-  const [openPdfModal, setOpenPdfModal] = useState(false); // 🆕 Nuevo estado para modal PDF
+  const [pdfPreview, setPdfPreview] = useState(null);
+  const [openPdfModal, setOpenPdfModal] = useState(false);
 
   const ordenesPorPagina = 5;
 
@@ -98,11 +99,42 @@ const OrdenCompra = () => {
       codigoOrden: codigoGenerado,
       detalles: productosSeleccionados
     };
-    await addOrdenCompra(nuevaOrden);
+
+    if (ordenEditando) {
+      // Crear un objeto que incluya el ID del ordenEditando
+      const ordenCompleta = {
+        ...nuevaOrden,
+        id: ordenEditando.id
+      };
+      
+      // Llamar al servicio con un solo parámetro
+      await updateOrdenCompra(ordenCompleta);
+      
+      setOrdenes(prev => prev.map(o => o.id === ordenEditando.id ? ordenCompleta : o));
+    
+    } else {
+      // Si es una nueva orden
+      await addOrdenCompra(nuevaOrden);
+    }
+    
     setMostrarModal(false);
     setFormulario({ empresaId: '', proveedorId: '', fechaEmision: '', estado: '' });
     setProductosSeleccionados([]);
+    setOrdenEditando(null);
     fetchOrdenes();
+  };
+
+  const handleEditarOrden = (orden) => {
+    setOrdenEditando(orden);
+    setFormulario({
+      empresaId: orden.empresaId,
+      proveedorId: orden.proveedorId,
+      fechaEmision: orden.fechaEmision,
+      estado: orden.estado
+    });
+    setCodigoGenerado(orden.codigoOrden);
+    setProductosSeleccionados(orden.detalles || []);
+    setMostrarModal(true);
   };
 
   const handleEliminarOrden = async (id) => {
@@ -148,7 +180,6 @@ const OrdenCompra = () => {
       body: rows,
     });
 
-    // 🆕 Mostrar como previsualización en base64
     const pdfDataUri = doc.output('datauristring');
     setPdfPreview(pdfDataUri);
     setOpenPdfModal(true);
@@ -161,28 +192,35 @@ const OrdenCompra = () => {
 
   const renderEstado = (estado) => {
     switch (estado) {
-      case 'Registrado':
-        return (
-          <div style={{ backgroundColor: '#FFF8E1', color: '#FFC107', padding: '4px 10px', borderRadius: '20px', display: 'flex', alignItems: 'center', width: 'fit-content' }}>
-            <Clock size={16} style={{ marginRight: '5px' }} /> Registrado
-          </div>
-        );
       case 'En proceso':
         return (
-          <div style={{ backgroundColor: '#E3F2FD', color: '#2196F3', padding: '4px 10px', borderRadius: '20px', display: 'flex', alignItems: 'center', width: 'fit-content' }}>
-            <Loader2 size={16} style={{ marginRight: '5px' }} /> En proceso
+          <div style={{ backgroundColor: '#FFF8E1', color: '#FFC107', padding: '4px 10px', borderRadius: '20px', display: 'flex', alignItems: 'center', width: 'fit-content' }}>
+            <Clock size={16} style={{ marginRight: '5px' }} /> En Proceso
           </div>
         );
-      case 'Completado':
+      case 'Aprobada':
+        return (
+          <div style={{ backgroundColor: '#E3F2FD', color: '#2196F3', padding: '4px 10px', borderRadius: '20px', display: 'flex', alignItems: 'center', width: 'fit-content' }}>
+            <Loader2 size={16} style={{ marginRight: '5px' }} /> Aprobada
+          </div>
+        );
+      case 'Completada':
         return (
           <div style={{ backgroundColor: '#E8F5E9', color: '#4CAF50', padding: '4px 10px', borderRadius: '20px', display: 'flex', alignItems: 'center', width: 'fit-content' }}>
-            <CheckCircle2 size={16} style={{ marginRight: '5px' }} /> Completado
+            <CheckCircle2 size={16} style={{ marginRight: '5px' }} /> Completada
+          </div>
+        );
+      case 'Rechazada':
+        return (
+          <div style={{ backgroundColor: '#FFEBEE', color: '#F44336', padding: '4px 10px', borderRadius: '20px', display: 'flex', alignItems: 'center', width: 'fit-content' }}>
+            <XCircle size={16} style={{ marginRight: '5px' }} /> Rechazada
           </div>
         );
       default:
         return estado;
     }
   };
+
 
   return (
     <div className="container-general">
@@ -197,6 +235,8 @@ const OrdenCompra = () => {
             const today = new Date().toISOString().split('T')[0];
             setCodigoGenerado(`OC-${siguienteId.toString().padStart(4, '0')}`);
             setFormulario(prev => ({ ...prev, fechaEmision: today }));
+            setOrdenEditando(null); // Limpiar orden en edición
+            setProductosSeleccionados([]); // Limpiar productos seleccionados
             setMostrarModal(true);
           }}
         >
@@ -233,6 +273,9 @@ const OrdenCompra = () => {
                     <Button color="primary" onClick={() => generarPDF(orden)}>
                       <FileText size={18} />
                     </Button>
+                    <Button color="info" onClick={() => handleEditarOrden(orden)}>
+                      <Pencil size={18} />
+                    </Button>
                     <Button color="error" onClick={() => handleEliminarOrden(orden.id)}>
                       <Trash2 size={18} />
                     </Button>
@@ -259,10 +302,10 @@ const OrdenCompra = () => {
           padding: '20px',
           borderRadius: '10px',
           minWidth: '700px',
-          maxHeight: '90vh',     // 👈 Limita el alto máximo del modal
-          overflowY: 'auto'       // 👈 Aparece scroll si se pasa el contenido
+          maxHeight: '90vh',
+          overflowY: 'auto'
         }}>
-          <h3>Nueva Orden de Compra</h3>
+          <h3>{ordenEditando ? 'Editar Orden de Compra' : 'Nueva Orden de Compra'}</h3>
 
           <TextField fullWidth select label="Empresa" value={formulario.empresaId} onChange={e => setFormulario({ ...formulario, empresaId: e.target.value })} margin="normal">
             {empresas.map(e => <MenuItem key={e.id} value={e.id}>{e.nombre}</MenuItem>)}
@@ -291,9 +334,10 @@ const OrdenCompra = () => {
               onChange={e => setFormulario({ ...formulario, estado: e.target.value })}
               size="medium"
             >
-              <MenuItem value="Registrado">Registrado</MenuItem>
               <MenuItem value="En proceso">En proceso</MenuItem>
-              <MenuItem value="Completado">Completado</MenuItem>
+              <MenuItem value="Aprobada">Aprobada</MenuItem>
+              <MenuItem value="Completada">Completada</MenuItem>
+              <MenuItem value="Rechazada">Rechazada</MenuItem>
             </TextField>
           </div>
 
@@ -384,12 +428,14 @@ const OrdenCompra = () => {
 
           <div style={{ display: 'flex', justifyContent: 'center', gap: '10px', marginTop: '20px' }}>
             <Button variant="outlined" color="primary" onClick={() => setMostrarModal(false)}>Cancelar</Button>
-            <Button variant="contained" color="primary" onClick={handleRegistrarOrden}>Registrar Orden</Button>
+            <Button variant="contained" color="primary" onClick={handleRegistrarOrden}>
+              {ordenEditando ? 'Actualizar Orden' : 'Registrar Orden'}
+            </Button>
           </div>
         </Box>
       </Modal>
 
-      {/* 🆕 MODAL DE PREVISUALIZACION DE PDF */}
+      {/* MODAL DE PREVISUALIZACION DE PDF */}
       <Modal open={openPdfModal} onClose={() => setOpenPdfModal(false)} style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
         <Box style={{
           background: '#fff',

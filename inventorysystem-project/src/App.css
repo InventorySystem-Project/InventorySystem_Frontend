@@ -376,7 +376,10 @@ button:hover {
   padding: 12px;
   text-align: center;
   margin: 50px;
+  
 }
+
+
 
 .MuiTableRow-root:hover {
   background-color: #f5f5f5;

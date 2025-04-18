@@ -24,37 +24,38 @@ const Proveedores = () => {
     const [paisesNombreCompleto, setPaisesNombreCompleto] = useState({});  // Mapa de códigos ISO a nombres completos de países
 
     useEffect(() => {
-        const fetchProveedores = async () => {
-            try {
-                const proveedores = await getProveedores();
-                setProveedores(proveedores);
-            } catch (error) {
-                console.error('Error al obtener proveedores', error);
-            }
-        };
-
-        const fetchPaises = async () => {
-            try {
-                const response = await fetch('https://restcountries.com/v3.1/all');
-                const data = await response.json();
-                const paisesOrdenados = data.sort((a, b) => a.name.common.localeCompare(b.name.common)); // Ordenar por nombre
-    
-                // Crear un mapa que relacione los códigos ISO con los nombres completos
-                const paisesMap = {};
-                data.forEach(pais => {
-                    paisesMap[pais.cca2] = pais.name.common;  // "cca2" es el código ISO y "name.common" es el nombre del país
-                });
-    
-                setPaises(paisesOrdenados);
-                setPaisesNombreCompleto(paisesMap);  // Guardar el mapa de países
-            } catch (error) {
-                console.error('Error al obtener los países', error);
-            }
-        };
-
         fetchProveedores();
         fetchPaises();  // Llamar a la función para obtener los países
     }, []);
+
+    const fetchProveedores = async () => {
+        try {
+            const proveedores = await getProveedores();
+            setProveedores(proveedores);
+        } catch (error) {
+            console.error('Error al obtener proveedores', error);
+        }
+    };
+
+    const fetchPaises = async () => {
+        try {
+            const response = await fetch('https://restcountries.com/v3.1/all');
+            const data = await response.json();
+            const paisesOrdenados = data.sort((a, b) => a.name.common.localeCompare(b.name.common)); // Ordenar por nombre
+
+            // Crear un mapa que relacione los códigos ISO con los nombres completos
+            const paisesMap = {};
+            data.forEach(pais => {
+                paisesMap[pais.cca2] = pais.name.common;  // "cca2" es el código ISO y "name.common" es el nombre del país
+            });
+
+            setPaises(paisesOrdenados);
+            setPaisesNombreCompleto(paisesMap);  // Guardar el mapa de países
+        } catch (error) {
+            console.error('Error al obtener los países', error);
+        }
+    };
+
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
