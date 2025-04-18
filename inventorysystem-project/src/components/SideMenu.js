@@ -11,7 +11,8 @@ import {
   Building,
   History,
   BarChart3,
-  LogOut
+  LogOut,
+  Warehouse
 } from "lucide-react";
 
 const SideMenu = () => {
@@ -51,6 +52,10 @@ const SideMenu = () => {
 
         <Link to="/materias-primas" className="menu-item">
           <span className="menu-icon"><Truck /></span> Materias Primas
+        </Link>
+
+        <Link to="/almacenes" className="menu-item">
+          <span className="menu-icon"><Warehouse /></span> Almacenes
         </Link>
 
         <Link to="/proveedores" className="menu-item">

@@ -14,7 +14,7 @@ import Producto from './pages/Producto';
 import Rol from './pages/Rol';
 import Usuario from './pages/Usuario';
 import Empresa from './pages/Empresa';
-
+import Almacen from './pages/Almacen';
 import MateriasPrimas from './pages/MateriasPrima';
 
 import Login from './pages/Login';
@@ -33,8 +33,8 @@ const App = () => {
             <Route path="/usuarios" element={<Usuario />} />
 
             <Route path="/empresas" element={<Empresa />} />
-
-
+            <Route path="/almacenes" element={<Almacen />} />
+            
             <Route path="/proveedores" element={<Proveedor />} />
             <Route path="/ordenes-compra" element={<OrdenCompra />} />
             <Route path="/detalle-orden-compra" element={<DetalleOrdenCompra />} />
