@@ -19,7 +19,7 @@ const Usuario = () => {
         telefono: '',
         enabled: true,
         empresaId: '',
-        roles: []
+        rol: ''
     });
 
     const [mostrarFormulario, setMostrarFormulario] = useState(false);
@@ -95,7 +95,7 @@ const Usuario = () => {
                 telefono: '',
                 enabled: true,
                 empresaId: '',
-                roles: []
+                roles: ''
             });
 
             setUsuarioEditando(null);
@@ -122,7 +122,7 @@ const Usuario = () => {
             telefono: '',
             enabled: true,
             empresaId: '',
-            roles: []
+            rol: ''
         });
     };
 
@@ -151,6 +151,74 @@ const Usuario = () => {
 
     const totalPages = Math.ceil(usuarios.length / usuariosPorPagina);
 
+
+    const renderEnabled = (enabled) => {
+        switch (enabled) {
+            case true:
+                return (
+                    <div style={{
+                        backgroundColor: '#9956f5', // Color morado suave
+                        color: 'white', // Color de texto morado oscuro
+                        padding: '4px 10px',
+                        borderRadius: '20px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        width: 'fit-content'
+                    }}>
+                        Activo
+                    </div>
+                );
+            case false:
+                return (
+                    <div style={{
+                        backgroundColor: '#f3f6f9', // Color azul suave
+                        color: '#0f172a', // Color de texto azul oscuro
+                        padding: '4px 10px',
+                        borderRadius: '20px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        width: 'fit-content'
+                    }}>
+                        Inactivo
+                    </div>
+                );
+        }
+    };
+    
+    const renderBackgroundRol = (rol) => {
+        switch (rol) {
+            case "ADMIN":
+                return (
+                    <div style={{
+                        backgroundColor: '#ef4444', // Color morado suave
+                        color: 'white', // Color de texto morado oscuro
+                        padding: '4px 10px',
+                        borderRadius: '20px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        width: 'fit-content'
+                    }}>
+                        Administrador
+                    </div>
+                );
+            case "USER":
+                return (
+                    <div style={{
+                        backgroundColor: '#4a7fff', // Color azul suave
+                        color: 'white', // Color de texto azul oscuro
+                        padding: '4px 10px',
+                        borderRadius: '20px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        width: 'fit-content'
+                    }}>
+                        Usuario
+                    </div>
+                );
+        }
+    };
+
+
     return (
         <div className="container-general">
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
@@ -175,6 +243,8 @@ const Usuario = () => {
                                 <TableCell style={{ fontWeight: 'bold' }}>Username</TableCell>
                                 <TableCell style={{ fontWeight: 'bold' }}>Genero</TableCell>
                                 <TableCell style={{ fontWeight: 'bold' }}>Teléfono</TableCell>
+                                <TableCell style={{ fontWeight: 'bold' }}>Estado</TableCell>
+                                <TableCell style={{ fontWeight: 'bold' }}>Rol</TableCell>
                                 <TableCell style={{ fontWeight: 'bold' }}>Acciones</TableCell>
                             </TableRow>
                         </TableHead>
@@ -186,12 +256,14 @@ const Usuario = () => {
                                     <TableCell>{usuario.username}</TableCell>
                                     <TableCell>{usuario.genero}</TableCell>
                                     <TableCell>{usuario.telefono}</TableCell>
+                                    <TableCell>{renderEnabled(usuario.enabled)}</TableCell>
+                                    <TableCell>{renderBackgroundRol(usuario.rol.rol)}</TableCell>
                                     <TableCell>
-                                        <Button onClick={() => handleEditarUsuario(usuario)}>
-                                            <Pencil />
+                                        <Button color="primary" onClick={() => handleEditarUsuario(usuario)}>
+                                            <Pencil size={18}/>
                                         </Button>
-                                        <Button onClick={() => handleEliminarUsuario(usuario.id)}>
-                                            <Trash2 />
+                                        <Button color="error" onClick={() => handleEliminarUsuario(usuario.id)}>
+                                            <Trash2 size={18}/>
                                         </Button>
                                     </TableCell>
                                 </TableRow>

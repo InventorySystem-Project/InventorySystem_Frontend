@@ -204,10 +204,10 @@ const OrdenCompra = () => {
             <Loader2 size={16} style={{ marginRight: '5px' }} /> Aprobada
           </div>
         );
-      case 'Completada':
+      case 'Recibida':
         return (
           <div style={{ backgroundColor: '#E8F5E9', color: '#4CAF50', padding: '4px 10px', borderRadius: '20px', display: 'flex', alignItems: 'center', width: 'fit-content' }}>
-            <CheckCircle2 size={16} style={{ marginRight: '5px' }} /> Completada
+            <CheckCircle2 size={16} style={{ marginRight: '5px' }} /> Recibida
           </div>
         );
       case 'Rechazada':
@@ -336,7 +336,7 @@ const OrdenCompra = () => {
             >
               <MenuItem value="En proceso">En proceso</MenuItem>
               <MenuItem value="Aprobada">Aprobada</MenuItem>
-              <MenuItem value="Completada">Completada</MenuItem>
+              <MenuItem value="Recibida">Recibida</MenuItem>
               <MenuItem value="Rechazada">Rechazada</MenuItem>
             </TextField>
           </div>

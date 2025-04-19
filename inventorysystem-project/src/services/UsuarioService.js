@@ -51,7 +51,7 @@ export const addUsuario = async (usuario) => {
 // Actualizar un usuario existente
 export const updateUsuario = async (id, usuario) => {
     try {
-        const response = await axios.put(`${API_URL}/modificar`, usuario, {
+        const response = await axios.put(`${API_URL}`, usuario, {
             headers: getAuthHeaders(),
         });
         return response.data;

@@ -9,8 +9,7 @@ const Rol = () => {
     const [users, setUsers] = useState([]);  // Nuevo estado para los usuarios
     const [nuevoRol, setNuevoRol] = useState({
         id: '',
-        rol: '',
-        userId: '', // userId vinculado al usuario
+        rol: ''
     });
 
     const [mostrarFormulario, setMostrarFormulario] = useState(false);
@@ -51,7 +50,7 @@ const Rol = () => {
     };
 
     const handleAgregarRol = async () => {
-        if (!nuevoRol.rol || !nuevoRol.userId) {
+        if (!nuevoRol.rol) {
             alert('Por favor complete los campos obligatorios');
             return;
         }
@@ -73,8 +72,7 @@ const Rol = () => {
             }
 
             setNuevoRol({
-                rol: '',
-                userId: '',
+                rol: ''
             });
 
             setRolEditando(null);
@@ -88,8 +86,7 @@ const Rol = () => {
         setMostrarFormulario(false);
         setRolEditando(null);
         setNuevoRol({
-            rol: '',
-            userId: '',
+            rol: ''
         });
     };
 
@@ -139,7 +136,6 @@ const Rol = () => {
                             <TableRow>
                                 <TableCell style={{ fontWeight: 'bold' }}>ID</TableCell>
                                 <TableCell style={{ fontWeight: 'bold' }}>Rol</TableCell>
-                                <TableCell style={{ fontWeight: 'bold' }}>Usuario</TableCell> {/* Muestra el nombre del usuario */}
                                 <TableCell style={{ fontWeight: 'bold' }}>Acciones</TableCell>
                             </TableRow>
                         </TableHead>
@@ -148,8 +144,8 @@ const Rol = () => {
                                 <TableRow key={rol.id}>
                                     <TableCell>{rol.id}</TableCell>
                                     <TableCell>{rol.rol}</TableCell>
-                                    {/* Muestra el nombre del usuario asociado al rol */}
-                                    <TableCell>{rol.user ? `${rol.user.nombre} ${rol.user.apellido}` : 'No asignado'}</TableCell>
+                                    {/* Muestra el nombre del usuario asociado al rol 
+                                    <TableCell>{rol.user ? `${rol.user.nombre} ${rol.user.apellido}` : 'No asignado'}</TableCell>*/}
                                     <TableCell>
                                         <Button color="primary" onClick={() => handleEditarRol(rol)}><Pencil size={18} /></Button>
                                         <Button color="error" onClick={() => handleEliminarRol(rol.id)}><Trash2 size={18} /></Button>
@@ -168,7 +164,7 @@ const Rol = () => {
                     <h3>{rolEditando ? 'Editar Rol' : 'Nuevo Rol'}</h3>
                     <TextField label="Rol" name="rol" value={nuevoRol.rol} onChange={handleInputChange} fullWidth />
 
-                    {/* Desplegable para seleccionar usuario */}
+                    {/* Desplegable para seleccionar usuario 
                     <TextField
                         select
                         label="Seleccionar Usuario"
@@ -179,10 +175,10 @@ const Rol = () => {
                     >
                         {users.map(user => (
                             <MenuItem key={user.id} value={user.id}>
-                                {user.nombre} {user.apellido} {/* Muestra el nombre y apellido del usuario */}
+                                {user.nombre} {user.apellido} {/* Muestra el nombre y apellido del usuario 
                             </MenuItem>
                         ))}
-                    </TextField>
+                    </TextField>*/}
 
                     <div style={{ display: 'flex', justifyContent: 'center', gap: '10px' }}>
                         <Button variant="outlined" color="primary" onClick={handleCancelar}>Cancelar</Button>
