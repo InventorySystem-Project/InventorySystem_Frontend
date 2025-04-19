@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { TextField, Button, Modal, Box, Table, TableBody, TableCell, TableHead, TableRow, Pagination, MenuItem } from '@mui/material';
-import { Plus, Pencil, Trash2 } from 'lucide-react';
+import { Plus, Pencil, Trash2, Edit } from 'lucide-react';
 import { getRoles, addRol, updateRol, deleteRol } from '../services/RolService';
 import { getUsuarios } from '../services/UsuarioService';  // Asumí que tienes un servicio para obtener usuarios
 
@@ -134,9 +134,9 @@ const Rol = () => {
                     <Table>
                         <TableHead>
                             <TableRow>
-                                <TableCell style={{ fontWeight: 'bold' }}>ID</TableCell>
-                                <TableCell style={{ fontWeight: 'bold' }}>Rol</TableCell>
-                                <TableCell style={{ fontWeight: 'bold' }}>Acciones</TableCell>
+                                <TableCell style={{ fontWeight: 'bold', color: '#748091' }}>ID</TableCell>
+                                <TableCell style={{ fontWeight: 'bold', color: '#748091' }}>Rol</TableCell>
+                                <TableCell style={{ fontWeight: 'bold', color: '#748091' }}>Acciones</TableCell>
                             </TableRow>
                         </TableHead>
                         <TableBody>
@@ -147,7 +147,7 @@ const Rol = () => {
                                     {/* Muestra el nombre del usuario asociado al rol 
                                     <TableCell>{rol.user ? `${rol.user.nombre} ${rol.user.apellido}` : 'No asignado'}</TableCell>*/}
                                     <TableCell>
-                                        <Button color="primary" onClick={() => handleEditarRol(rol)}><Pencil size={18} /></Button>
+                                        <Button color="primary" onClick={() => handleEditarRol(rol)}><Edit size={18} /></Button>
                                         <Button color="error" onClick={() => handleEliminarRol(rol.id)}><Trash2 size={18} /></Button>
                                     </TableCell>
                                 </TableRow>

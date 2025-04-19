@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { TextField, Button, Modal, Box, Table, TableBody, TableCell, TableHead, TableRow, Pagination } from '@mui/material';
-import { Plus, Pencil, Trash2 } from 'lucide-react';
+import { Plus, Pencil, Trash2, Edit } from 'lucide-react';
 import { getUsuarios, addUsuario, updateUsuario, deleteUsuario } from '../services/UsuarioService';
 
 const Usuario = () => {
@@ -184,7 +184,7 @@ const Usuario = () => {
                 );
         }
     };
-    
+
     const renderBackgroundRol = (rol) => {
         switch (rol) {
             case "ADMIN":
@@ -238,14 +238,14 @@ const Usuario = () => {
                     <Table>
                         <TableHead>
                             <TableRow>
-                                <TableCell style={{ fontWeight: 'bold' }}>Nombre</TableCell>
-                                <TableCell style={{ fontWeight: 'bold' }}>Correo</TableCell>
-                                <TableCell style={{ fontWeight: 'bold' }}>Username</TableCell>
-                                <TableCell style={{ fontWeight: 'bold' }}>Genero</TableCell>
-                                <TableCell style={{ fontWeight: 'bold' }}>Teléfono</TableCell>
-                                <TableCell style={{ fontWeight: 'bold' }}>Estado</TableCell>
-                                <TableCell style={{ fontWeight: 'bold' }}>Rol</TableCell>
-                                <TableCell style={{ fontWeight: 'bold' }}>Acciones</TableCell>
+                                <TableCell style={{ fontWeight: 'bold', color: '#748091' }}>Nombre</TableCell>
+                                <TableCell style={{ fontWeight: 'bold', color: '#748091' }}>Correo</TableCell>
+                                <TableCell style={{ fontWeight: 'bold', color: '#748091' }}>Username</TableCell>
+                                <TableCell style={{ fontWeight: 'bold', color: '#748091' }}>Genero</TableCell>
+                                <TableCell style={{ fontWeight: 'bold', color: '#748091' }}>Teléfono</TableCell>
+                                <TableCell style={{ fontWeight: 'bold', color: '#748091' }}>Estado</TableCell>
+                                <TableCell style={{ fontWeight: 'bold', color: '#748091' }}>Rol</TableCell>
+                                <TableCell style={{ fontWeight: 'bold', color: '#748091' }}>Acciones</TableCell>
                             </TableRow>
                         </TableHead>
                         <TableBody>
@@ -260,10 +260,10 @@ const Usuario = () => {
                                     <TableCell>{renderBackgroundRol(usuario.rol.rol)}</TableCell>
                                     <TableCell>
                                         <Button color="primary" onClick={() => handleEditarUsuario(usuario)}>
-                                            <Pencil size={18}/>
+                                            <Edit size={18} />
                                         </Button>
                                         <Button color="error" onClick={() => handleEliminarUsuario(usuario.id)}>
-                                            <Trash2 size={18}/>
+                                            <Trash2 size={18} />
                                         </Button>
                                     </TableCell>
                                 </TableRow>

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
-import { FileText, Trash2, Plus, Clock, CheckCircle2, Loader2, XCircle, Pencil } from "lucide-react";
+import { FileText, Trash2, Plus, Clock, CheckCircle2, Loader2, XCircle, Pencil, Edit } from "lucide-react";
 import {
   Button,
   Modal,
@@ -106,17 +106,17 @@ const OrdenCompra = () => {
         ...nuevaOrden,
         id: ordenEditando.id
       };
-      
+
       // Llamar al servicio con un solo parámetro
       await updateOrdenCompra(ordenCompleta);
-      
+
       setOrdenes(prev => prev.map(o => o.id === ordenEditando.id ? ordenCompleta : o));
-    
+
     } else {
       // Si es una nueva orden
       await addOrdenCompra(nuevaOrden);
     }
-    
+
     setMostrarModal(false);
     setFormulario({ empresaId: '', proveedorId: '', fechaEmision: '', estado: '' });
     setProductosSeleccionados([]);
@@ -254,18 +254,18 @@ const OrdenCompra = () => {
         <div style={{ padding: '0px', borderRadius: '8px' }}>
           <Table>
             <TableHead>
-              <TableRow>
-                <TableCell style={{ fontWeight: 'bold' }}>Código</TableCell>
-                <TableCell style={{ fontWeight: 'bold' }}>Proveedor</TableCell>
-                <TableCell style={{ fontWeight: 'bold' }}>Fecha</TableCell>
-                <TableCell style={{ fontWeight: 'bold' }}>Estado</TableCell>
-                <TableCell style={{ fontWeight: 'bold' }}>Acciones</TableCell>
+              <TableRow >
+                <TableCell style={{ fontWeight: 'bold', color: '#748091' }}>Código</TableCell>
+                <TableCell style={{ fontWeight: 'bold', color: '#748091' }}>Proveedor</TableCell>
+                <TableCell style={{ fontWeight: 'bold', color: '#748091' }}>Fecha</TableCell>
+                <TableCell style={{ fontWeight: 'bold', color: '#748091' }}>Estado</TableCell>
+                <TableCell style={{ fontWeight: 'bold', color: '#748091' }}>Acciones</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
               {ordenesPaginadas.map((orden) => (
                 <TableRow key={orden.id}>
-                  <TableCell>{orden.codigoOrden}</TableCell>
+                  <TableCell style={{ fontWeight: 'bold' }}>{orden.codigoOrden}</TableCell>
                   <TableCell>{proveedores.find(p => p.id === orden.proveedorId)?.nombreEmpresaProveedor || "-"}</TableCell>
                   <TableCell>{orden.fechaEmision}</TableCell>
                   <TableCell>{renderEstado(orden.estado)}</TableCell>
@@ -274,7 +274,7 @@ const OrdenCompra = () => {
                       <FileText size={18} />
                     </Button>
                     <Button color="info" onClick={() => handleEditarOrden(orden)}>
-                      <Pencil size={18} />
+                      <Edit size={18} />
                     </Button>
                     <Button color="error" onClick={() => handleEliminarOrden(orden.id)}>
                       <Trash2 size={18} />

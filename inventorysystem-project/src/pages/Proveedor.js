@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { TextField, Button, Modal, Box, Pagination, Table, TableBody, TableCell, TableHead, TableRow } from '@mui/material';
-import { Plus, Pencil, Trash2 } from "lucide-react";
+import { Plus, Pencil, Trash2, Edit} from "lucide-react";
 import { getProveedores, addProveedor, updateProveedor, deleteProveedor } from '../services/ProveedorService';
 
 const Proveedores = () => {
@@ -183,13 +183,13 @@ const Proveedores = () => {
                     <Table>
                         <TableHead>
                             <TableRow>
-                                <TableCell style={{ fontWeight: 'bold' }}>Nombre Empresa</TableCell>
-                                <TableCell style={{ fontWeight: 'bold' }}>RUC</TableCell>
-                                <TableCell style={{ fontWeight: 'bold' }}>Contacto</TableCell>
-                                <TableCell style={{ fontWeight: 'bold' }}>País</TableCell>
-                                <TableCell style={{ fontWeight: 'bold' }}>Teléfono</TableCell>
-                                <TableCell style={{ fontWeight: 'bold' }}>Correo</TableCell>
-                                <TableCell style={{ fontWeight: 'bold' }}>Acciones</TableCell>
+                                <TableCell style={{ fontWeight: 'bold' , color: '#748091'}}>Nombre Empresa</TableCell>
+                                <TableCell style={{ fontWeight: 'bold' , color: '#748091'}}>RUC</TableCell>
+                                <TableCell style={{ fontWeight: 'bold' , color: '#748091'}}>Contacto</TableCell>
+                                <TableCell style={{ fontWeight: 'bold' , color: '#748091'}}>País</TableCell>
+                                <TableCell style={{ fontWeight: 'bold' , color: '#748091'}}>Teléfono</TableCell>
+                                <TableCell style={{ fontWeight: 'bold' , color: '#748091'}}>Correo</TableCell>
+                                <TableCell style={{ fontWeight: 'bold' , color: '#748091'}}>Acciones</TableCell>
                             </TableRow>
                         </TableHead>
                         <TableBody>
@@ -216,7 +216,7 @@ const Proveedores = () => {
                                     <TableCell>{proveedor.telefono}</TableCell>
                                     <TableCell>{proveedor.correo}</TableCell>
                                     <TableCell>
-                                        <Button color="primary" onClick={() => handleEditarProveedor(proveedor)}><Pencil size={18} /></Button>
+                                        <Button color="primary" onClick={() => handleEditarProveedor(proveedor)}><Edit size={18} /></Button>
                                         <Button color="error" onClick={() => handleEliminarProveedor(proveedor.id)}><Trash2 size={18} /></Button>
                                     </TableCell>
                                 </TableRow>

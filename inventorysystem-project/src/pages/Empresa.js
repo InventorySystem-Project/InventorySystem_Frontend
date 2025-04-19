@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { TextField, Button, Modal, Box, Pagination, Table, TableBody, TableCell, TableHead, TableRow } from '@mui/material';
-import { Plus, Pencil, Trash2 } from "lucide-react";
+import { Plus, Pencil, Trash2, Edit } from "lucide-react";
 import Flag from 'react-world-flags'; // Para mostrar banderas
 import { getEmpresas, addEmpresa, updateEmpresa, deleteEmpresa } from '../services/EmpresaService';
 
@@ -127,13 +127,13 @@ const Empresa = () => {
                     <Table>
                         <TableHead>
                             <TableRow>
-                                <TableCell style={{ fontWeight: 'bold' }}>Nombre</TableCell>
-                                <TableCell style={{ fontWeight: 'bold' }}>RUC</TableCell>
-                                <TableCell style={{ fontWeight: 'bold' }}>Dirección</TableCell>
-                                <TableCell style={{ fontWeight: 'bold' }}>Teléfono</TableCell>
-                                <TableCell style={{ fontWeight: 'bold' }}>Correo</TableCell>
-                                <TableCell style={{ fontWeight: 'bold' }}>País</TableCell>
-                                <TableCell style={{ fontWeight: 'bold' }}>Acciones</TableCell>
+                                <TableCell style={{ fontWeight: 'bold', color: '#748091' }}>Nombre</TableCell>
+                                <TableCell style={{ fontWeight: 'bold', color: '#748091' }}>RUC</TableCell>
+                                <TableCell style={{ fontWeight: 'bold', color: '#748091' }}>Dirección</TableCell>
+                                <TableCell style={{ fontWeight: 'bold', color: '#748091' }}>Teléfono</TableCell>
+                                <TableCell style={{ fontWeight: 'bold', color: '#748091' }}>Correo</TableCell>
+                                <TableCell style={{ fontWeight: 'bold', color: '#748091' }}>País</TableCell>
+                                <TableCell style={{ fontWeight: 'bold', color: '#748091' }}>Acciones</TableCell>
                             </TableRow>
                         </TableHead>
                         <TableBody>
@@ -163,7 +163,7 @@ const Empresa = () => {
 
 
                                     <TableCell>
-                                        <Button color="primary" onClick={() => handleEditarEmpresa(empresa)}><Pencil size={18} /></Button>
+                                        <Button color="primary" onClick={() => handleEditarEmpresa(empresa)}><Edit size={18} /></Button>
                                         <Button color="error" onClick={() => handleEliminarEmpresa(empresa.id)}><Trash2 size={18} /></Button>
                                     </TableCell>
                                 </TableRow>

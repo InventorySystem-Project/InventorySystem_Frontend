@@ -70,7 +70,7 @@ const SideMenu = () => {
           <span className="menu-icon"><Building /></span> Empresas
         </Link>
 
-        <Link to="/movimientos" className="menu-item">
+        <Link to="/movimientos-materia-prima" className="menu-item">
           <span className="menu-icon"><History /></span> Movimientos
         </Link>
 

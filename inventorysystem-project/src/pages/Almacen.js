@@ -84,10 +84,10 @@ const Almacen = () => {
         <Table>
           <TableHead>
             <TableRow>
-              <TableCell style={{ fontWeight: 'bold' }}>Nombre</TableCell>
-              <TableCell style={{ fontWeight: 'bold' }}>Ubicación</TableCell>
-              <TableCell style={{ fontWeight: 'bold' }}>Empresa</TableCell> {/* Columna para Empresa */}
-              <TableCell style={{ fontWeight: 'bold' }}>Acciones</TableCell>
+              <TableCell style={{ fontWeight: 'bold', color: '#748091' }}>Nombre</TableCell>
+              <TableCell style={{ fontWeight: 'bold', color: '#748091' }}>Ubicación</TableCell>
+              <TableCell style={{ fontWeight: 'bold', color: '#748091' }}>Empresa</TableCell> {/* Columna para Empresa */}
+              <TableCell style={{ fontWeight: 'bold', color: '#748091' }}>Acciones</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>

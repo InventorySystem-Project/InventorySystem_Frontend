@@ -11,7 +11,7 @@ import {
     TableCell,
     TableBody,
     Pagination
-  } from '@mui/material';import { Plus, Pencil, Trash2 } from "lucide-react";
+} from '@mui/material'; import { Plus, Pencil, Trash2, Edit } from "lucide-react";
 import { getMateriasPrimas, addMateriaPrima, updateMateriaPrima, deleteMateriaPrima } from '../services/MateriaPrimaService';
 
 const MateriaPrima = () => {
@@ -122,9 +122,9 @@ const MateriaPrima = () => {
                     <Table>
                         <TableHead>
                             <TableRow>
-                                <TableCell style={{ fontWeight: 'bold' }}>Nombre</TableCell>
-                                <TableCell style={{ fontWeight: 'bold' }}>Unidad</TableCell>
-                                <TableCell style={{ fontWeight: 'bold' }}>Acciones</TableCell>
+                                <TableCell style={{ fontWeight: 'bold', color: '#748091' }}>Nombre</TableCell>
+                                <TableCell style={{ fontWeight: 'bold', color: '#748091' }}>Unidad</TableCell>
+                                <TableCell style={{ fontWeight: 'bold', color: '#748091' }}>Acciones</TableCell>
                             </TableRow>
                         </TableHead>
                         <TableBody>
@@ -133,8 +133,8 @@ const MateriaPrima = () => {
                                     <TableCell>{materiaPrima.nombre}</TableCell>
                                     <TableCell>{materiaPrima.unidad}</TableCell>
                                     <TableCell>
-                                        <Button color="primary" onClick={() => handleEditarMateriaPrima(materiaPrima)}><Pencil size={18}/></Button>
-                                        <Button color="error" onClick={() => handleEliminarMateriaPrima(materiaPrima.id)}><Trash2 size={18}/></Button>
+                                        <Button color="primary" onClick={() => handleEditarMateriaPrima(materiaPrima)}><Edit size={18} /></Button>
+                                        <Button color="error" onClick={() => handleEliminarMateriaPrima(materiaPrima.id)}><Trash2 size={18} /></Button>
                                     </TableCell>
                                 </TableRow>
                             ))}
@@ -157,25 +157,25 @@ const MateriaPrima = () => {
                     <h3>{materiaPrimaEditando ? 'Editar Materia Prima' : 'Nueva Materia Prima'}</h3>
                     <TextField label="Nombre" name="nombre" value={nuevaMateriaPrima.nombre} onChange={handleInputChange} fullWidth />
                     <TextField
-  select
-  label="Unidad"
-  name="unidad"
-  value={nuevaMateriaPrima.unidad}
-  onChange={handleInputChange}
-  fullWidth
->
-  <MenuItem value="m²">Metro cuadrado (m²)</MenuItem>
-  <MenuItem value="cm²">Centímetro cuadrado (cm²)</MenuItem>
-  <MenuItem value="m">Metro lineal (m)</MenuItem>
-  <MenuItem value="cm">Centímetro lineal (cm)</MenuItem>
-  <MenuItem value="kg">Kilogramo (kg)</MenuItem>
-  <MenuItem value="g">Gramo (g)</MenuItem>
-  <MenuItem value="L">Litro (L)</MenuItem>
-  <MenuItem value="mL">Mililitro (mL)</MenuItem>
-  <MenuItem value="unid.">Unidad (unid.)</MenuItem>
-  <MenuItem value="rollo">Rollo</MenuItem>
-  <MenuItem value="par">Par</MenuItem>
-</TextField>
+                        select
+                        label="Unidad"
+                        name="unidad"
+                        value={nuevaMateriaPrima.unidad}
+                        onChange={handleInputChange}
+                        fullWidth
+                    >
+                        <MenuItem value="m²">Metro cuadrado (m²)</MenuItem>
+                        <MenuItem value="cm²">Centímetro cuadrado (cm²)</MenuItem>
+                        <MenuItem value="m">Metro lineal (m)</MenuItem>
+                        <MenuItem value="cm">Centímetro lineal (cm)</MenuItem>
+                        <MenuItem value="kg">Kilogramo (kg)</MenuItem>
+                        <MenuItem value="g">Gramo (g)</MenuItem>
+                        <MenuItem value="L">Litro (L)</MenuItem>
+                        <MenuItem value="mL">Mililitro (mL)</MenuItem>
+                        <MenuItem value="unid.">Unidad (unid.)</MenuItem>
+                        <MenuItem value="rollo">Rollo</MenuItem>
+                        <MenuItem value="par">Par</MenuItem>
+                    </TextField>
                     <div style={{ display: 'flex', justifyContent: 'center', gap: '10px' }}>
                         <Button variant="outlined" color="primary" onClick={handleCancelar}>Cancelar</Button>
                         <Button variant="contained" color="primary" onClick={handleAgregarMateriaPrima}>Guardar</Button>

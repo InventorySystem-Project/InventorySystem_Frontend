@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { TextField, Button, Modal, Box, Table, TableBody, TableCell, TableHead, TableRow, Pagination } from '@mui/material';
-import { Plus, Pencil, Trash2 } from 'lucide-react';
+import { Plus, Pencil, Trash2, Edit } from 'lucide-react';
 import { getProductos, addProducto, updateProducto, deleteProducto } from '../services/ProductoService';
 
 const Producto = () => {
@@ -154,14 +154,14 @@ const Producto = () => {
                     <Table>
                         <TableHead>
                             <TableRow>
-                                <TableCell style={{ fontWeight: 'bold' }}>Nombre</TableCell>
-                                <TableCell style={{ fontWeight: 'bold' }}>Descripción</TableCell>
-                                <TableCell style={{ fontWeight: 'bold' }}>Tipo</TableCell>
-                                <TableCell style={{ fontWeight: 'bold' }}>Modelo</TableCell>
-                                <TableCell style={{ fontWeight: 'bold' }}>Color</TableCell>
-                                <TableCell style={{ fontWeight: 'bold' }}>Precio</TableCell>
-                                <TableCell style={{ fontWeight: 'bold' }}>Pieza</TableCell>
-                                <TableCell style={{ fontWeight: 'bold' }}>Acciones</TableCell>
+                                <TableCell style={{ fontWeight: 'bold', color: '#748091' }}>Nombre</TableCell>
+                                <TableCell style={{ fontWeight: 'bold', color: '#748091' }}>Descripción</TableCell>
+                                <TableCell style={{ fontWeight: 'bold', color: '#748091' }}>Tipo</TableCell>
+                                <TableCell style={{ fontWeight: 'bold', color: '#748091' }}>Modelo</TableCell>
+                                <TableCell style={{ fontWeight: 'bold', color: '#748091' }}>Color</TableCell>
+                                <TableCell style={{ fontWeight: 'bold', color: '#748091' }}>Precio</TableCell>
+                                <TableCell style={{ fontWeight: 'bold', color: '#748091' }}>Pieza</TableCell>
+                                <TableCell style={{ fontWeight: 'bold', color: '#748091' }}>Acciones</TableCell>
                             </TableRow>
                         </TableHead>
                         <TableBody>
@@ -175,7 +175,7 @@ const Producto = () => {
                                     <TableCell>{producto.precioUnitario}</TableCell>
                                     <TableCell>{producto.pieza}</TableCell>
                                     <TableCell>
-                                        <Button color="primary" onClick={() => handleEditarProducto(producto)}><Pencil size={18} /></Button>
+                                        <Button color="primary" onClick={() => handleEditarProducto(producto)}><Edit size={18} /></Button>
                                         <Button color="error" onClick={() => handleEliminarProducto(producto.id)}><Trash2 size={18} /></Button>
                                     </TableCell>
                                 </TableRow>
