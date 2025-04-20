@@ -91,6 +91,15 @@ iframe#webpack-dev-server-client-overlay{display:none!important}
   margin: 0 
 }
 
+.container-general h3 {
+  font-size: 24px;
+  color: #333;
+  margin-bottom: 20px;
+  text-align: center; /* Alineación centrada del título */
+  font-weight: bold;
+}
+
+
 /* =========================================== */
 /*         REGISTRAR USUARIOS                  */
 /* =========================================== */
@@ -445,13 +454,7 @@ textarea {
   z-index: 1000;
 }
 
-h3 {
-  font-size: 24px;
-  color: #333;
-  margin-bottom: 20px;
-  text-align: center; /* Alineación centrada del título */
-  font-weight: bold;
-}
+
 
 .producto-formulario-contenedor {
   border: 1px solid #e0e0e0;
