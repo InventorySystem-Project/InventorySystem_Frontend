@@ -18,7 +18,6 @@ const Usuario = () => {
         username: '',
         genero: '',
         dni: '',
-        foto: '',
         fechaNacimiento: '',
         telefono: '',
         enabled: true,
@@ -62,7 +61,6 @@ const Usuario = () => {
             username: '',
             genero: '',
             dni: '',
-            foto: '',
             fechaNacimiento: '',
             telefono: '',
             enabled: true,
@@ -309,152 +307,154 @@ const Usuario = () => {
                         {usuarioEditando ? 'Editar Usuario' : 'Nuevo Usuario'}
                     </h3>
 
-                    <Grid container spacing={2}>
-                        {/* Primera fila: Nombre y Apellido */}
-                        <Grid item xs={12} md={6}>
-                            <TextField
-                                label="Nombre"
-                                name="nombre"
-                                value={nuevoUsuario.nombre}
-                                onChange={handleInputChange}
-                                fullWidth
-                                required
-                            />
-                        </Grid>
-                        <Grid item xs={12} md={6}>
-                            <TextField
-                                label="Apellido"
-                                name="apellido"
-                                value={nuevoUsuario.apellido}
-                                onChange={handleInputChange}
-                                fullWidth
-                                required
-                            />
-                        </Grid>
+                    {/* Primer fila: Nombre y Apellido */}
+                    <div style={{ display: 'flex', gap: '20px', marginBottom: '15px' }}>
+                        <TextField
+                            label="Nombre"
+                            name="nombre"
+                            value={nuevoUsuario.nombre}
+                            onChange={handleInputChange}
+                            fullWidth
+                            required
+                            style={{ flex: 1 }}
+                        />
+                        <TextField
+                            label="Apellido"
+                            name="apellido"
+                            value={nuevoUsuario.apellido}
+                            onChange={handleInputChange}
+                            fullWidth
+                            required
+                            style={{ flex: 1 }}
+                        />
+                    </div>
 
-                        {/* Segunda fila: Correo y Username */}
-                        <Grid item xs={12} md={6}>
-                            <TextField
-                                label="Correo"
-                                name="correo"
-                                type="email"
-                                value={nuevoUsuario.correo}
-                                onChange={handleInputChange}
-                                fullWidth
-                                required
-                            />
-                        </Grid>
-                        <Grid item xs={12} md={6}>
-                            <TextField
-                                label="Username"
-                                name="username"
-                                value={nuevoUsuario.username}
-                                onChange={handleInputChange}
-                                fullWidth
-                                required
-                            />
-                        </Grid>
+                    {/* Segunda fila: Correo y Username */}
+                    <div style={{ display: 'flex', gap: '20px', marginBottom: '15px' }}>
+                        <TextField
+                            label="Correo"
+                            name="correo"
+                            type="email"
+                            value={nuevoUsuario.correo}
+                            onChange={handleInputChange}
+                            fullWidth
+                            required
+                            style={{ flex: 1 }}
+                        />
+                        <TextField
+                            select
+                            label="Género"
+                            name="genero"
+                            value={nuevoUsuario.genero}
+                            onChange={handleInputChange}
+                            fullWidth
+                            style={{ flex: 1 }}
+                        >
+                            {opcionesGenero.map((opcion) => (
+                                <MenuItem key={opcion.value} value={opcion.value}>
+                                    {opcion.label}
+                                </MenuItem>
+                            ))}
+                        </TextField>
 
-                        {/* Tercera fila: Password */}
-                        <Grid item xs={12} md={6}>
-                            <TextField
-                                label="Password"
-                                name="password"
-                                type="password"
-                                value={nuevoUsuario.password}
-                                onChange={handleInputChange}
-                                fullWidth
-                                required
-                            />
-                        </Grid>
-                        <Grid item xs={12} md={6}>
-                            <TextField
-                                label="DNI"
-                                name="dni"
-                                value={nuevoUsuario.dni}
-                                onChange={handleInputChange}
-                                fullWidth
-                            />
-                        </Grid>
 
-                        {/* Cuarta fila: Género y Teléfono */}
-                        <Grid item xs={12} md={6}>
-                            <TextField
-                                select
-                                label="Género"
-                                name="genero"
-                                value={nuevoUsuario.genero}
-                                onChange={handleInputChange}
-                                fullWidth
-                            >
-                                {opcionesGenero.map((opcion) => (
-                                    <MenuItem key={opcion.value} value={opcion.value}>
-                                        {opcion.label}
-                                    </MenuItem>
-                                ))}
-                            </TextField>
-                        </Grid>
-                        <Grid item xs={12} md={6}>
-                            <TextField
-                                label="Teléfono"
-                                name="telefono"
-                                value={nuevoUsuario.telefono}
-                                onChange={handleInputChange}
-                                fullWidth
-                            />
-                        </Grid>
+                    </div>
 
-                        {/* Quinta fila: Fecha de Nacimiento y Empresa */}
-                        <Grid item xs={12} md={6}>
-                            <TextField
-                                fullWidth
-                                type="date"
-                                label="Fecha de Nacimiento"
-                                InputLabelProps={{ shrink: true }}
-                                name="fechaNacimiento"
-                                value={nuevoUsuario.fechaNacimiento}
-                                onChange={handleInputChange}
-                            />
-                        </Grid>
-                        <Grid item xs={12} md={6}>
-                            <TextField
-                                fullWidth
-                                select
-                                label="Empresa"
-                                value={nuevoUsuario.empresaId}
-                                onChange={handleInputChange}
-                                name="empresaId"
-                            >
-                                {empresas.map((empresa) => (
-                                    <MenuItem key={empresa.id} value={empresa.id}>
-                                        {empresa.nombre}
-                                    </MenuItem>
-                                ))}
-                            </TextField>
-                        </Grid>
+                    {/* Tercera fila: Contraseña y DNI */}
+                    <div style={{ display: 'flex', gap: '20px', marginBottom: '15px' }}>
+                        <TextField
+                            label="Username"
+                            name="username"
+                            value={nuevoUsuario.username}
+                            onChange={handleInputChange}
+                            fullWidth
+                            required
+                            style={{ flex: 1 }}
+                        />
 
-                        {/* Sexta fila: Rol */}
-                        <Grid item xs={12} md={6}>
-                            <TextField
-                                fullWidth
-                                select
-                                label="Rol"
-                                value={nuevoUsuario.rol.id}
-                                onChange={handleInputChange}
-                                name="rol"
-                                required
-                            >
-                                {roles.map((rol) => (
-                                    <MenuItem key={rol.id} value={rol.id}>
-                                        {rol.rol}
-                                    </MenuItem>
-                                ))}
-                            </TextField>
-                        </Grid>
-                        {/* Mantenemos el Grid para balance aunque este vacío */}
-                        <Grid item xs={12} md={6}></Grid>
-                    </Grid>
+                        <TextField
+                            label="Contraseña"
+                            name="password"
+                            type="password"
+                            value={nuevoUsuario.password}
+                            onChange={handleInputChange}
+                            fullWidth
+                            required
+                            style={{ flex: 1 }}
+                        />
 
+                    </div>
+
+                    {/* Cuarta fila: Género y Teléfono */}
+                    <div style={{ display: 'flex', gap: '20px', marginBottom: '15px' }}>
+                        <TextField
+                            label="DNI"
+                            name="dni"
+                            value={nuevoUsuario.dni}
+                            onChange={handleInputChange}
+                            fullWidth
+                            style={{ flex: 1 }}
+                        />
+                        <TextField
+                            label="Teléfono"
+                            name="telefono"
+                            value={nuevoUsuario.telefono}
+                            onChange={handleInputChange}
+                            fullWidth
+                            style={{ flex: 1 }}
+                        />
+                    </div>
+
+                    {/* Quinta fila: Fecha de Nacimiento y Empresa */}
+                    <div style={{ display: 'flex', gap: '20px', marginBottom: '15px' }}>
+                        <TextField
+                            fullWidth
+                            type="date"
+                            label="Fecha de Nacimiento"
+                            InputLabelProps={{ shrink: true }}
+                            name="fechaNacimiento"
+                            value={nuevoUsuario.fechaNacimiento}
+                            onChange={handleInputChange}
+                            style={{ flex: 1 }}
+                        />
+                        <TextField
+                            fullWidth
+                            select
+                            label="Empresa"
+                            value={nuevoUsuario.empresaId}
+                            onChange={handleInputChange}
+                            name="empresaId"
+                            style={{ flex: 1 }}
+                        >
+                            {empresas.map((empresa) => (
+                                <MenuItem key={empresa.id} value={empresa.id}>
+                                    {empresa.nombre}
+                                </MenuItem>
+                            ))}
+                        </TextField>
+                    </div>
+
+                    {/* Sexta fila: Rol */}
+                    <div style={{ display: 'flex', gap: '20px', marginBottom: '15px' }}>
+                        <TextField
+                            fullWidth
+                            select
+                            label="Rol"
+                            value={nuevoUsuario.rol.id}
+                            onChange={handleInputChange}
+                            name="rol"
+                            required
+                            style={{ flex: 1 }}
+                        >
+                            {roles.map((rol) => (
+                                <MenuItem key={rol.id} value={rol.id}>
+                                    {rol.rol}
+                                </MenuItem>
+                            ))}
+                        </TextField>
+                    </div>
+
+                    {/* Botones de acción */}
                     <div style={{ display: 'flex', justifyContent: 'center', gap: '20px', marginTop: '30px' }}>
                         <Button
                             variant="outlined"
@@ -475,6 +475,9 @@ const Usuario = () => {
                     </div>
                 </Box>
             </Modal>
+
+
+
         </div>
     );
 };
