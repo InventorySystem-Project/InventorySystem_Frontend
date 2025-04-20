@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { TextField, Button, Modal, Box, Table, TableBody, TableCell, TableHead, TableRow, Pagination, MenuItem, Grid } from '@mui/material';
+import { TextField, Button, Modal, Box, Table, TableBody, TableCell, TableHead, TableRow, Pagination, MenuItem } from '@mui/material';
 import { Plus, Trash2, Edit } from 'lucide-react';
 import { getUsuarios, addUsuario, updateUsuario, deleteUsuario } from '../services/UsuarioService';
 import { getEmpresas } from '../services/EmpresaService';
@@ -22,13 +22,14 @@ const Usuario = () => {
         telefono: '',
         enabled: true,
         empresaId: '',
-        rol: { id: '', rol: '' } // Objeto completo con id y rol
+        rol: { id: '', rol: '' }
     });
 
     const [mostrarFormulario, setMostrarFormulario] = useState(false);
     const [usuarioEditando, setUsuarioEditando] = useState(null);
     const [paginaActual, setPaginaActual] = useState(1);
     const [usuariosPorPagina, setUsuariosPorPagina] = useState(5);
+    const [errors, setErrors] = useState({});
 
     // Opciones para el género
     const opcionesGenero = [
@@ -67,6 +68,7 @@ const Usuario = () => {
             empresaId: '',
             rol: { id: '', rol: '' }
         });
+        setErrors({});
     };
 
     const fetchUsuarios = async () => {
@@ -99,6 +101,19 @@ const Usuario = () => {
     const handleInputChange = (e) => {
         const { name, value } = e.target;
 
+        // Validación para DNI y teléfono
+        if (name === "dni" || name === "telefono") {
+            // Solo permitir números
+            if (value !== '' && !/^\d+$/.test(value)) {
+                return; // No actualizar el estado si no es un número
+            }
+        }
+
+        // Limpiar error específico cuando el usuario empieza a corregir
+        if (errors[name]) {
+            setErrors(prev => ({ ...prev, [name]: null }));
+        }
+
         // Manejo especial para el campo rol
         if (name === "rol") {
             // Encontrar el objeto rol completo basado en el id seleccionado
@@ -121,37 +136,68 @@ const Usuario = () => {
         }
     };
 
+    const validarFormulario = () => {
+        const nuevoErrors = {};
+        
+        // Validar campos obligatorios
+        if (!nuevoUsuario.nombre) nuevoErrors.nombre = 'El nombre es obligatorio';
+        if (!nuevoUsuario.apellido) nuevoErrors.apellido = 'El apellido es obligatorio';
+        if (!nuevoUsuario.correo) nuevoErrors.correo = 'El correo es obligatorio';
+        if (!nuevoUsuario.password && !usuarioEditando) nuevoErrors.password = 'La contraseña es obligatoria';
+        if (!nuevoUsuario.username) nuevoErrors.username = 'El nombre de usuario es obligatorio';
+        if (!nuevoUsuario.rol.id) nuevoErrors.rol = 'El rol es obligatorio';
+        
+        // Validar formato correo
+        if (nuevoUsuario.correo && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(nuevoUsuario.correo)) {
+            nuevoErrors.correo = 'Formato de correo inválido';
+        }
+        
+        // Validar que DNI tenga solo números
+        if (nuevoUsuario.dni && !/^\d+$/.test(nuevoUsuario.dni)) {
+            nuevoErrors.dni = 'El DNI debe contener solo números';
+        }
+        
+        // Validar que teléfono tenga solo números
+        if (nuevoUsuario.telefono && !/^\d+$/.test(nuevoUsuario.telefono)) {
+            nuevoErrors.telefono = 'El teléfono debe contener solo números';
+        }
+        
+        setErrors(nuevoErrors);
+        return Object.keys(nuevoErrors).length === 0;
+    };
+
     const handleAgregarUsuario = async () => {
-        if (
-            !nuevoUsuario.nombre ||
-            !nuevoUsuario.apellido ||
-            !nuevoUsuario.correo ||
-            !nuevoUsuario.password ||
-            !nuevoUsuario.username
-        ) {
-            alert('Por favor complete los campos obligatorios');
+        if (!validarFormulario()) {
             return;
         }
 
         try {
             if (usuarioEditando) {
                 // Si estamos editando un usuario, lo actualizamos
-                await updateUsuario(usuarioEditando.id, nuevoUsuario);
+                const usuarioActualizado = await updateUsuario(usuarioEditando.id, nuevoUsuario);
+                
+                // Actualizar la lista inmediatamente con el usuario actualizado
                 setUsuarios((prev) =>
                     prev.map((u) =>
-                        u.id === usuarioEditando.id ? { ...nuevoUsuario, id: usuarioEditando.id } : u
+                        u.id === usuarioEditando.id ? usuarioActualizado : u
                     )
                 );
             } else {
                 // Si es un nuevo usuario, lo agregamos
                 const usuarioCreado = await addUsuario(nuevoUsuario);
+                
+                // Añadir el nuevo usuario a la lista inmediatamente
                 setUsuarios((prev) => [usuarioCreado, ...prev]);
             }
 
             resetearFormulario();
             setMostrarFormulario(false);
+            
+            // Opcional: Refrescar toda la lista para asegurarnos de tener datos actualizados
+            fetchUsuarios();
         } catch (error) {
             console.error('Error al agregar o actualizar usuario', error);
+            alert('Error al guardar el usuario. Por favor, intente nuevamente.');
         }
     };
 
@@ -178,11 +224,14 @@ const Usuario = () => {
     };
 
     const handleEliminarUsuario = async (id) => {
-        try {
-            await deleteUsuario(id);
-            setUsuarios((prev) => prev.filter((u) => u.id !== id));
-        } catch (error) {
-            console.error('Error al eliminar usuario', error);
+        if (window.confirm('¿Está seguro que desea eliminar este usuario?')) {
+            try {
+                await deleteUsuario(id);
+                setUsuarios((prev) => prev.filter((u) => u.id !== id));
+            } catch (error) {
+                console.error('Error al eliminar usuario', error);
+                alert('Error al eliminar el usuario. Por favor, intente nuevamente.');
+            }
         }
     };
 
@@ -265,29 +314,35 @@ const Usuario = () => {
                             </TableRow>
                         </TableHead>
                         <TableBody>
-                            {usuariosPaginados.map((usuario) => (
-                                <TableRow key={usuario.id}>
-                                    <TableCell>{usuario.nombre} {usuario.apellido}</TableCell>
-                                    <TableCell>{usuario.correo}</TableCell>
-                                    <TableCell>{usuario.username}</TableCell>
-                                    <TableCell>{
-                                        usuario.genero === 'M' ? 'Masculino' :
-                                            usuario.genero === 'F' ? 'Femenino' :
-                                                usuario.genero === 'O' ? 'Otro' : usuario.genero
-                                    }</TableCell>
-                                    <TableCell>{usuario.telefono}</TableCell>
-                                    <TableCell>{usuario.enabled ? 'Activo' : 'Inactivo'}</TableCell>
-                                    <TableCell>{renderBackgroundRol(usuario.rol)}</TableCell>
-                                    <TableCell>
-                                        <Button color="primary" onClick={() => handleEditarUsuario(usuario)}>
-                                            <Edit size={18} />
-                                        </Button>
-                                        <Button color="error" onClick={() => handleEliminarUsuario(usuario.id)}>
-                                            <Trash2 size={18} />
-                                        </Button>
-                                    </TableCell>
+                            {usuariosPaginados.length > 0 ? (
+                                usuariosPaginados.map((usuario) => (
+                                    <TableRow key={usuario.id}>
+                                        <TableCell>{usuario.nombre} {usuario.apellido}</TableCell>
+                                        <TableCell>{usuario.correo}</TableCell>
+                                        <TableCell>{usuario.username}</TableCell>
+                                        <TableCell>{
+                                            usuario.genero === 'M' ? 'Masculino' :
+                                                usuario.genero === 'F' ? 'Femenino' :
+                                                    usuario.genero === 'O' ? 'Otro' : usuario.genero
+                                        }</TableCell>
+                                        <TableCell>{usuario.telefono}</TableCell>
+                                        <TableCell>{usuario.enabled ? 'Activo' : 'Inactivo'}</TableCell>
+                                        <TableCell>{renderBackgroundRol(usuario.rol)}</TableCell>
+                                        <TableCell>
+                                            <Button color="primary" onClick={() => handleEditarUsuario(usuario)}>
+                                                <Edit size={18} />
+                                            </Button>
+                                            <Button color="error" onClick={() => handleEliminarUsuario(usuario.id)}>
+                                                <Trash2 size={18} />
+                                            </Button>
+                                        </TableCell>
+                                    </TableRow>
+                                ))
+                            ) : (
+                                <TableRow>
+                                    <TableCell colSpan={8} style={{ textAlign: 'center' }}>No hay usuarios registrados</TableCell>
                                 </TableRow>
-                            ))}
+                            )}
                         </TableBody>
                     </Table>
 
@@ -316,6 +371,8 @@ const Usuario = () => {
                             onChange={handleInputChange}
                             fullWidth
                             required
+                            error={!!errors.nombre}
+                            helperText={errors.nombre}
                             style={{ flex: 1 }}
                         />
                         <TextField
@@ -325,11 +382,13 @@ const Usuario = () => {
                             onChange={handleInputChange}
                             fullWidth
                             required
+                            error={!!errors.apellido}
+                            helperText={errors.apellido}
                             style={{ flex: 1 }}
                         />
                     </div>
 
-                    {/* Segunda fila: Correo y Username */}
+                    {/* Segunda fila: Correo y Género */}
                     <div style={{ display: 'flex', gap: '20px', marginBottom: '15px' }}>
                         <TextField
                             label="Correo"
@@ -339,6 +398,8 @@ const Usuario = () => {
                             onChange={handleInputChange}
                             fullWidth
                             required
+                            error={!!errors.correo}
+                            helperText={errors.correo}
                             style={{ flex: 1 }}
                         />
                         <TextField
@@ -356,11 +417,9 @@ const Usuario = () => {
                                 </MenuItem>
                             ))}
                         </TextField>
-
-
                     </div>
 
-                    {/* Tercera fila: Contraseña y DNI */}
+                    {/* Tercera fila: Username y Contraseña */}
                     <div style={{ display: 'flex', gap: '20px', marginBottom: '15px' }}>
                         <TextField
                             label="Username"
@@ -369,6 +428,8 @@ const Usuario = () => {
                             onChange={handleInputChange}
                             fullWidth
                             required
+                            error={!!errors.username}
+                            helperText={errors.username}
                             style={{ flex: 1 }}
                         />
 
@@ -379,13 +440,14 @@ const Usuario = () => {
                             value={nuevoUsuario.password}
                             onChange={handleInputChange}
                             fullWidth
-                            required
+                            required={!usuarioEditando}
+                            error={!!errors.password}
+                            helperText={errors.password}
                             style={{ flex: 1 }}
                         />
-
                     </div>
 
-                    {/* Cuarta fila: Género y Teléfono */}
+                    {/* Cuarta fila: DNI y Teléfono */}
                     <div style={{ display: 'flex', gap: '20px', marginBottom: '15px' }}>
                         <TextField
                             label="DNI"
@@ -393,6 +455,9 @@ const Usuario = () => {
                             value={nuevoUsuario.dni}
                             onChange={handleInputChange}
                             fullWidth
+                            error={!!errors.dni}
+                            helperText={errors.dni}
+                            inputProps={{ inputMode: 'numeric', pattern: '[0-9]*' }}
                             style={{ flex: 1 }}
                         />
                         <TextField
@@ -401,6 +466,9 @@ const Usuario = () => {
                             value={nuevoUsuario.telefono}
                             onChange={handleInputChange}
                             fullWidth
+                            error={!!errors.telefono}
+                            helperText={errors.telefono}
+                            inputProps={{ inputMode: 'numeric', pattern: '[0-9]*' }}
                             style={{ flex: 1 }}
                         />
                     </div>
@@ -444,6 +512,8 @@ const Usuario = () => {
                             onChange={handleInputChange}
                             name="rol"
                             required
+                            error={!!errors.rol}
+                            helperText={errors.rol}
                             style={{ flex: 1 }}
                         >
                             {roles.map((rol) => (
@@ -475,9 +545,6 @@ const Usuario = () => {
                     </div>
                 </Box>
             </Modal>
-
-
-
         </div>
     );
 };

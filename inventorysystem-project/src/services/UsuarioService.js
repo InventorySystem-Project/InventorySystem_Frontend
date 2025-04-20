@@ -64,7 +64,7 @@ export const updateUsuario = async (id, usuario) => {
 // Eliminar un usuario
 export const deleteUsuario = async (id) => {
     try {
-        await axios.delete(`${API_URL}/eliminar/${id}`, {
+        await axios.delete(`${API_URL}/${id}`, {
             headers: getAuthHeaders(),
         });
     } catch (error) {
