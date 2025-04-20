@@ -27,7 +27,8 @@ const MainLayout = ({ children }) => {
             paddingLeft: '20px',
             backgroundColor: '#134ac1',
             height: '100%',
-            overflowY: 'auto'
+            overflowY: 'auto',
+            overflow: 'hidden'
           }}
         >
           {children}

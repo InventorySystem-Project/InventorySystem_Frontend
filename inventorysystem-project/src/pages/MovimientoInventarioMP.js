@@ -255,7 +255,7 @@ const MovimientoInventarioMP = () => {
     return (
         <div className="container-general">
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
-                <h2 style={{ margin: 0 }}>Gestión de Movimientos de Inventario</h2>
+                <h2 >Gestión de Movimientos de Inventario</h2>
                 <Button variant="contained" color="primary" onClick={() => setMostrarFormulario(true)}>
                     <Plus /> Nuevo Movimiento
                 </Button>

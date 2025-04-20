@@ -34,7 +34,7 @@ const SideMenu = () => {
   return (
     <div className="side-menu">
       <div className="menu-header">
-        <h2 className="menu-heading">Menú Lateral</h2>
+        <h2 className="menu-heading">Sistema de Inventario</h2>
         <hr />
       </div>
 

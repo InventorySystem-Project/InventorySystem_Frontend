@@ -138,7 +138,7 @@ const Usuario = () => {
 
     const validarFormulario = () => {
         const nuevoErrors = {};
-        
+
         // Validar campos obligatorios
         if (!nuevoUsuario.nombre) nuevoErrors.nombre = 'El nombre es obligatorio';
         if (!nuevoUsuario.apellido) nuevoErrors.apellido = 'El apellido es obligatorio';
@@ -146,22 +146,22 @@ const Usuario = () => {
         if (!nuevoUsuario.password && !usuarioEditando) nuevoErrors.password = 'La contraseña es obligatoria';
         if (!nuevoUsuario.username) nuevoErrors.username = 'El nombre de usuario es obligatorio';
         if (!nuevoUsuario.rol.id) nuevoErrors.rol = 'El rol es obligatorio';
-        
+
         // Validar formato correo
         if (nuevoUsuario.correo && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(nuevoUsuario.correo)) {
             nuevoErrors.correo = 'Formato de correo inválido';
         }
-        
+
         // Validar que DNI tenga solo números
         if (nuevoUsuario.dni && !/^\d+$/.test(nuevoUsuario.dni)) {
             nuevoErrors.dni = 'El DNI debe contener solo números';
         }
-        
+
         // Validar que teléfono tenga solo números
         if (nuevoUsuario.telefono && !/^\d+$/.test(nuevoUsuario.telefono)) {
             nuevoErrors.telefono = 'El teléfono debe contener solo números';
         }
-        
+
         setErrors(nuevoErrors);
         return Object.keys(nuevoErrors).length === 0;
     };
@@ -175,7 +175,7 @@ const Usuario = () => {
             if (usuarioEditando) {
                 // Si estamos editando un usuario, lo actualizamos
                 const usuarioActualizado = await updateUsuario(usuarioEditando.id, nuevoUsuario);
-                
+
                 // Actualizar la lista inmediatamente con el usuario actualizado
                 setUsuarios((prev) =>
                     prev.map((u) =>
@@ -185,14 +185,14 @@ const Usuario = () => {
             } else {
                 // Si es un nuevo usuario, lo agregamos
                 const usuarioCreado = await addUsuario(nuevoUsuario);
-                
+
                 // Añadir el nuevo usuario a la lista inmediatamente
                 setUsuarios((prev) => [usuarioCreado, ...prev]);
             }
 
             resetearFormulario();
             setMostrarFormulario(false);
-            
+
             // Opcional: Refrescar toda la lista para asegurarnos de tener datos actualizados
             fetchUsuarios();
         } catch (error) {
@@ -287,7 +287,7 @@ const Usuario = () => {
     return (
         <div className="container-general">
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
-                <h2 style={{ margin: 0 }}>Gestión de Usuarios</h2>
+                <h2>Gestión de Usuarios</h2>
                 <Button variant="contained" color="primary" onClick={() => setMostrarFormulario(true)}>
                     <Plus /> Nuevo Usuario
                 </Button>

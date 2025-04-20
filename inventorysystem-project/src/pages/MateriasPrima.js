@@ -106,7 +106,7 @@ const MateriaPrima = () => {
     return (
         <div className="container-general">
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
-                <h2 style={{ margin: 0 }}>Gestión de Materias Primas</h2>
+                <h2 >Gestión de Materias Primas</h2>
                 <Button variant="contained" color="primary" onClick={() => setMostrarFormulario(true)}>
                     <Plus /> Nueva Materia Prima
                 </Button>

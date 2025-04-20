@@ -111,7 +111,7 @@ const Empresa = () => {
     return (
         <div className="container-general">
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
-                <h2 style={{ margin: 0 }}>Gestión de Empresas</h2>
+                <h2>Gestión de Empresas</h2>
                 <Button variant="contained" color="primary" onClick={() => setMostrarFormulario(true)}>
                     <Plus /> Nueva Empresa
                 </Button>

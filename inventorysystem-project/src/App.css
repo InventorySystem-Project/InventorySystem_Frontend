@@ -3,6 +3,10 @@ html, body, #root, .App {
   margin: 0;
   padding: 0;
   background-color: #134ac1;
+  
+}
+* {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
 }
 iframe#webpack-dev-server-client-overlay{display:none!important}
 
@@ -52,8 +56,7 @@ iframe#webpack-dev-server-client-overlay{display:none!important}
 }
 
 .menu-heading {
-  font-size: 28px;
-  margin-bottom: 20px;
+ 
 }
 
 .menu-list {
@@ -81,6 +84,11 @@ iframe#webpack-dev-server-client-overlay{display:none!important}
   /*transition: transform 0.2s ease-in-out;*/
   min-height: 90vh; /* para que no se vea en blanco al hacer zoom */
   
+}
+
+.container-general h2{
+
+  margin: 0 
 }
 
 /* =========================================== */
@@ -204,10 +212,7 @@ iframe#webpack-dev-server-client-overlay{display:none!important}
 }
 /* TABLA------------------------------------*/
 /* Contenedor de la tabla */
-.table-container {
-  width: 100%;
-  overflow-x: auto; /* Permite desplazamiento horizontal si la tabla es más ancha que el contenedor */
-}
+
 
 /* Estilos para la tabla */
 .table {
@@ -335,12 +340,7 @@ iframe#webpack-dev-server-client-overlay{display:none!important}
 
 
 /* Título */
-h2 {
-  font-size: 24px;
-  color: #333;
-  margin-bottom: 20px;
-  display: inline-block;
-}
+
 
 .MuiButtonBase-root{
 background-color: #ffffff;
@@ -364,12 +364,16 @@ button:hover {
 
 .table-container {
   margin-top: 20px;
+  /*
   right: 20px;
   left: 20px;
+  */
   padding: 20px;
   border-radius: 10px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   border: 1px solid #dfdfdf;
+  width: 100%;
+  overflow-x: auto; /* Permite desplazamiento horizontal si la tabla es más ancha que el contenedor */
 }
 
 .MuiTableCell-root {
@@ -740,6 +744,7 @@ h3 {
   transform: translateY(-20px); /* Comienza ligeramente hacia arriba */
   transition: opacity 0.3s ease, transform 0.3s ease; /* Animación suave para aparecer */
   z-index: 1;
+  visibility: hidden; /* Oculta el menú completamente */
 }
 
 .user-menu.show {
@@ -747,6 +752,7 @@ h3 {
   transform: translateY(0); /* Se mueve hacia abajo */
   background-color: #2563eb;
   pointer-events: auto; /* Permite interacciones cuando el menú está visible */
+  visibility: visible; /* Lo hace visible */
 
   
 }

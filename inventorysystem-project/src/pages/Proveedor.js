@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { TextField, Button, Modal, Box, Pagination, Table, TableBody, TableCell, TableHead, TableRow } from '@mui/material';
-import { Plus, Pencil, Trash2, Edit} from "lucide-react";
+import { Plus, Pencil, Trash2, Edit } from "lucide-react";
 import { getProveedores, addProveedor, updateProveedor, deleteProveedor } from '../services/ProveedorService';
 
 const Proveedores = () => {
@@ -68,12 +68,11 @@ const Proveedores = () => {
     const handleAgregarProveedor = async () => {
         // Verificar si todos los campos están completos
         if (
-            !nuevoProveedor.nombreEmpresaProveedor || 
-            !nuevoProveedor.nombreContacto || 
-            !nuevoProveedor.telefono || 
+            !nuevoProveedor.nombreEmpresaProveedor ||
+            !nuevoProveedor.nombreContacto ||
+            !nuevoProveedor.telefono ||
             !nuevoProveedor.ruc
-        ) 
-            {
+        ) {
             alert('Por favor complete los campos obligatorios');
             return;
         }
@@ -167,10 +166,11 @@ const Proveedores = () => {
     return (
         <div className="container-general">
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
-                <h2 style={{ margin: 0 }}>Gestión de Proveedores</h2>
+                <h2 >Gestión de Proveedores</h2>
                 <Button variant="contained" color="primary" onClick={() => setMostrarFormulario(true)}>
                     <Plus /> Nuevo Proveedor
                 </Button>
+
             </div>
 
             <div className="table-container">
@@ -183,13 +183,13 @@ const Proveedores = () => {
                     <Table>
                         <TableHead>
                             <TableRow>
-                                <TableCell style={{ fontWeight: 'bold' , color: '#748091'}}>Nombre Empresa</TableCell>
-                                <TableCell style={{ fontWeight: 'bold' , color: '#748091'}}>RUC</TableCell>
-                                <TableCell style={{ fontWeight: 'bold' , color: '#748091'}}>Contacto</TableCell>
-                                <TableCell style={{ fontWeight: 'bold' , color: '#748091'}}>País</TableCell>
-                                <TableCell style={{ fontWeight: 'bold' , color: '#748091'}}>Teléfono</TableCell>
-                                <TableCell style={{ fontWeight: 'bold' , color: '#748091'}}>Correo</TableCell>
-                                <TableCell style={{ fontWeight: 'bold' , color: '#748091'}}>Acciones</TableCell>
+                                <TableCell style={{ fontWeight: 'bold', color: '#748091' }}>Nombre Empresa</TableCell>
+                                <TableCell style={{ fontWeight: 'bold', color: '#748091' }}>RUC</TableCell>
+                                <TableCell style={{ fontWeight: 'bold', color: '#748091' }}>Contacto</TableCell>
+                                <TableCell style={{ fontWeight: 'bold', color: '#748091' }}>País</TableCell>
+                                <TableCell style={{ fontWeight: 'bold', color: '#748091' }}>Teléfono</TableCell>
+                                <TableCell style={{ fontWeight: 'bold', color: '#748091' }}>Correo</TableCell>
+                                <TableCell style={{ fontWeight: 'bold', color: '#748091' }}>Acciones</TableCell>
                             </TableRow>
                         </TableHead>
                         <TableBody>
@@ -198,21 +198,21 @@ const Proveedores = () => {
                                     <TableCell>{proveedor.nombreEmpresaProveedor}</TableCell>
                                     <TableCell>{proveedor.ruc}</TableCell>
                                     <TableCell>{proveedor.nombreContacto}</TableCell>
-                                     <TableCell>
-                                                                            {/* Contenedor para la bandera y el nombre del país */}
-                                                                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                                                                                <img
-                                                                                    src={`https://flagcdn.com/w320/${proveedor.pais.toLowerCase()}.png`}
-                                                                                    alt={proveedor.pais}
-                                                                                    style={{
-                                                                                        width: '24px',
-                                                                                        height: '16px',
-                                                                                        borderRadius: '2px',  // Borde redondeado solo en la imagen
-                                                                                    }}
-                                                                                />
-                                                                                <span>{paisesNombreCompleto[proveedor.pais] || proveedor.pais}</span> {/* Aquí mostramos el nombre completo del país */}
-                                                                            </div>
-                                                                        </TableCell>
+                                    <TableCell>
+                                        {/* Contenedor para la bandera y el nombre del país */}
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                            <img
+                                                src={`https://flagcdn.com/w320/${proveedor.pais.toLowerCase()}.png`}
+                                                alt={proveedor.pais}
+                                                style={{
+                                                    width: '24px',
+                                                    height: '16px',
+                                                    borderRadius: '2px',  // Borde redondeado solo en la imagen
+                                                }}
+                                            />
+                                            <span>{paisesNombreCompleto[proveedor.pais] || proveedor.pais}</span> {/* Aquí mostramos el nombre completo del país */}
+                                        </div>
+                                    </TableCell>
                                     <TableCell>{proveedor.telefono}</TableCell>
                                     <TableCell>{proveedor.correo}</TableCell>
                                     <TableCell>
@@ -228,15 +228,26 @@ const Proveedores = () => {
                 </div>
             </div>
 
-            <Modal open={mostrarFormulario} onClose={() => setMostrarFormulario(false)} style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+            <Modal
+                open={mostrarFormulario}
+                onClose={() => setMostrarFormulario(false)}
+                style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}
+            >
                 <Box style={{ background: '#fff', padding: '20px', borderRadius: '10px', minWidth: '400px' }}>
                     <h3>{proveedorEditando ? 'Editar Proveedor' : 'Nuevo Proveedor'}</h3>
-                    <TextField label="Nombre Empresa" name="nombreEmpresaProveedor" value={nuevoProveedor.nombreEmpresaProveedor} onChange={handleInputChange} fullWidth />
+                    <TextField
+                        label="Nombre Empresa"
+                        name="nombreEmpresaProveedor"
+                        value={nuevoProveedor.nombreEmpresaProveedor}
+                        onChange={handleInputChange}
+                        fullWidth
+                    />
+
                     <TextField label="RUC" name="ruc" value={nuevoProveedor.ruc} onChange={handleInputChange} fullWidth />
                     <TextField label="Nombre de Contacto" name="nombreContacto" value={nuevoProveedor.nombreContacto} onChange={handleInputChange} fullWidth />
                     <TextField label="Teléfono" name="telefono" value={nuevoProveedor.telefono} onChange={handleInputChange} fullWidth />
                     <TextField label="Correo" name="correo" value={nuevoProveedor.correo} onChange={handleInputChange} fullWidth />
-<TextField
+                    <TextField
                         label="País"
                         name="pais"
                         value={nuevoProveedor.pais}
