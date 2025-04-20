@@ -620,7 +620,7 @@ const Login = () => {
               <input
                 style={{
                   ...styles.input,
-                  paddingRight: '40px'
+                  paddingRight: '40x'
                 }}
                 type="date"
                 name="fechaNacimiento"
@@ -636,7 +636,7 @@ const Login = () => {
                 alignItems: 'center',
                 color: '#666'
               }}>
-                <Calendar size={18} />
+                {/*<Calendar size={18} />*/}
               </div>
             </div>
           </div>
