@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Eye, EyeOff, ArrowLeft, ArrowRight, User, Lock, Mail } from 'lucide-react';
+import { Eye, EyeOff, ArrowRight, ArrowLeft, Calendar, User, Lock, Mail } from 'lucide-react';
 
 const Login = () => {
   // States for different views
@@ -27,7 +27,10 @@ const Login = () => {
     nombre: '',
     apellido: '',
     dni: '',
-    telefono: ''
+    telefono: '',
+    genero: 'M', // Default value
+    fechaNacimiento: '',
+    enabled: true // Set enabled to true by default
   });
 
   // Recovery states
@@ -79,8 +82,10 @@ const Login = () => {
       const token = response.data.jwttoken;
       
       if (token) {
-        localStorage.setItem('token', token);
+        // Store token with Bearer prefix
+        localStorage.setItem('token', `Bearer ${token}`);
         localStorage.setItem('username', loginData.username);
+        // Set Authorization header with Bearer prefix
         axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
         
         setSuccessMsg('Inicio de sesión exitoso. Redirigiendo...');
@@ -122,8 +127,8 @@ const Login = () => {
     }
     
     try {
-      // Prepare data for API - remove confirmPassword field
-      const apiData = { ...registerData };
+      // Prepare data for API - remove confirmPassword field and ensure enabled is true
+      const apiData = { ...registerData, enabled: true };
       delete apiData.confirmPassword;
       
       // Replace with your actual registration endpoint
@@ -141,7 +146,10 @@ const Login = () => {
             nombre: '',
             apellido: '',
             dni: '',
-            telefono: ''
+            telefono: '',
+            genero: 'M',
+            fechaNacimiento: '',
+            enabled: true
           });
         }, 2000);
       }
@@ -328,6 +336,18 @@ const Login = () => {
       boxSizing: 'border-box',
       paddingRight: '40px', // Space for the eye icon
     },
+    select: {
+      padding: '12px 15px',
+      borderRadius: '8px',
+      border: '1px solid #ddd',
+      fontSize: '16px',
+      transition: 'border-color 0.3s',
+      width: '100%',
+      boxSizing: 'border-box',
+      backgroundColor: 'white',
+      appearance: 'none',
+      paddingRight: '40px', // Space for dropdown arrow
+    },
     iconWrapper: {
       position: 'absolute',
       right: '12px',
@@ -402,6 +422,17 @@ const Login = () => {
       padding: '5px',
       cursor: 'pointer',
       marginBottom: '15px',
+    },
+    selectWrapper: {
+      position: 'relative'
+    },
+    selectArrow: {
+      position: 'absolute',
+      right: '12px',
+      top: '50%',
+      transform: 'translateY(-50%)',
+      pointerEvents: 'none',
+      color: '#666'
     }
   };
 
@@ -574,6 +605,59 @@ const Login = () => {
               color: '#666'
             }}>
               <Mail size={18} />
+            </div>
+          </div>
+        </div>
+        
+        <div style={styles.inputRow}>
+          <div style={{...styles.inputGroup, ...styles.inputHalf}}>
+            <label style={styles.inputLabel}>Fecha de Nacimiento</label>
+            <div style={{
+              position: 'relative',
+              display: 'flex',
+              alignItems: 'center'
+            }}>
+              <input
+                style={{
+                  ...styles.input,
+                  paddingRight: '40px'
+                }}
+                type="date"
+                name="fechaNacimiento"
+                value={registerData.fechaNacimiento}
+                onChange={handleRegisterChange}
+                required
+              />
+              <div style={{
+                position: 'absolute',
+                right: '12px',
+                pointerEvents: 'none',
+                display: 'flex',
+                alignItems: 'center',
+                color: '#666'
+              }}>
+                <Calendar size={18} />
+              </div>
+            </div>
+          </div>
+          
+          <div style={{...styles.inputGroup, ...styles.inputHalf}}>
+            <label style={styles.inputLabel}>Género</label>
+            <div style={styles.selectWrapper}>
+              <select
+                style={styles.select}
+                name="genero"
+                value={registerData.genero}
+                onChange={handleRegisterChange}
+                required
+              >
+                <option value="M">Masculino</option>
+                <option value="F">Femenino</option>
+                <option value="O">Otro</option>
+              </select>
+              <div style={styles.selectArrow}>
+                <ArrowRight size={16} style={{ transform: 'rotate(90deg)' }} />
+              </div>
             </div>
           </div>
         </div>
@@ -885,77 +969,77 @@ const Login = () => {
                   required
                 />
                 <div style={{
-                  position: 'absolute',
-                  right: '12px',
-                  pointerEvents: 'none',
-                  display: 'flex',
-                  alignItems: 'center',
-                  color: '#666'
-                }}>
-                  <Lock size={18} />
-                </div>
-              </div>
-            </div>
-            
-            <motion.button
-              style={styles.button}
-              type="submit"
-              disabled={loading}
-              variants={buttonVariants}
-              whileHover="hover"
-              whileTap="tap"
-            >
-              {loading ? 'Actualizando...' : 'Actualizar contraseña'}
-            </motion.button>
-          </form>
-        </>
-      );
-    }
-  };
+position: 'absolute',
+right: '12px',
+pointerEvents: 'none',
+display: 'flex',
+alignItems: 'center',
+color: '#666'
+}}>
+<Lock size={18} />
+</div>
+</div>
+</div>
 
-  // Determine which form to render
-  const renderActiveView = () => {
-    switch(activeView) {
-      case 'register':
-        return renderRegisterForm();
-      case 'recover':
-        return renderRecoverForm();
-      default:
-        return renderLoginForm();
-    }
-  };
+<motion.button
+style={styles.button}
+type="submit"
+disabled={loading}
+variants={buttonVariants}
+whileHover="hover"
+whileTap="tap"
+>
+{loading ? 'Actualizando...' : 'Actualizar contraseña'}
+</motion.button>
+</form>
+</>
+);
+}
+};
 
-  // Get the heading text based on the active view
-  const getHeadingText = () => {
-    if (activeView === 'register') {
-      return 'Crear Cuenta';
-    } else if (activeView === 'recover') {
-      if (recoveryStep === 1) return 'Recuperar Contraseña';
-      if (recoveryStep === 2) return 'Verificar Código';
-      if (recoveryStep === 3) return 'Nueva Contraseña';
-    }
-    return 'Bienvenido de nuevo';
-  };
+// Determine which form to render
+const renderActiveView = () => {
+switch(activeView) {
+case 'register':
+return renderRegisterForm();
+case 'recover':
+return renderRecoverForm();
+default:
+return renderLoginForm();
+}
+};
 
-  return (
-    <div style={styles.container}>
-      <motion.div
-        style={styles.card}
-        initial="hidden"
-        animate="visible"
-        exit="exit"
-        variants={cardVariants}
-        key={`${activeView}-${recoveryStep}`}
-      >
-        <h2 style={styles.heading}>{getHeadingText()}</h2>
-        
-        {errorMsg && <div style={styles.error}>{errorMsg}</div>}
-        {successMsg && <div style={styles.success}>{successMsg}</div>}
-        
-        {renderActiveView()}
-      </motion.div>
-    </div>
-  );
+// Get the heading text based on the active view
+const getHeadingText = () => {
+if (activeView === 'register') {
+return 'Crear Cuenta';
+} else if (activeView === 'recover') {
+if (recoveryStep === 1) return 'Recuperar Contraseña';
+if (recoveryStep === 2) return 'Verificar Código';
+if (recoveryStep === 3) return 'Nueva Contraseña';
+}
+return 'Bienvenido de nuevo';
+};
+
+return (
+<div style={styles.container}>
+<motion.div
+style={styles.card}
+initial="hidden"
+animate="visible"
+exit="exit"
+variants={cardVariants}
+key={`${activeView}-${recoveryStep}`}
+>
+<h2 style={styles.heading}>{getHeadingText()}</h2>
+
+{errorMsg && <div style={styles.error}>{errorMsg}</div>}
+{successMsg && <div style={styles.success}>{successMsg}</div>}
+
+{renderActiveView()}
+</motion.div>
+</div>
+);
 }
 
 export default Login;
