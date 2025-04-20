@@ -527,6 +527,9 @@ h3 {
 /* =============================== */
 /*             LOGIN               */
 /* =============================== */
+
+
+/*
 .login-page {
   display: flex;
   justify-content: center;
@@ -587,7 +590,7 @@ h3 {
 .login-button:hover {
   background-color: #1d4ed8;
 }
-
+*/
 
 /* ========================================*/
 /* Layout con el menú lateral - SIDE MENU  */
@@ -736,6 +739,7 @@ h3 {
   opacity: 0; /* Comienza invisible */
   transform: translateY(-20px); /* Comienza ligeramente hacia arriba */
   transition: opacity 0.3s ease, transform 0.3s ease; /* Animación suave para aparecer */
+  z-index: 1;
 }
 
 .user-menu.show {
