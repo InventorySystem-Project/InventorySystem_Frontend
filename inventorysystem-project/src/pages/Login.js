@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Eye, EyeOff, ArrowRight, ArrowLeft, Calendar, User, Lock, Mail } from 'lucide-react';
+import { Eye, EyeOff, ArrowLeft, ArrowRight, User, Lock, Mail } from 'lucide-react';
 
 const Login = () => {
   // States for different views
@@ -11,7 +11,7 @@ const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
-  
+
   // Login states
   const [loginData, setLoginData] = useState({
     username: '',
@@ -28,9 +28,9 @@ const Login = () => {
     apellido: '',
     dni: '',
     telefono: '',
-    genero: 'M', // Default value
+    genero: 'M',
     fechaNacimiento: '',
-    enabled: true // Set enabled to true by default
+    enabled: true
   });
 
   // Recovery states
@@ -62,12 +62,12 @@ const Login = () => {
   // Handle registration form input changes
   const handleRegisterChange = (e) => {
     const { name, value } = e.target;
-    
+
     // Validation for numeric fields
     if ((name === 'dni' || name === 'telefono') && value !== '') {
       if (!/^\d*$/.test(value)) return; // Only allow numbers
     }
-    
+
     setRegisterData(prev => ({ ...prev, [name]: value }));
   };
 
@@ -76,18 +76,16 @@ const Login = () => {
     e.preventDefault();
     setLoading(true);
     setErrorMsg('');
-    
+
     try {
       const response = await axios.post('http://localhost:8080/authenticate', loginData);
       const token = response.data.jwttoken;
-      
+
       if (token) {
-        // Store token with Bearer prefix
-        localStorage.setItem('token', `Bearer ${token}`);
+        localStorage.setItem('token', token);
         localStorage.setItem('username', loginData.username);
-        // Set Authorization header with Bearer prefix
         axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-        
+
         setSuccessMsg('Inicio de sesión exitoso. Redirigiendo...');
         setTimeout(() => navigate('/dashboard'), 1000);
       } else {
@@ -110,14 +108,14 @@ const Login = () => {
     e.preventDefault();
     setLoading(true);
     setErrorMsg('');
-    
+
     // Validate password match
     if (registerData.password !== registerData.confirmPassword) {
       setErrorMsg('Las contraseñas no coinciden');
       setLoading(false);
       return;
     }
-    
+
     // Validate email format
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(registerData.email)) {
@@ -125,15 +123,15 @@ const Login = () => {
       setLoading(false);
       return;
     }
-    
+
     try {
-      // Prepare data for API - remove confirmPassword field and ensure enabled is true
-      const apiData = { ...registerData, enabled: true };
+      // Prepare data for API - remove confirmPassword field
+      const apiData = { ...registerData };
       delete apiData.confirmPassword;
-      
+
       // Replace with your actual registration endpoint
       const response = await axios.post('http://localhost:8080/usuarios/registrar', apiData);
-      
+
       if (response.status === 201 || response.status === 200) {
         setSuccessMsg('Registro exitoso. Ahora puede iniciar sesión.');
         setTimeout(() => {
@@ -170,7 +168,7 @@ const Login = () => {
     e.preventDefault();
     setLoading(true);
     setErrorMsg('');
-    
+
     // Validate email format
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(recoverEmail)) {
@@ -178,11 +176,11 @@ const Login = () => {
       setLoading(false);
       return;
     }
-    
+
     try {
       // Replace with your actual password recovery endpoint
       await axios.post('http://localhost:8080/recover-password', { email: recoverEmail });
-      
+
       setSuccessMsg('Se ha enviado un código de verificación a su correo electrónico.');
       setTimeout(() => {
         setRecoveryStep(2);
@@ -200,14 +198,14 @@ const Login = () => {
     e.preventDefault();
     setLoading(true);
     setErrorMsg('');
-    
+
     try {
       // Replace with your actual code verification endpoint
-      await axios.post('http://localhost:8080/verify-code', { 
+      await axios.post('http://localhost:8080/verify-code', {
         email: recoverEmail,
         code: recoveryCode
       });
-      
+
       setSuccessMsg('Código verificado correctamente.');
       setTimeout(() => {
         setRecoveryStep(3);
@@ -225,13 +223,13 @@ const Login = () => {
     e.preventDefault();
     setLoading(true);
     setErrorMsg('');
-    
+
     if (newPassword !== confirmNewPassword) {
       setErrorMsg('Las contraseñas no coinciden');
       setLoading(false);
       return;
     }
-    
+
     try {
       // Replace with your actual password reset endpoint
       await axios.post('http://localhost:8080/reset-password', {
@@ -239,7 +237,7 @@ const Login = () => {
         code: recoveryCode,
         newPassword: newPassword
       });
-      
+
       setSuccessMsg('Contraseña actualizada exitosamente. Ahora puede iniciar sesión.');
       setTimeout(() => {
         setActiveView('login');
@@ -260,18 +258,18 @@ const Login = () => {
   // Card animation for transitions between forms
   const cardVariants = {
     hidden: { opacity: 0, y: 30 },
-    visible: { 
-      opacity: 1, 
+    visible: {
+      opacity: 1,
       y: 0,
-      transition: { 
+      transition: {
         duration: 0.5,
         ease: "easeOut"
       }
     },
-    exit: { 
+    exit: {
       opacity: 0,
       y: -30,
-      transition: { 
+      transition: {
         duration: 0.3,
         ease: "easeIn"
       }
@@ -441,10 +439,10 @@ const Login = () => {
     <form style={styles.form} onSubmit={handleLoginSubmit}>
       <div style={styles.inputGroup}>
         <label style={styles.inputLabel}>Nombre de usuario</label>
-        <div style={{ 
+        <div style={{
           position: 'relative',
           display: 'flex',
-          alignItems: 'center' 
+          alignItems: 'center'
         }}>
           <input
             style={{
@@ -470,13 +468,13 @@ const Login = () => {
           </div>
         </div>
       </div>
-      
+
       <div style={styles.inputGroup}>
         <label style={styles.inputLabel}>Contraseña</label>
-        <div style={{ 
+        <div style={{
           position: 'relative',
           display: 'flex',
-          alignItems: 'center' 
+          alignItems: 'center'
         }}>
           <input
             style={{
@@ -490,7 +488,7 @@ const Login = () => {
             placeholder="Ingrese su contraseña"
             required
           />
-          <div 
+          <div
             style={{
               position: 'absolute',
               right: '12px',
@@ -505,7 +503,7 @@ const Login = () => {
           </div>
         </div>
       </div>
-      
+
       <motion.button
         style={styles.button}
         type="submit"
@@ -516,19 +514,19 @@ const Login = () => {
       >
         {loading ? 'Iniciando sesión...' : 'Iniciar Sesión'}
       </motion.button>
-      
+
       <div style={{ marginTop: '10px', textAlign: 'right' }}>
-        <span 
+        <span
           style={styles.linkText}
           onClick={() => setActiveView('recover')}
         >
           ¿Olvidó su contraseña?
         </span>
       </div>
-      
+
       <div style={styles.footer}>
         <span>¿No tiene una cuenta? </span>
-        <span 
+        <span
           style={{ ...styles.linkText, marginLeft: '5px' }}
           onClick={() => setActiveView('register')}
         >
@@ -541,16 +539,16 @@ const Login = () => {
   // Render registration form
   const renderRegisterForm = () => (
     <>
-      <button 
-        style={styles.backButton} 
+      <button
+        style={styles.backButton}
         onClick={() => setActiveView('login')}
       >
         <ArrowLeft size={16} /> Volver a inicio de sesión
       </button>
-      
+
       <form style={styles.form} onSubmit={handleRegisterSubmit}>
         <div style={styles.inputRow}>
-          <div style={{...styles.inputGroup, ...styles.inputHalf}}>
+          <div style={{ ...styles.inputGroup, ...styles.inputHalf }}>
             <label style={styles.inputLabel}>Nombre</label>
             <input
               style={styles.input}
@@ -562,8 +560,8 @@ const Login = () => {
               required
             />
           </div>
-          
-          <div style={{...styles.inputGroup, ...styles.inputHalf}}>
+
+          <div style={{ ...styles.inputGroup, ...styles.inputHalf }}>
             <label style={styles.inputLabel}>Apellido</label>
             <input
               style={styles.input}
@@ -576,13 +574,13 @@ const Login = () => {
             />
           </div>
         </div>
-        
+
         <div style={styles.inputGroup}>
           <label style={styles.inputLabel}>Correo Electrónico</label>
-          <div style={{ 
+          <div style={{
             position: 'relative',
             display: 'flex',
-            alignItems: 'center' 
+            alignItems: 'center'
           }}>
             <input
               style={{
@@ -608,9 +606,8 @@ const Login = () => {
             </div>
           </div>
         </div>
-        
         <div style={styles.inputRow}>
-          <div style={{...styles.inputGroup, ...styles.inputHalf}}>
+          <div style={{ ...styles.inputGroup, ...styles.inputHalf }}>
             <label style={styles.inputLabel}>Fecha de Nacimiento</label>
             <div style={{
               position: 'relative',
@@ -620,7 +617,7 @@ const Login = () => {
               <input
                 style={{
                   ...styles.input,
-                  paddingRight: '40x'
+                  paddingRight: '40px'
                 }}
                 type="date"
                 name="fechaNacimiento"
@@ -636,12 +633,12 @@ const Login = () => {
                 alignItems: 'center',
                 color: '#666'
               }}>
-                {/*<Calendar size={18} />*/}
+                {/* <Calendar size={18} />*/}
               </div>
             </div>
           </div>
-          
-          <div style={{...styles.inputGroup, ...styles.inputHalf}}>
+
+          <div style={{ ...styles.inputGroup, ...styles.inputHalf }}>
             <label style={styles.inputLabel}>Género</label>
             <div style={styles.selectWrapper}>
               <select
@@ -661,13 +658,12 @@ const Login = () => {
             </div>
           </div>
         </div>
-        
         <div style={styles.inputGroup}>
           <label style={styles.inputLabel}>Nombre de Usuario</label>
-          <div style={{ 
+          <div style={{
             position: 'relative',
             display: 'flex',
-            alignItems: 'center' 
+            alignItems: 'center'
           }}>
             <input
               style={{
@@ -693,9 +689,9 @@ const Login = () => {
             </div>
           </div>
         </div>
-        
+
         <div style={styles.inputRow}>
-          <div style={{...styles.inputGroup, ...styles.inputHalf}}>
+          <div style={{ ...styles.inputGroup, ...styles.inputHalf }}>
             <label style={styles.inputLabel}>DNI</label>
             <input
               style={styles.input}
@@ -707,8 +703,8 @@ const Login = () => {
               required
             />
           </div>
-          
-          <div style={{...styles.inputGroup, ...styles.inputHalf}}>
+
+          <div style={{ ...styles.inputGroup, ...styles.inputHalf }}>
             <label style={styles.inputLabel}>Teléfono</label>
             <input
               style={styles.input}
@@ -721,13 +717,13 @@ const Login = () => {
             />
           </div>
         </div>
-        
+
         <div style={styles.inputGroup}>
           <label style={styles.inputLabel}>Contraseña</label>
-          <div style={{ 
+          <div style={{
             position: 'relative',
             display: 'flex',
-            alignItems: 'center' 
+            alignItems: 'center'
           }}>
             <input
               style={{
@@ -741,7 +737,7 @@ const Login = () => {
               placeholder="Cree una contraseña segura"
               required
             />
-            <div 
+            <div
               style={{
                 position: 'absolute',
                 right: '12px',
@@ -756,7 +752,7 @@ const Login = () => {
             </div>
           </div>
         </div>
-        
+
         <div style={styles.inputGroup}>
           <label style={styles.inputLabel}>Confirmar Contraseña</label>
           <div style={{
@@ -788,7 +784,7 @@ const Login = () => {
             </div>
           </div>
         </div>
-        
+
         <motion.button
           style={styles.button}
           type="submit"
@@ -808,20 +804,20 @@ const Login = () => {
     if (recoveryStep === 1) {
       return (
         <>
-          <button 
-            style={styles.backButton} 
+          <button
+            style={styles.backButton}
             onClick={() => setActiveView('login')}
           >
             <ArrowLeft size={16} /> Volver a inicio de sesión
           </button>
-          
+
           <form style={styles.form} onSubmit={handleRecoverSubmit}>
             <div style={styles.inputGroup}>
               <label style={styles.inputLabel}>Correo Electrónico</label>
-              <div style={{ 
+              <div style={{
                 position: 'relative',
                 display: 'flex',
-                alignItems: 'center' 
+                alignItems: 'center'
               }}>
                 <input
                   style={{
@@ -846,7 +842,7 @@ const Login = () => {
                 </div>
               </div>
             </div>
-            
+
             <motion.button
               style={styles.button}
               type="submit"
@@ -863,13 +859,13 @@ const Login = () => {
     } else if (recoveryStep === 2) {
       return (
         <>
-          <button 
-            style={styles.backButton} 
+          <button
+            style={styles.backButton}
             onClick={() => setRecoveryStep(1)}
           >
             <ArrowLeft size={16} /> Volver atrás
           </button>
-          
+
           <form style={styles.form} onSubmit={handleVerifyCode}>
             <div style={styles.inputGroup}>
               <label style={styles.inputLabel}>Código de Verificación</label>
@@ -891,7 +887,7 @@ const Login = () => {
                 Por favor revise su correo electrónico e ingrese el código de verificación.
               </small>
             </div>
-            
+
             <motion.button
               style={styles.button}
               type="submit"
@@ -908,20 +904,20 @@ const Login = () => {
     } else if (recoveryStep === 3) {
       return (
         <>
-          <button 
-            style={styles.backButton} 
+          <button
+            style={styles.backButton}
             onClick={() => setRecoveryStep(2)}
           >
             <ArrowLeft size={16} /> Volver atrás
           </button>
-          
+
           <form style={styles.form} onSubmit={handleSetNewPassword}>
             <div style={styles.inputGroup}>
               <label style={styles.inputLabel}>Nueva Contraseña</label>
-              <div style={{ 
+              <div style={{
                 position: 'relative',
                 display: 'flex',
-                alignItems: 'center' 
+                alignItems: 'center'
               }}>
                 <input
                   style={{
@@ -934,7 +930,7 @@ const Login = () => {
                   placeholder="Ingrese su nueva contraseña"
                   required
                 />
-                <div 
+                <div
                   style={{
                     position: 'absolute',
                     right: '12px',
@@ -949,13 +945,13 @@ const Login = () => {
                 </div>
               </div>
             </div>
-            
+
             <div style={styles.inputGroup}>
               <label style={styles.inputLabel}>Confirmar Contraseña</label>
-              <div style={{ 
+              <div style={{
                 position: 'relative',
                 display: 'flex',
-                alignItems: 'center' 
+                alignItems: 'center'
               }}>
                 <input
                   style={{
@@ -969,77 +965,77 @@ const Login = () => {
                   required
                 />
                 <div style={{
-position: 'absolute',
-right: '12px',
-pointerEvents: 'none',
-display: 'flex',
-alignItems: 'center',
-color: '#666'
-}}>
-<Lock size={18} />
-</div>
-</div>
-</div>
+                  position: 'absolute',
+                  right: '12px',
+                  pointerEvents: 'none',
+                  display: 'flex',
+                  alignItems: 'center',
+                  color: '#666'
+                }}>
+                  <Lock size={18} />
+                </div>
+              </div>
+            </div>
 
-<motion.button
-style={styles.button}
-type="submit"
-disabled={loading}
-variants={buttonVariants}
-whileHover="hover"
-whileTap="tap"
->
-{loading ? 'Actualizando...' : 'Actualizar contraseña'}
-</motion.button>
-</form>
-</>
-);
-}
-};
+            <motion.button
+              style={styles.button}
+              type="submit"
+              disabled={loading}
+              variants={buttonVariants}
+              whileHover="hover"
+              whileTap="tap"
+            >
+              {loading ? 'Actualizando...' : 'Actualizar contraseña'}
+            </motion.button>
+          </form>
+        </>
+      );
+    }
+  };
 
-// Determine which form to render
-const renderActiveView = () => {
-switch(activeView) {
-case 'register':
-return renderRegisterForm();
-case 'recover':
-return renderRecoverForm();
-default:
-return renderLoginForm();
-}
-};
+  // Determine which form to render
+  const renderActiveView = () => {
+    switch (activeView) {
+      case 'register':
+        return renderRegisterForm();
+      case 'recover':
+        return renderRecoverForm();
+      default:
+        return renderLoginForm();
+    }
+  };
 
-// Get the heading text based on the active view
-const getHeadingText = () => {
-if (activeView === 'register') {
-return 'Crear Cuenta';
-} else if (activeView === 'recover') {
-if (recoveryStep === 1) return 'Recuperar Contraseña';
-if (recoveryStep === 2) return 'Verificar Código';
-if (recoveryStep === 3) return 'Nueva Contraseña';
-}
-return 'Bienvenido de nuevo';
-};
+  // Get the heading text based on the active view
+  const getHeadingText = () => {
+    if (activeView === 'register') {
+      return 'Crear Cuenta';
+    } else if (activeView === 'recover') {
+      if (recoveryStep === 1) return 'Recuperar Contraseña';
+      if (recoveryStep === 2) return 'Verificar Código';
+      if (recoveryStep === 3) return 'Nueva Contraseña';
+    }
+    return 'Bienvenido de nuevo';
+  };
 
-return (
-<div style={styles.container}>
-<motion.div
-style={styles.card}
-initial="hidden"
-animate="visible"
-exit="exit"
-variants={cardVariants}
-key={`${activeView}-${recoveryStep}`}
->
-<h2 style={styles.heading}>{getHeadingText()}</h2>
+  return (
+    <div style={styles.container}>
+      <motion.div
+        style={styles.card}
+        initial="hidden"
+        animate="visible"
+        exit="exit"
+        variants={cardVariants}
+        key={`${activeView}-${recoveryStep}`}
+      >
+        <h2 style={styles.heading}>{getHeadingText()}</h2>
 
-{errorMsg && <div style={styles.error}>{errorMsg}</div>}
-{successMsg && <div style={styles.success}>{successMsg}</div>}
+        {errorMsg && <div style={styles.error}>{errorMsg}</div>}
+        {successMsg && <div style={styles.success}>{successMsg}</div>}
 
-{renderActiveView()}
-</motion.div>
-</div>
-);
+        {renderActiveView()}
+      </motion.div>
+    </div>
+  );
 }
 
 export default Login;
