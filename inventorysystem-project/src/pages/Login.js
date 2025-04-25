@@ -3,6 +3,7 @@ import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Eye, EyeOff, ArrowLeft, ArrowRight, User, Lock, Mail } from 'lucide-react';
+import { getRoles, addRol } from '../services/RolService';
 
 const Login = () => {
   // States for different views
@@ -103,32 +104,46 @@ const Login = () => {
     }
   };
 
-  // Handle registration submission
   const handleRegisterSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setErrorMsg('');
-
-    // Validate password match
-    if (registerData.password !== registerData.confirmPassword) {
-      setErrorMsg('Las contraseñas no coinciden');
-      setLoading(false);
-      return;
-    }
-
-    // Validate email format
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(registerData.email)) {
-      setErrorMsg('Formato de correo electrónico inválido');
-      setLoading(false);
-      return;
-    }
-
+  
+    // Validaciones existentes...
+  
     try {
+      // Buscar el rol USER o crearlo si no existe
+      
+      let userRol;
+      try {
+        // Obtener todos los roles
+        const roles = await getRoles();
+        // Buscar el rol con nombre "USER"
+        userRol = roles.find(rol => rol.rol === "USER");
+        
+        // Si no existe, crearlo
+        if (!userRol) {
+          userRol = await addRol({ rol: "USER" });
+        }
+      } catch (error) {
+        console.error("Error al obtener/crear rol USER:", error);
+        // Intenta crear el rol incluso si falla la búsqueda
+        try {
+          userRol = await addRol({ rol: "USER" });
+        } catch (rolError) {
+          console.error("Error al crear rol USER:", rolError);
+        }
+      }
+  
       // Prepare data for API - remove confirmPassword field
       const apiData = { ...registerData };
       delete apiData.confirmPassword;
-
+      
+      // Asignar el rol al usuario si se encontró o creó exitosamente
+      if (userRol && userRol.id) {
+        apiData.rol = { id: userRol.id };
+      }
+  
       // Replace with your actual registration endpoint
       const response = await axios.post('http://localhost:8080/usuarios/registrar', apiData);
 
