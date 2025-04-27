@@ -1,20 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { TextField, Button, Modal, Box, Table, TableBody, TableCell, TableHead, TableRow, Pagination } from '@mui/material';
 import { Plus, Pencil, Trash2, Edit } from 'lucide-react';
-import { getProductos, addProducto, updateProducto, deleteProducto } from '../services/ProductoService';
+import { getProductosTerminados, addProductoTerminado, updateProductoTerminado, deleteProductoTerminado } from '../services/ProductoTerminadoService';
 
 const Producto = () => {
     const [productos, setProductos] = useState([]);
     const [nuevoProducto, setNuevoProducto] = useState({
         nombre: '',
-        descripcion: '',
         tipo: '',
         modelo: '',
         color: '',
-        precioUnitario: '',
-        pieza: '',
-        enabled: true,
-        imagen: '',
+        precioUnitario: ''
     });
 
     const [mostrarFormulario, setMostrarFormulario] = useState(false);
@@ -26,7 +22,7 @@ const Producto = () => {
     useEffect(() => {
         const fetchProductos = async () => {
             try {
-                const productos = await getProductos();
+                const productos = await getProductosTerminados();
                 setProductos(productos);
             } catch (error) {
                 console.error('Error al obtener productos', error);
@@ -47,7 +43,6 @@ const Producto = () => {
     const handleAgregarProducto = async () => {
         if (
             !nuevoProducto.nombre ||
-            !nuevoProducto.descripcion ||
             !nuevoProducto.tipo ||
             !nuevoProducto.precioUnitario
         ) {
@@ -61,7 +56,7 @@ const Producto = () => {
 
             if (productoEditando) {
                 // Si estamos editando un producto, lo actualizamos
-                await updateProducto(productoEditando.id, nuevoProducto);
+                await updateProductoTerminado(productoEditando.id, nuevoProducto);
                 setProductos((prev) =>
                     prev.map((p) =>
                         p.id === productoEditando.id ? { ...nuevoProducto, id: productoEditando.id } : p
@@ -71,20 +66,16 @@ const Producto = () => {
                 // Si es un nuevo producto, lo agregamos
                 producto = { ...nuevoProducto, id: Date.now() };  // Usamos una id temporal
                 setProductos((prev) => [producto, ...prev]);  // Actualizamos inmediatamente el estado
-                await addProducto(nuevoProducto);  // Ahora sincronizamos con el backend
+                await addProductoTerminado(nuevoProducto);  // Ahora sincronizamos con el backend
             }
 
 
             setNuevoProducto({
                 nombre: '',
-                descripcion: '',
                 tipo: '',
                 modelo: '',
                 color: '',
-                precioUnitario: '',
-                pieza: '',
-                enabled: true,
-                imagen: '',
+                precioUnitario: ''
             });
 
             setProductoEditando(null);
@@ -99,14 +90,10 @@ const Producto = () => {
         setProductoEditando(null);
         setNuevoProducto({
             nombre: '',
-            descripcion: '',
             tipo: '',
             modelo: '',
             color: '',
-            precioUnitario: '',
-            pieza: '',
-            enabled: true,
-            imagen: '',
+            precioUnitario: ''
         });
     };
 
@@ -118,7 +105,7 @@ const Producto = () => {
 
     const handleEliminarProducto = async (id) => {
         try {
-            await deleteProducto(id);
+            await deleteProductoTerminado(id);
             setProductos((prev) => prev.filter((p) => p.id !== id));
         } catch (error) {
             console.error('Error al eliminar producto', error);
@@ -155,12 +142,10 @@ const Producto = () => {
                         <TableHead>
                             <TableRow>
                                 <TableCell style={{ fontWeight: 'bold', color: '#748091' }}>Nombre</TableCell>
-                                <TableCell style={{ fontWeight: 'bold', color: '#748091' }}>Descripción</TableCell>
                                 <TableCell style={{ fontWeight: 'bold', color: '#748091' }}>Tipo</TableCell>
                                 <TableCell style={{ fontWeight: 'bold', color: '#748091' }}>Modelo</TableCell>
                                 <TableCell style={{ fontWeight: 'bold', color: '#748091' }}>Color</TableCell>
                                 <TableCell style={{ fontWeight: 'bold', color: '#748091' }}>Precio</TableCell>
-                                <TableCell style={{ fontWeight: 'bold', color: '#748091' }}>Pieza</TableCell>
                                 <TableCell style={{ fontWeight: 'bold', color: '#748091' }}>Acciones</TableCell>
                             </TableRow>
                         </TableHead>
@@ -168,12 +153,10 @@ const Producto = () => {
                             {productosPaginados.map((producto) => (
                                 <TableRow key={producto.id}>
                                     <TableCell>{producto.nombre}</TableCell>
-                                    <TableCell>{producto.descripcion}</TableCell>
                                     <TableCell>{producto.tipo}</TableCell>
                                     <TableCell>{producto.modelo}</TableCell>
                                     <TableCell>{producto.color}</TableCell>
-                                    <TableCell>{producto.precioUnitario}</TableCell>
-                                    <TableCell>{producto.pieza}</TableCell>
+                                    <TableCell>{"S/. "+producto.precioUnitario}</TableCell>
                                     <TableCell>
                                         <Button color="primary" onClick={() => handleEditarProducto(producto)}><Edit size={18} /></Button>
                                         <Button color="error" onClick={() => handleEliminarProducto(producto.id)}><Trash2 size={18} /></Button>
@@ -187,17 +170,14 @@ const Producto = () => {
                 </div>
             </div>
 
-            <Modal open={mostrarFormulario} onClose={() => setMostrarFormulario(false)} style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+<Modal open={mostrarFormulario} onClose={() => setMostrarFormulario(false)} style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
                 <Box style={{ background: '#fff', padding: '20px', borderRadius: '10px', minWidth: '400px' }}>
                     <h3>{productoEditando ? 'Editar Producto' : 'Nuevo Producto'}</h3>
                     <TextField label="Nombre" name="nombre" value={nuevoProducto.nombre} onChange={handleInputChange} fullWidth />
-                    <TextField label="Descripción" name="descripcion" value={nuevoProducto.descripcion} onChange={handleInputChange} fullWidth />
                     <TextField label="Tipo" name="tipo" value={nuevoProducto.tipo} onChange={handleInputChange} fullWidth />
                     <TextField label="Modelo" name="modelo" value={nuevoProducto.modelo} onChange={handleInputChange} fullWidth />
                     <TextField label="Color" name="color" value={nuevoProducto.color} onChange={handleInputChange} fullWidth />
                     <TextField label="Precio Unitario" name="precioUnitario" value={nuevoProducto.precioUnitario} onChange={handleInputChange} fullWidth />
-                    <TextField label="Pieza" name="pieza" value={nuevoProducto.pieza} onChange={handleInputChange} fullWidth />
-                    <TextField label="Imagen" name="imagen" value={nuevoProducto.imagen} onChange={handleInputChange} fullWidth />
                     <div style={{ display: 'flex', justifyContent: 'center', gap: '10px' }}>
                         <Button variant="outlined" color="primary" onClick={handleCancelar}>Cancelar</Button>
                         <Button variant="contained" color="primary" onClick={handleAgregarProducto}>Guardar</Button>

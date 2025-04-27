@@ -55,69 +55,70 @@ const SideMenu = ({ isCollapsed, toggleCollapse }) => {
       {/* Sección de Gestión */}
       <div className="menu-section">
         {!isCollapsed && <p className="section-title">Gestión</p>}
-        
+
         <Link to="/dashboard" className="menu-item">
-          <span className="menu-icon"><Home /></span> 
+          <span className="menu-icon"><Home /></span>
           {!isCollapsed && <span>Dashboard</span>}
         </Link>
 
         <Link to="/productos" className="menu-item">
-          <span className="menu-icon"><Package /></span> 
+          <span className="menu-icon"><Package /></span>
           {!isCollapsed && <span>Productos</span>}
         </Link>
 
         <Link to="/materias-primas" className="menu-item">
-          <span className="menu-icon"><Truck /></span> 
+          <span className="menu-icon"><Truck /></span>
           {!isCollapsed && <span>Materias Primas</span>}
         </Link>
 
         <Link to="/almacenes" className="menu-item">
-          <span className="menu-icon"><Warehouse /></span> 
+          <span className="menu-icon"><Warehouse /></span>
           {!isCollapsed && <span>Almacenes</span>}
         </Link>
 
         <Link to="/proveedores" className="menu-item">
-          <span className="menu-icon"><Users /></span> 
+          <span className="menu-icon"><Users /></span>
           {!isCollapsed && <span>Proveedores</span>}
         </Link>
 
         <Link to="/ordenes-compra" className="menu-item">
-          <span className="menu-icon"><FileText /></span> 
+          <span className="menu-icon"><FileText /></span>
           {!isCollapsed && <span>Órdenes de Compra</span>}
         </Link>
 
         <Link to="/empresas" className="menu-item">
-          <span className="menu-icon"><Building /></span> 
+          <span className="menu-icon"><Building /></span>
           {!isCollapsed && <span>Empresas</span>}
         </Link>
 
-        <Link to="/movimientos-materia-prima" className="menu-item">
-          <span className="menu-icon"><History /></span> 
+        <Link to="/movimientos" className="menu-item">
+          <span className="menu-icon"><History /></span>
           {!isCollapsed && <span>Movimientos</span>}
         </Link>
-
+        {/* 
         <Link to="/reportes" className="menu-item">
           <span className="menu-icon"><BarChart3 /></span> 
           {!isCollapsed && <span>Reportes</span>}
         </Link>
+        */}
       </div>
 
       {/* Sección de Sistema */}
       <div className="menu-section">
         {!isCollapsed && <p className="section-title">Sistema</p>}
-        
+
         <Link to="/roles" className="menu-item">
-          <span className="menu-icon"><UserCog /></span> 
+          <span className="menu-icon"><UserCog /></span>
           {!isCollapsed && <span>Roles</span>}
         </Link>
 
         <Link to="/usuarios" className="menu-item">
-          <span className="menu-icon"><User /></span> 
+          <span className="menu-icon"><User /></span>
           {!isCollapsed && <span>Usuarios</span>}
         </Link>
 
         <div className="menu-item" onClick={handleLogout}>
-          <span className="menu-icon"><LogOut /></span> 
+          <span className="menu-icon"><LogOut /></span>
           {!isCollapsed && <span>Salir</span>}
         </div>
       </div>

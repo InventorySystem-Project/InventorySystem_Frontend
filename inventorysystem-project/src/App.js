@@ -19,7 +19,7 @@ import MateriasPrimas from './pages/MateriasPrima';
 
 import Login from './pages/Login';
 import './App.css';
-import MovimientoInventarioMP from './pages/MovimientoInventarioMP';
+import MovimientoInventario from './pages/MovimientoInventario';
 
 
 const App = () => {
@@ -39,7 +39,7 @@ const App = () => {
             <Route path="/proveedores" element={<Proveedor />} />
             <Route path="/ordenes-compra" element={<OrdenCompra />} />
             <Route path="/detalle-orden-compra" element={<DetalleOrdenCompra />} />
-            <Route path="/movimientos-materia-prima" element={<MovimientoInventarioMP />} />
+            <Route path="/movimientos" element={<MovimientoInventario />} />
             
             <Route path="/productos" element={<Producto />} />
             <Route path="/materias-primas" element={<MateriasPrimas />} />

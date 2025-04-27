@@ -24,7 +24,7 @@ const getAuthHeaders = () => {
 };
 
 // Obtener todos los productos terminados
-export const getProductos = async () => {
+export const getProductosTerminados = async () => {
     try {
         const response = await axios.get(`${API_URL}/listar`, {  // Cambiado a la ruta correcta
             headers: getAuthHeaders(), 
@@ -37,7 +37,7 @@ export const getProductos = async () => {
 };
 
 // Agregar un nuevo producto terminado
-export const addProducto = async (producto) => {
+export const addProductoTerminado = async (producto) => {
     try {
         const response = await axios.post(`${API_URL}/registrar`, producto, {  // Cambiado a la ruta correcta
             headers: getAuthHeaders(),
@@ -50,7 +50,7 @@ export const addProducto = async (producto) => {
 };
 
 // Actualizar un producto terminado existente
-export const updateProducto = async (id, producto) => {
+export const updateProductoTerminado = async (id, producto) => {
     try {
         const response = await axios.put(`${API_URL}`, producto, {  // Ruta PUT
             headers: getAuthHeaders(),
@@ -63,7 +63,7 @@ export const updateProducto = async (id, producto) => {
 };
 
 // Eliminar un producto terminado
-export const deleteProducto = async (id) => {
+export const deleteProductoTerminado = async (id) => {
     try {
         await axios.delete(`${API_URL}/${id}`, {  // Ruta DELETE
             headers: getAuthHeaders(),

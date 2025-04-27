@@ -5,11 +5,11 @@ import {
   CartesianGrid, Tooltip, Legend, ResponsiveContainer
 } from 'recharts';
 
-import { getProductos, addProducto, updateProducto, deleteProducto } from '../services/ProductoService';
+import { getProductosTerminados, addProductoTerminadoTerminado, updateProductoTerminadoTerminado, deleteProductoTerminadoTerminado } from '../services/ProductoTerminadoService';
 import { getAlmacenes, addAlmacen, updateAlmacen, deleteAlmacen } from '../services/AlmacenService';
 import { getMateriasPrimas, addMateriaPrima, updateMateriaPrima, deleteMateriaPrima } from '../services/MateriaPrimaService';
 import { getMovimientosInventarioMP, addMovimientoInventarioMP, updateMovimientoInventarioMP, deleteMovimientoInventarioMP } from '../services/MovimientoInventarioMPService';
-
+import { getMovimientosInventarioPT } from '../services/MovimientoInventarioPTService';
 // Colores para los gráficos
 const COLORS = ['#4e79a7', '#f28e2c', '#76b7b2', '#e15759', '#59a14f'];
 
@@ -211,8 +211,27 @@ const Dashboard = () => {
     console.log("Stock por materia prima: ", stockPorMateriaPrima);
     return stockPorMateriaPrima;
   };
-
-
+  const calcularStockProductos = (movimientos) => {
+    const stockPorProducto = {};
+  
+    movimientos.forEach((movimiento) => {
+      const { productoTerminadoId, cantidad, tipoMovimiento } = movimiento;
+  
+      if (!stockPorProducto[productoTerminadoId]) {
+        stockPorProducto[productoTerminadoId] = 0;
+      }
+  
+      if (tipoMovimiento === "Entrada") {
+        stockPorProducto[productoTerminadoId] += cantidad;
+      } else if (tipoMovimiento === "Salida") {
+        stockPorProducto[productoTerminadoId] -= cantidad;
+      }
+    });
+  
+    console.log("Stock por producto terminado: ", stockPorProducto);
+    return stockPorProducto;
+  };
+  const [stockRealProductos, setStockRealProductos] = useState({});
   const [stockReal, setStockReal] = useState({});
 
   useEffect(() => {
@@ -223,10 +242,15 @@ const Dashboard = () => {
         // Obtener las materias primas
         const materiasData = await getMateriasPrimas();
   
-        // Obtener los movimientos de inventario
+        // Obtener los productos terminados
+        const productosData = await getProductosTerminados();
+        setTotalProductos(productosData.length);
+        setTotalMateriasPrimas(materiasData.length);
+  
+        // Obtener los movimientos de inventario de materias primas
         const movimientosData = await getMovimientosInventarioMP();
   
-        // Calcular el stock real en base a los movimientos
+        // Calcular el stock real de materias primas en base a los movimientos
         const stockCalculado = calcularStock(movimientosData);
         setStockReal(stockCalculado);  // Actualiza el estado con el stock calculado
   
@@ -236,36 +260,48 @@ const Dashboard = () => {
           const materiaPrima = materiasData.find(mp => mp.id === parseInt(materiaPrimaId));
   
           return {
-            name: materiaPrima ? materiaPrima.nombre : `Materia Prima ${materiaPrimaId}`,  // Usamos el nombre en vez del ID
+            name: materiaPrima ? materiaPrima.nombre : `Materia Prima ${materiaPrimaId}`,
             value: stockCalculado[materiaPrimaId]
           };
         });
   
         console.log("Distribución de materias primas:", distribucionMPData);
-        setDistribucionMPData(distribucionMPData);  // Actualiza el estado de distribucionMPData
+        setDistribucionMPData(distribucionMPData);
   
-        // Obtener otros datos de productos y almacenes
-        const productosData = await getProductos();
-        setTotalProductos(productosData.length);
+        // Obtener los movimientos de inventario de productos terminados
+        const movimientosPTData = await getMovimientosInventarioPT();
   
-setTotalMateriasPrimas(materiasData.length)
-
-        // Filtrar productos con stock bajo
-        const stockBajo = productosData.filter(p => p.stock < 5);
+        // Calcular el stock real de productos en base a los movimientos
+        const stockCalculadoPT = calcularStockProductos(movimientosPTData);
+        setStockRealProductos(stockCalculadoPT);
+  
+        // Crear datos para el gráfico de distribución de productos
+        const distribucionProductosData = Object.keys(stockCalculadoPT).map((productoId) => {
+          // Buscar el nombre del producto usando su ID
+          const producto = productosData.find(p => p.id === parseInt(productoId));
+          
+          return {
+            name: producto ? producto.nombre : `Producto ${productoId}`,
+            value: stockCalculadoPT[productoId]
+          };
+        });
+  
+        console.log("Distribución de productos terminados:", distribucionProductosData);
+        setDistribucionProductos(distribucionProductosData);
+  
+        // Filtrar productos con stock bajo basado en el stock calculado
+        const stockBajo = productosData.filter(p => {
+          const stockActual = stockCalculadoPT[p.id] || 0;
+          return stockActual < 5;
+        });
         setProductosStockBajo(stockBajo);
   
-        // Crear datos para gráfico de distribución de productos
-        const categoriasCounts = productosData.reduce((acc, producto) => {
-          acc[producto.categoria] = (acc[producto.categoria] || 0) + 1;
-          return acc;
-        }, {});
-  
-        const distribucionData = Object.keys(categoriasCounts).map(categoria => ({
-          name: categoria,
-          value: categoriasCounts[categoria],
-        }));
-  
-        setDistribucionProductos(distribucionData);
+        // Filtrar materias primas con stock bajo basado en el stock calculado
+        const materiasBajo = materiasData.filter(mp => {
+          const stockActual = stockCalculado[mp.id] || 0;
+          return stockActual < 5;
+        });
+        setMateriasPrimasStockBajo(materiasBajo);
   
         // Obtener almacenes
         const almacenesData = await getAlmacenes();
@@ -283,7 +319,6 @@ setTotalMateriasPrimas(materiasData.length)
   
     fetchData();
   }, []);
-  
 
 
   const handleAlmacenChange = (e) => {
@@ -506,35 +541,35 @@ setTotalMateriasPrimas(materiasData.length)
                 </div>
               </div>
               <div style={{ height: '240px' }}>
-              <ResponsiveContainer width="100%" height="100%">
-  <BarChart
-    data={distribucionMPData}
-    margin={{
-      top: 5,
-      right: 30,
-      left: 20,
-      bottom: 5,
-    }}
-  >
-    {/* Cambiar el color de la cuadrícula */}
-    <CartesianGrid strokeDasharray="3 3" stroke="#dcdcdc" /> {/* Cambié el color de la cuadrícula a un gris claro */}
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart
+                    data={distribucionMPData}
+                    margin={{
+                      top: 5,
+                      right: 30,
+                      left: 20,
+                      bottom: 5,
+                    }}
+                  >
+                    {/* Cambiar el color de la cuadrícula */}
+                    <CartesianGrid strokeDasharray="3 3" stroke="#dcdcdc" /> {/* Cambié el color de la cuadrícula a un gris claro */}
 
-    {/* Cambiar el color de los ticks en el eje X */}
-    <XAxis dataKey="name" tick={{ fill: '#2c3e50' }} /> {/* Color oscuro para los ticks del eje X */}
+                    {/* Cambiar el color de los ticks en el eje X */}
+                    <XAxis dataKey="name" tick={{ fill: '#2c3e50' }} /> {/* Color oscuro para los ticks del eje X */}
 
-    {/* Cambiar el color de los ticks en el eje Y */}
-    <YAxis tick={{ fill: '#2c3e50' }} /> {/* Color oscuro para los ticks del eje Y */}
+                    {/* Cambiar el color de los ticks en el eje Y */}
+                    <YAxis tick={{ fill: '#2c3e50' }} /> {/* Color oscuro para los ticks del eje Y */}
 
-    {/* Tooltip personalizado */}
-    <Tooltip content={<CustomTooltip />} />
+                    {/* Tooltip personalizado */}
+                    <Tooltip content={<CustomTooltip />} />
 
-    {/* Leyenda */}
-    <Legend iconType="circle" iconSize={10} />
-    
-    {/* Cambiar el color de las barras */}
-    <Bar dataKey="value" fill="#ff6347" /> {/* Color rojo tomate para las barras */}
-  </BarChart>
-</ResponsiveContainer>
+                    {/* Leyenda */}
+                    <Legend iconType="circle" iconSize={10} />
+
+                    {/* Cambiar el color de las barras */}
+                    <Bar dataKey="value" fill="#ff6347" /> {/* Color rojo tomate para las barras */}
+                  </BarChart>
+                </ResponsiveContainer>
 
               </div>
             </div>
