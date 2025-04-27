@@ -574,16 +574,17 @@ const MovimientoInventario = () => {
                     </p>
 
                     {/* Botones para elegir tipo de movimiento a registrar */}
-                    <Box sx={{
-                        display: 'flex',
-                        gap: '10px',
-                        marginBottom: 2,
-                        width: '100%'
-                    }}>
+                    <div
+                        style={{
+                            display: 'flex',        // Alinea los elementos horizontalmente
+                            gap: '10px',            // Espacio entre los botones
+                            marginBottom: '16px',   // Espacio debajo del contenedor
+                            width: '100%',          // Asegura que el contenedor ocupe todo el ancho disponible
+                        }}
+                    >
                         <Button
                             fullWidth
                             variant={tipoInventarioForm === 'productosTerminados' ? 'contained' : 'outlined'}
-
                             sx={{
                                 backgroundColor: tipoInventarioForm === 'productosTerminados' ? '#7c3aed' : 'transparent',
                                 color: tipoInventarioForm === 'productosTerminados' ? 'white' : '#0F172A',
@@ -591,14 +592,14 @@ const MovimientoInventario = () => {
                                     backgroundColor: tipoInventarioForm === 'productosTerminados' ? '#6d28d9' : '#c7c7ff',
                                     boxShadow: tipoInventarioForm === 'productosTerminados' ? '0 2px 5px rgba(0,0,0,0.2)' : 'none',
                                     transform: 'translateY(-1px)',
-                                    transition: 'all 0.2s ease-in-out'
+                                    //transition: 'all 0.2s ease-in-out',
                                 },
                                 borderRadius: '8px',
                                 textTransform: 'none',
                                 fontWeight: 500,
                                 padding: '10px',
                                 border: tipoInventarioForm === 'productosTerminados' ? 'none' : '1px solid #e2e8f0',
-                                transition: 'all 0.2s ease-in-out'
+                                //transition: 'all 0.2s ease-in-out',
                             }}
                             onClick={() => handleChangeTipoInventarioForm(null, 'productosTerminados')}
                         >
@@ -608,26 +609,27 @@ const MovimientoInventario = () => {
                             fullWidth
                             variant={tipoInventarioForm === 'materiasPrimas' ? 'contained' : 'outlined'}
                             sx={{
-                                backgroundColor: tipoInventarioForm === 'materiasPrimas' ? '7c3aed' : 'transparent',
+                                backgroundColor: tipoInventarioForm === 'materiasPrimas' ? '#7c3aed' : 'transparent',
                                 color: tipoInventarioForm === 'materiasPrimas' ? 'white' : '#0F172A',
                                 '&:hover': {
                                     backgroundColor: tipoInventarioForm === 'materiasPrimas' ? '#6d28d9' : '#c7c7ff',
                                     borderColor: tipoInventarioForm === 'materiasPrimas' ? '0 2px 5px rgba(0,0,0,0.2)' : 'none',
                                     transform: 'translateY(-1px)',
-                                    transition: 'all 0.2s ease-in-out'
+                                    //transition: 'all 0.2s ease-in-out',
                                 },
                                 borderRadius: '8px',
                                 textTransform: 'none',
                                 fontWeight: 500,
                                 padding: '10px',
                                 border: '1px solid #e2e8f0',
-                                transition: 'all 0.2s ease-in-out'
+                                //transition: 'all 0.2s ease-in-out',
                             }}
                             onClick={() => handleChangeTipoInventarioForm(null, 'materiasPrimas')}
                         >
                             Materias Primas
                         </Button>
-                    </Box>
+                    </div>
+
 
                     {/* Formulario para Materias Primas */}
                     {tipoInventarioForm === 'materiasPrimas' && (
