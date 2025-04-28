@@ -14,7 +14,8 @@ import {
   LogOut,
   Warehouse,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  Boxes
 } from "lucide-react";
 
 const SideMenu = ({ isCollapsed, toggleCollapse }) => {
@@ -67,7 +68,7 @@ const SideMenu = ({ isCollapsed, toggleCollapse }) => {
         </Link>
 
         <Link to="/materias-primas" className="menu-item" data-tooltip="Materias Primas">
-          <span className="menu-icon"><Truck /></span>
+          <span className="menu-icon"><Boxes /></span>
           {!isCollapsed && <span>Materias Primas</span>}
         </Link>
 
@@ -77,7 +78,7 @@ const SideMenu = ({ isCollapsed, toggleCollapse }) => {
         </Link>
 
         <Link to="/proveedores" className="menu-item" data-tooltip="Proveedores">
-          <span className="menu-icon"><Users /></span>
+          <span className="menu-icon"><Truck /></span>
           {!isCollapsed && <span>Proveedores</span>}
         </Link>
 

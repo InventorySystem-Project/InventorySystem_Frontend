@@ -42,10 +42,12 @@ const TopBar = ({ isCollapsed, toggleCollapse }) => {
   return (
     <div className={`top-bar ${isCollapsed ? 'collapsed' : ''}`}>
       <div className="breadcrumbs">{generateBreadcrumbs()}</div>
+      {/*
       <div className="search-container">
         <input type="text" placeholder="Buscar" />
         <IoSearchOutline className="search-icon" />
       </div>
+      */}
       <div className="user-profile">
         <FaBell className="notification-icon" />
         <div className="profile-circle" onClick={() => setOpenUserMenu(!openUserMenu)}>
@@ -56,9 +58,10 @@ const TopBar = ({ isCollapsed, toggleCollapse }) => {
             <p><strong>Usuario: </strong> {username}</p>
             <p><strong>Rol: </strong> {role}</p>
           </div>
+          {/*
           <button onClick={handleLogout} className="logout-button">
-            <FaPowerOff /> Cerrar sesión
-          </button>
+            {<FaPowerOff /} Cerrar sesión
+          </button>*/} 
         </div>
       </div>
     </div>

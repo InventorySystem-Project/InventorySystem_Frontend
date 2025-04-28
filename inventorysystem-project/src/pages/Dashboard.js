@@ -5,7 +5,27 @@ import {
   PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis,
   CartesianGrid, Tooltip, Legend, ResponsiveContainer, ReferenceLine
 } from 'recharts';
-
+import {
+  Button,
+  Modal,
+  Box,
+  TextField,
+  MenuItem,
+  Table,
+  TableHead,
+  TableRow,
+  TableCell,
+  TableBody,
+  Pagination,
+  Tabs,
+  Container,
+  Tab
+} from '@mui/material';
+import {
+  Package,
+  Boxes
+} from "lucide-react";
+import ReactLoading from 'react-loading';
 import { getProductosTerminados, addProductoTerminadoTerminado, updateProductoTerminadoTerminado, deleteProductoTerminadoTerminado } from '../services/ProductoTerminadoService';
 import { getAlmacenes, addAlmacen, updateAlmacen, deleteAlmacen } from '../services/AlmacenService';
 import { getMateriasPrimas, addMateriaPrima, updateMateriaPrima, deleteMateriaPrima } from '../services/MateriaPrimaService';
@@ -190,7 +210,7 @@ const styles = {
     '0%': { transform: 'rotate(0deg)' },
     '100%': { transform: 'rotate(360deg)' }
   },
-   // Estilo del fondo opaco (overlay)
+  // Estilo del fondo opaco (overlay)
   modalOverlay: {
     position: 'fixed',
     top: 0,
@@ -211,7 +231,25 @@ const styles = {
     textAlign: 'center',
     width: '300px',  // Ajusta el ancho según el diseño
     boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
-  }
+
+  },
+  loadingContainer: {
+    display: 'flex',
+    flexDirection: 'column',  // Coloca el texto y el spinner en columna
+    justifyContent: 'center',
+    alignItems: 'center', // Centra el contenido
+    gap: '10px', // Espacio entre el texto y el spinner
+  },
+  cancelButton: {
+    backgroundColor: '#e74c3c', // Rojo para destacar
+    color: 'white',
+    padding: '8px 15px',
+    borderRadius: '4px',
+    fontSize: '14px',
+    cursor: 'pointer',
+    border: 'none',
+    marginTop: '10px',  // Espacio entre el spinner y el botón
+  },
 };
 
 const Dashboard = () => {
@@ -282,7 +320,7 @@ const Dashboard = () => {
     console.log("Stock por materia prima: ", stockPorMateriaPrima);
     return stockPorMateriaPrima;
   };
-  
+
   const calcularStockProductos = (movimientos) => {
     const stockPorProducto = {};
 
@@ -633,166 +671,184 @@ const Dashboard = () => {
       {/* Contadores de totales */}
       <div style={styles.statsWrapper}> {/* Contenedor para las tarjetas centradas */}
         <div style={styles.statCardTop}>
-          <div style={styles.statLabelTop}>Total Productos</div>
+          <div style={styles.statLabelTop}>
+            <Boxes size={18} style={{ marginRight: '8px', color: '#3498db' }} /> {/* Icono de Boxes */}
+            Total Productos
+          </div>
           <div style={styles.statValueTop}>{totalProductos}</div>
         </div>
         <div style={styles.statCardTop}>
-          <div style={styles.statLabelTop}>Total Materias Primas</div>
+          <div style={styles.statLabelTop}>
+            <Package size={18} style={{ marginRight: '8px', color: '#3498db' }} /> {/* Icono de Package */}
+            Total Materias Primas
+          </div>
           <div style={styles.statValueTop}>{totalMateriasPrimas}</div>
         </div>
       </div>
 
 
-
-
       {/* Productos y Materias Primas con stock bajo */}
       <div style={styles.statsContainer}>
-  <div style={{ ...styles.statCard, overflow: 'auto', maxHeight: '300px' }}>
-    <h2 style={styles.listTitle}>Productos con Stock Bajo</h2>
-    {productosStockBajo.length > 0 ? (
-      <div>
-        {productosStockBajo.map(producto => (
-          <div key={producto.id} style={{
-            padding: '10px',
-            borderBottom: '1px solid #e0e0e0',
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-          }}>
-            <div style={{ flex: 1, marginRight: '10px' }}>
-              <div style={{ color: '#333' }}>{producto.nombre}</div>
-              <div style={{ fontSize: '12px', color: '#95a5a6' }}>
-                Categoría: {producto.tipo}
-              </div>
-            </div>
-            <div style={{
-              display: 'flex',
-              justifyContent: 'flex-end',
-              gap: '10px',
-              alignItems: 'center',
-            }}>
-              <div style={{
-                backgroundColor: '#e74c3c',
-                color: 'white',
-                padding: '2px 6px',
-                borderRadius: '4px',
-                fontSize: '12px',
-                width: '100px',
-                height: '40px',
-                display: 'flex',
-                justifyContent: 'center',
-                alignItems: 'center',
-              }}>
-                <div>Stock: {stockRealProductos[producto.id] || 0}</div>
-              </div>
-              {/* Botón de automatización */}
-              <button
-                style={{
-                  backgroundColor: '#3498db', // Azul
-                  color: 'white',
-                  padding: '4px 10px',
-                  borderRadius: '4px',
-                  fontSize: '12px',
-                  cursor: 'pointer',
-                  border: 'none',
-                  width: '100px',
-                  display: 'flex'
-                }}
-                onClick={() => iniciarAutomatizacion(producto.nombre)} // Llamada a iniciar automatización
-              >
-                Iniciar Automatización
-              </button>
-            </div>
-          </div>
-        ))}
-      </div>
-    ) : (
-      <div style={styles.listEmpty}>No hay productos con stock bajo</div>
-    )}
-  </div>
-
-  <div style={{ ...styles.statCard, overflow: 'auto', maxHeight: '300px' }}>
-    <h2 style={styles.listTitle}>Materias Primas con Stock Bajo</h2>
-    {materiasPrimasStockBajo.length > 0 ? (
-      <div>
-        {materiasPrimasStockBajo.map(materia => (
-          <div key={materia.id} style={{
-            padding: '10px',
-            borderBottom: '1px solid #e0e0e0',
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-          }}>
-            <div style={{ flex: 1, marginRight: '10px' }}>
-              <div style={{ color: '#333' }}>{materia.nombre}</div>
-              <div style={{ fontSize: '12px', color: '#95a5a6' }}>
-                Unidad: {materia.unidad}
-              </div>
-            </div>
-            <div style={{
-              display: 'flex',
-              justifyContent: 'flex-end',
-              gap: '10px',
-              alignItems: 'center',
-            }}>
-              <div style={{
-                backgroundColor: '#e74c3c',
-                color: 'white',
-                padding: '2px 6px',
-                borderRadius: '4px',
-                fontSize: '12px',
-                width: '100px',
-                height: '40px',
-                display: 'flex',
-                justifyContent: 'center',
-                alignItems: 'center',
-              }}>
-                <div>Stock: {stockReal[materia.id] || 0}</div>
-              </div>
-              {/* Botón de automatización */}
-              <button
-                style={{
-                  backgroundColor: '#3498db', // Azul
-                  color: 'white',
-                  padding: '4px 10px',
-                  borderRadius: '4px',
-                  fontSize: '12px',
-                  cursor: 'pointer',
-                  border: 'none',
-                  width: '100px',
-                  display: 'flex'
-                }}
-                onClick={() => iniciarAutomatizacion(materia.nombre)} // Llamada a iniciar automatización
-              >
-                Iniciar Automatización
-              </button>
-            </div>
-          </div>
-        ))}
-      </div>
-    ) : (
-      <div style={styles.listEmpty}>No hay materias primas con stock bajo</div>
-    )}
-  </div>
-</div>
-
-{/* Mostrar el formulario cuando showForm sea verdadero */}
-{showForm && (
-      <div style={styles.modalOverlay}>
-        <div style={styles.modalContainer}>
-          {loading ? (
+        <div style={{ ...styles.statCard, overflow: 'auto', maxHeight: '300px' }}>
+          <h2 style={styles.listTitle}>Productos con Stock Bajo</h2>
+          {productosStockBajo.length > 0 ? (
             <div>
-              <div className="loader" style={styles.loader}></div>
-              <p>Iniciando automatización de Orden de compra...</p>
+              {productosStockBajo.map(producto => (
+                <div key={producto.id} style={{
+                  padding: '10px',
+                  borderBottom: '1px solid #e0e0e0',
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                }}>
+                  <div style={{ flex: 1, marginRight: '10px' }}>
+                    <div style={{ color: '#333' }}>{producto.nombre}</div>
+                    <div style={{ fontSize: '12px', color: '#95a5a6' }}>
+                      Categoría: {producto.tipo}
+                    </div>
+                  </div>
+                  <div style={{
+                    display: 'flex',
+                    justifyContent: 'flex-end',
+                    gap: '10px',
+                    alignItems: 'center',
+                  }}>
+                    <div style={{
+                      backgroundColor: '#e74c3c',
+                      color: 'white',
+                      padding: '2px 6px',
+                      borderRadius: '4px',
+                      fontSize: '12px',
+                      width: '100px',
+                      height: '40px',
+                      display: 'flex',
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                    }}>
+                      <div>Stock: {stockRealProductos[producto.id] || 0}</div>
+                    </div>
+                    {/* Botón de automatización */}
+                    <button
+                      style={{
+                        backgroundColor: '#3498db', // Azul
+                        color: 'white',
+                        padding: '4px 10px',
+                        borderRadius: '4px',
+                        fontSize: '12px',
+                        cursor: 'pointer',
+                        border: 'none',
+                        width: '100px',
+                        display: 'flex'
+                      }}
+                      onClick={() => iniciarAutomatizacion(producto.nombre)} // Llamada a iniciar automatización
+                    >
+                      Iniciar Automatización
+                    </button>
+                  </div>
+                </div>
+              ))}
             </div>
           ) : (
+            <div style={styles.listEmpty}>No hay productos con stock bajo</div>
+          )}
+        </div>
+
+        <div style={{ ...styles.statCard, overflow: 'auto', maxHeight: '300px' }}>
+          <h2 style={styles.listTitle}>Materias Primas con Stock Bajo</h2>
+          {materiasPrimasStockBajo.length > 0 ? (
             <div>
-              <p>La automatización fue completada exitosamente.</p>
+              {materiasPrimasStockBajo.map(materia => (
+                <div key={materia.id} style={{
+                  padding: '10px',
+                  borderBottom: '1px solid #e0e0e0',
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                }}>
+                  <div style={{ flex: 1, marginRight: '10px' }}>
+                    <div style={{ color: '#333' }}>{materia.nombre}</div>
+                    <div style={{ fontSize: '12px', color: '#95a5a6' }}>
+                      Unidad: {materia.unidad}
+                    </div>
+                  </div>
+                  <div style={{
+                    display: 'flex',
+                    justifyContent: 'flex-end',
+                    gap: '10px',
+                    alignItems: 'center',
+                  }}>
+                    <div style={{
+                      backgroundColor: '#e74c3c',
+                      color: 'white',
+                      padding: '2px 6px',
+                      borderRadius: '4px',
+                      fontSize: '12px',
+                      width: '100px',
+                      height: '40px',
+                      display: 'flex',
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                    }}>
+                      <div>Stock: {stockReal[materia.id] || 0}</div>
+                    </div>
+                    {/* Botón de automatización */}
+                    <button
+                      style={{
+                        backgroundColor: '#3498db', // Azul
+                        color: 'white',
+                        padding: '4px 10px',
+                        borderRadius: '4px',
+                        fontSize: '12px',
+                        cursor: 'pointer',
+                        border: 'none',
+                        width: '100px',
+                        display: 'flex'
+                      }}
+                      onClick={() => iniciarAutomatizacion(materia.nombre)} // Llamada a iniciar automatización
+                    >
+                      Iniciar Automatización
+                    </button>
+
+                  </div>
+                </div>
+              ))}
             </div>
+          ) : (
+            <div style={styles.listEmpty}>No hay materias primas con stock bajo</div>
           )}
         </div>
       </div>
-    )}
+
+      {/* Mostrar el formulario cuando showForm sea verdadero */}
+      {showForm && (
+  <div style={styles.modalOverlay}>
+    <div style={styles.modalContainer}>
+      {loading ? (
+        <div style={styles.loadingContainer}>
+          <p>Iniciando automatización de Orden de compra...</p>
+          <ReactLoading type="spin" color="#3498db" height={50} width={50} />
+          {/* Botón de cancelar */}
+          <button 
+            style={styles.cancelButton} 
+            onClick={() => { 
+              setLoading(false); 
+              setShowForm(false); 
+            }}
+          >
+            Cancelar
+          </button>
+        </div>
+      ) : (
+        <div>
+          <p>La automatización fue completada exitosamente.</p>
+        </div>
+      )}
+    </div>
+  </div>
+)}
+
+
+
 
 
 
@@ -862,7 +918,7 @@ const Dashboard = () => {
                     labelLine={true}
                     label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
                     outerRadius={100}
-                    fill="#4e79a7"
+                    fill="#2c90e5"
                     dataKey="value"
                   >
                     {productChartData.map((entry, index) => (
