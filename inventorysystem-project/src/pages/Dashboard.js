@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import {
   PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis,
-  CartesianGrid, Tooltip, Legend, ResponsiveContainer
+  CartesianGrid, Tooltip, Legend, ResponsiveContainer, ReferenceLine
 } from 'recharts';
 
 import { getProductosTerminados, addProductoTerminadoTerminado, updateProductoTerminadoTerminado, deleteProductoTerminadoTerminado } from '../services/ProductoTerminadoService';
@@ -13,6 +13,7 @@ import { getMovimientosInventarioMP, addMovimientoInventarioMP, updateMovimiento
 import { getMovimientosInventarioPT } from '../services/MovimientoInventarioPTService';
 // Colores para los gráficos
 const COLORS = ['#4e79a7', '#f28e2c', '#76b7b2', '#e15759', '#59a14f'];
+
 
 // Estilos definidos directamente en el componente
 const styles = {
@@ -176,6 +177,40 @@ const styles = {
     chartsContainer: {
       gridTemplateColumns: '1fr'
     }
+  },
+  loader: {
+    border: '5px solid #f3f3f3',
+    borderTop: '5px solid #3498db',
+    borderRadius: '50%',
+    width: '50px',
+    height: '50px',
+    animation: 'spin 2s linear infinite'
+  },
+  '@keyframes spin': {
+    '0%': { transform: 'rotate(0deg)' },
+    '100%': { transform: 'rotate(360deg)' }
+  },
+   // Estilo del fondo opaco (overlay)
+  modalOverlay: {
+    position: 'fixed',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',  // Fondo oscuro semitransparente
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 1000,  // Asegura que el modal esté sobre el contenido principal
+  },
+  // Estilo del contenedor del popup/modal
+  modalContainer: {
+    backgroundColor: '#fff',
+    padding: '20px',
+    borderRadius: '8px',
+    textAlign: 'center',
+    width: '300px',  // Ajusta el ancho según el diseño
+    boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
   }
 };
 
@@ -210,6 +245,23 @@ const Dashboard = () => {
   const [materiasPrimas, setMateriasPrimas] = useState([]);
   const [productos, setProductos] = useState([]);
 
+  const [loading, setLoading] = useState(false);  // Estado para el círculo de carga
+  const [showForm, setShowForm] = useState(false); // Estado para mostrar el formulario
+
+  const iniciarAutomatizacion = (nombre) => {
+    setLoading(true);
+    setShowForm(true);
+
+    // Simulando un proceso de automatización
+    setTimeout(() => {
+      setLoading(false);
+      //alert(`Iniciando automatización para ${nombre}`);
+      setShowForm(false); // Cierra el popup después de 3 segundos
+    }, 3000);  // Simulación de 3 segundos de automatización
+  };
+
+
+
   const calcularStock = (movimientos) => {
     const stockPorMateriaPrima = {};
 
@@ -230,7 +282,7 @@ const Dashboard = () => {
     console.log("Stock por materia prima: ", stockPorMateriaPrima);
     return stockPorMateriaPrima;
   };
-
+  
   const calcularStockProductos = (movimientos) => {
     const stockPorProducto = {};
 
@@ -313,27 +365,27 @@ const Dashboard = () => {
     const fetchData = async () => {
       try {
         setIsLoading(true);
-  
+
         // Obtener los productos y las materias primas
         const materiasData = await getMateriasPrimas();
         const productosData = await getProductosTerminados();
         console.log('Productos:', productosData); // Verifica que productosData tenga el nombre
         console.log('Materias Primas:', materiasData); // Verifica que materiasData tenga el nombre
-  
+
         // Guardar los productos y materias primas
         setTotalProductos(productosData.length);
         setTotalMateriasPrimas(materiasData.length);
         setMateriasPrimas(materiasData);
         setProductos(productosData);
-  
+
         // Obtener los movimientos de inventario de materias primas
         const movimientosMPData = await getMovimientosInventarioMP();
         setMovimientosMP(movimientosMPData);
-  
+
         // Calcular el stock real de materias primas en base a los movimientos
         const stockCalculado = calcularStock(movimientosMPData);
         setStockReal(stockCalculado);
-  
+
         // Crear datos para el gráfico de distribución de materias primas
         const distribucionMPData = Object.keys(stockCalculado).map((materiaPrimaId) => {
           // Buscar el nombre de la materia prima usando su ID
@@ -345,15 +397,15 @@ const Dashboard = () => {
         });
         console.log("Distribución de materias primas:", distribucionMPData);
         setDistribucionMPData(distribucionMPData);
-  
+
         // Obtener los movimientos de inventario de productos terminados
         const movimientosPTData = await getMovimientosInventarioPT();
         setMovimientosPT(movimientosPTData);
-  
+
         // Calcular el stock real de productos en base a los movimientos
         const stockCalculadoPT = calcularStockProductos(movimientosPTData);
         setStockRealProductos(stockCalculadoPT);
-  
+
         // Crear datos para el gráfico de distribución de productos
         const distribucionProductosData = Object.keys(stockCalculadoPT).map((productoId) => {
           // Buscar el nombre del producto usando su ID
@@ -365,46 +417,46 @@ const Dashboard = () => {
         });
         console.log("Distribución de productos terminados:", distribucionProductosData);
         setDistribucionProductos(distribucionProductosData);
-  
+
         // Filtrar productos con stock bajo basado en el stock calculado
         const stockBajo = productosData.filter(p => {
           const stockActual = stockCalculadoPT[p.id] || 0;
           return stockActual < 5;
         });
         setProductosStockBajo(stockBajo);
-  
+
         // Filtrar materias primas con stock bajo basado en el stock calculado
         const materiasBajo = materiasData.filter(mp => {
           const stockActual = stockCalculado[mp.id] || 0;
           return stockActual < 5;
         });
         setMateriasPrimasStockBajo(materiasBajo);
-  
+
         // Obtener almacenes
         const almacenesData = await getAlmacenes();
         setAlmacenes(almacenesData);
         if (almacenesData.length > 0) {
           setAlmacenSeleccionado(almacenesData[0].id);
         }
-  
+
         // Procesar datos para los gráficos de movimientos
         // Aquí pasamos `productosData` y `materiasData` a la función `agruparMovimientosPorItem`
         const datosMateriasPrimas = agruparMovimientosPorItem(movimientosMPData, "materiaPrimaId", productosData, materiasData);
         const datosProductos = agruparMovimientosPorItem(movimientosPTData, "productoTerminadoId", productosData, materiasData);
-  
+
         setDatosMovimientosEntradaMP(datosMateriasPrimas);
         setDatosMovimientosEntradaPT(datosProductos);
-  
+
       } catch (error) {
         console.error("Error al cargar datos del dashboard:", error);
       } finally {
         setIsLoading(false);
       }
     };
-  
+
     fetchData();
   }, []);
-  
+
 
 
   // Añade esta función a tu componente
@@ -462,10 +514,10 @@ const Dashboard = () => {
   // Nueva función para agrupar movimientos por ítem específico
   const agruparMovimientosPorItem = (movimientos, idKey, productosData, materiasPrimas) => {
     const agrupados = {};
-  
+
     movimientos.forEach(movimiento => {
       let itemId, itemName;
-  
+
       // Si el idKey es "materiaPrimaId", buscamos el nombre en materiasPrimas
       if (idKey === "materiaPrimaId") {
         itemId = movimiento[idKey];
@@ -476,7 +528,7 @@ const Dashboard = () => {
         const producto = productosData.find(p => p.id === parseInt(itemId));
         itemName = producto ? producto.nombre : `Producto ${itemId}`;
       }
-  
+
       // Si no existe el ítem, lo inicializamos
       if (!agrupados[itemName]) {
         agrupados[itemName] = {
@@ -484,7 +536,7 @@ const Dashboard = () => {
           Salidas: 0
         };
       }
-  
+
       // Sumar la cantidad dependiendo del tipo de movimiento
       if (movimiento.tipoMovimiento === "Entrada") {
         agrupados[itemName].Entradas += movimiento.cantidad;
@@ -492,7 +544,7 @@ const Dashboard = () => {
         agrupados[itemName].Salidas += movimiento.cantidad;
       }
     });
-  
+
     // Convertir el objeto agrupado en formato para gráfico
     return Object.keys(agrupados).map(name => ({
       name,
@@ -500,10 +552,10 @@ const Dashboard = () => {
       Salidas: agrupados[name].Salidas
     }));
   };
-  
-  
-  
-  
+
+
+
+
   // Función para obtener el nombre del ítem
   const getItemName = (id, idKey) => {
     const parsedId = parseInt(id);
@@ -590,76 +642,161 @@ const Dashboard = () => {
         </div>
       </div>
 
+
+
+
       {/* Productos y Materias Primas con stock bajo */}
       <div style={styles.statsContainer}>
-        <div style={{ ...styles.statCard, overflow: 'auto', maxHeight: '300px' }}>
-          <h2 style={styles.listTitle}>Productos con Stock Bajo</h2>
-          {productosStockBajo.length > 0 ? (
-            <div>
-              {productosStockBajo.map(producto => (
-                <div key={producto.id} style={{
-                  padding: '10px',
-                  borderBottom: '1px solid #e0e0e0',
-                  display: 'flex',
-                  justifyContent: 'space-between'
-                }}>
-                  <div>
-                    <div style={{ color: '#333' }}>{producto.nombre}</div>
-                    <div style={{ fontSize: '12px', color: '#95a5a6' }}>
-                      Categoría: {producto.categoria}
-                    </div>
-                  </div>
-                  <div style={{
-                    backgroundColor: '#e74c3c',
-                    color: 'white',
-                    padding: '2px 6px',
-                    borderRadius: '4px',
-                    fontSize: '12px'
-                  }}>
-                    Stock: {producto.stock}
-                  </div>
-                </div>
-              ))}
+  <div style={{ ...styles.statCard, overflow: 'auto', maxHeight: '300px' }}>
+    <h2 style={styles.listTitle}>Productos con Stock Bajo</h2>
+    {productosStockBajo.length > 0 ? (
+      <div>
+        {productosStockBajo.map(producto => (
+          <div key={producto.id} style={{
+            padding: '10px',
+            borderBottom: '1px solid #e0e0e0',
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+          }}>
+            <div style={{ flex: 1, marginRight: '10px' }}>
+              <div style={{ color: '#333' }}>{producto.nombre}</div>
+              <div style={{ fontSize: '12px', color: '#95a5a6' }}>
+                Categoría: {producto.tipo}
+              </div>
             </div>
-          ) : (
-            <div style={styles.listEmpty}>No hay productos con stock bajo</div>
-          )}
-        </div>
+            <div style={{
+              display: 'flex',
+              justifyContent: 'flex-end',
+              gap: '10px',
+              alignItems: 'center',
+            }}>
+              <div style={{
+                backgroundColor: '#e74c3c',
+                color: 'white',
+                padding: '2px 6px',
+                borderRadius: '4px',
+                fontSize: '12px',
+                width: '100px',
+                height: '40px',
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+              }}>
+                <div>Stock: {stockRealProductos[producto.id] || 0}</div>
+              </div>
+              {/* Botón de automatización */}
+              <button
+                style={{
+                  backgroundColor: '#3498db', // Azul
+                  color: 'white',
+                  padding: '4px 10px',
+                  borderRadius: '4px',
+                  fontSize: '12px',
+                  cursor: 'pointer',
+                  border: 'none',
+                  width: '100px',
+                  display: 'flex'
+                }}
+                onClick={() => iniciarAutomatizacion(producto.nombre)} // Llamada a iniciar automatización
+              >
+                Iniciar Automatización
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>
+    ) : (
+      <div style={styles.listEmpty}>No hay productos con stock bajo</div>
+    )}
+  </div>
 
-        <div style={{ ...styles.statCard, overflow: 'auto', maxHeight: '300px' }}>
-          <h2 style={styles.listTitle}>Materias Primas con stock bajo</h2>
-          {materiasPrimasStockBajo.length > 0 ? (
+  <div style={{ ...styles.statCard, overflow: 'auto', maxHeight: '300px' }}>
+    <h2 style={styles.listTitle}>Materias Primas con Stock Bajo</h2>
+    {materiasPrimasStockBajo.length > 0 ? (
+      <div>
+        {materiasPrimasStockBajo.map(materia => (
+          <div key={materia.id} style={{
+            padding: '10px',
+            borderBottom: '1px solid #e0e0e0',
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+          }}>
+            <div style={{ flex: 1, marginRight: '10px' }}>
+              <div style={{ color: '#333' }}>{materia.nombre}</div>
+              <div style={{ fontSize: '12px', color: '#95a5a6' }}>
+                Unidad: {materia.unidad}
+              </div>
+            </div>
+            <div style={{
+              display: 'flex',
+              justifyContent: 'flex-end',
+              gap: '10px',
+              alignItems: 'center',
+            }}>
+              <div style={{
+                backgroundColor: '#e74c3c',
+                color: 'white',
+                padding: '2px 6px',
+                borderRadius: '4px',
+                fontSize: '12px',
+                width: '100px',
+                height: '40px',
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+              }}>
+                <div>Stock: {stockReal[materia.id] || 0}</div>
+              </div>
+              {/* Botón de automatización */}
+              <button
+                style={{
+                  backgroundColor: '#3498db', // Azul
+                  color: 'white',
+                  padding: '4px 10px',
+                  borderRadius: '4px',
+                  fontSize: '12px',
+                  cursor: 'pointer',
+                  border: 'none',
+                  width: '100px',
+                  display: 'flex'
+                }}
+                onClick={() => iniciarAutomatizacion(materia.nombre)} // Llamada a iniciar automatización
+              >
+                Iniciar Automatización
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>
+    ) : (
+      <div style={styles.listEmpty}>No hay materias primas con stock bajo</div>
+    )}
+  </div>
+</div>
+
+{/* Mostrar el formulario cuando showForm sea verdadero */}
+{showForm && (
+      <div style={styles.modalOverlay}>
+        <div style={styles.modalContainer}>
+          {loading ? (
             <div>
-              {materiasPrimasStockBajo.map(materia => (
-                <div key={materia.id} style={{
-                  padding: '10px',
-                  borderBottom: '1px solid #e0e0e0',
-                  display: 'flex',
-                  justifyContent: 'space-between'
-                }}>
-                  <div>
-                    <div style={{ color: '#333' }}>{materia.nombre}</div>
-                    <div style={{ fontSize: '12px', color: '#95a5a6' }}>
-                      Tipo: {materia.tipo}
-                    </div>
-                  </div>
-                  <div style={{
-                    backgroundColor: '#e74c3c',
-                    color: 'white',
-                    padding: '2px 6px',
-                    borderRadius: '4px',
-                    fontSize: '12px'
-                  }}>
-                    Stock: {materia.stock}
-                  </div>
-                </div>
-              ))}
+              <div className="loader" style={styles.loader}></div>
+              <p>Iniciando automatización de Orden de compra...</p>
             </div>
           ) : (
-            <div style={styles.listEmpty}>No hay materias primas con stock bajo</div>
+            <div>
+              <p>La automatización fue completada exitosamente.</p>
+            </div>
           )}
         </div>
       </div>
+    )}
+
+
+
+
 
       {/* Tabs de Inventario y Movimientos (Movido abajo) */}
       <div style={styles.contentTabs}>
@@ -724,7 +861,7 @@ const Dashboard = () => {
                     cy="50%"
                     labelLine={true}
                     label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
-                    outerRadius={80}
+                    outerRadius={100}
                     fill="#4e79a7"
                     dataKey="value"
                   >
@@ -771,23 +908,13 @@ const Dashboard = () => {
                       bottom: 5,
                     }}
                   >
-                    {/* Cambiar el color de la cuadrícula */}
-                    <CartesianGrid strokeDasharray="3 3" stroke="#dcdcdc" /> {/* Cambié el color de la cuadrícula a un gris claro */}
-
-                    {/* Cambiar el color de los ticks en el eje X */}
-                    <XAxis dataKey="name" tick={{ fill: '#2c3e50' }} /> {/* Color oscuro para los ticks del eje X */}
-
-                    {/* Cambiar el color de los ticks en el eje Y */}
-                    <YAxis tick={{ fill: '#2c3e50' }} /> {/* Color oscuro para los ticks del eje Y */}
-
-                    {/* Tooltip personalizado */}
+                    <CartesianGrid strokeDasharray="3 3" stroke="#dcdcdc" />
+                    <XAxis dataKey="name" tick={{ fill: '#2c3e50' }} />
+                    <YAxis tick={{ fill: '#2c3e50' }} />
                     <Tooltip content={<CustomTooltip />} />
-
-                    {/* Leyenda */}
                     <Legend iconType="circle" iconSize={10} />
-
-                    {/* Cambiar el color de las barras */}
-                    <Bar dataKey="value" fill="#ff6347" /> {/* Color rojo tomate para las barras */}
+                    <ReferenceLine y={0} stroke="#000" />
+                    <Bar name="Cantidad" dataKey="value" fill="#ff6347" /> {/* Color rojo tomate para las barras */}
                   </BarChart>
                 </ResponsiveContainer>
 
@@ -803,47 +930,6 @@ const Dashboard = () => {
       {/* Contenido del tab Movimientos */}
       {activeTab === "movimientos" && (
         <div style={styles.chartsContainer}>
-          <div style={styles.chartCard}>
-            <div style={styles.chartHeader}>
-              <div style={styles.chartTitleContainer}>
-                <h2 style={styles.chartTitle}>Entradas y Salidas - Materias Primas</h2>
-                <div style={styles.chartSubtitle}>Movimientos por materia prima</div>
-              </div>
-              <div style={{ width: '150px' }}>
-                <select
-                  value={periodoEntradas}
-                  onChange={handlePeriodoEntradasChange}
-                  style={styles.almacenSelect}
-                >
-                  <option value="semanal">Semanal</option>
-                  <option value="mensual">Mensual</option>
-                  <option value="trimestral">Trimestral</option>
-                </select>
-              </div>
-            </div>
-            <div style={{ height: '240px' }}>
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart
-                  data={datosMovimientosEntradaMP}
-                  margin={{
-                    top: 5,
-                    right: 30,
-                    left: 20,
-                    bottom: 5,
-                  }}
-                >
-                  <CartesianGrid strokeDasharray="3 3" stroke="#dcdcdc" />
-                  <XAxis dataKey="name" tick={{ fill: '#2c3e50' }} />
-                  <YAxis tick={{ fill: '#2c3e50' }} />
-                  <Tooltip content={<CustomTooltip />} />
-                  <Legend />
-                  <Bar name="Entradas" dataKey="Entradas" fill="#4e79a7" />
-                  <Bar name="Salidas" dataKey="Salidas" fill="#e15759" />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          </div>
-
           <div style={styles.chartCard}>
             <div style={styles.chartHeader}>
               <div style={styles.chartTitleContainer}>
@@ -876,14 +962,58 @@ const Dashboard = () => {
                   <CartesianGrid strokeDasharray="3 3" stroke="#dcdcdc" />
                   <XAxis dataKey="name" tick={{ fill: '#2c3e50' }} />
                   <YAxis tick={{ fill: '#2c3e50' }} />
-                  <Tooltip content={<CustomTooltip />} />
+                  <Tooltip />
                   <Legend />
-                  <Bar name="Entradas" dataKey="Entradas" fill="#4e79a7" />
-                  <Bar name="Salidas" dataKey="Salidas" fill="#e15759" />
+                  <ReferenceLine y={0} stroke="#000" />
+                  <Bar name="Entradas" dataKey="Entradas" fill="#6489fa" />
+                  <Bar name="Salidas" dataKey="Salidas" fill="#fa7864" />
                 </BarChart>
               </ResponsiveContainer>
             </div>
           </div>
+          <div style={styles.chartCard}>
+            <div style={styles.chartHeader}>
+              <div style={styles.chartTitleContainer}>
+                <h2 style={styles.chartTitle}>Entradas y Salidas - Materias Primas</h2>
+                <div style={styles.chartSubtitle}>Movimientos por materia prima</div>
+              </div>
+              <div style={{ width: '150px' }}>
+                <select
+                  value={periodoEntradas}
+                  onChange={handlePeriodoEntradasChange}
+                  style={styles.almacenSelect}
+                >
+                  <option value="semanal">Semanal</option>
+                  <option value="mensual">Mensual</option>
+                  <option value="trimestral">Trimestral</option>
+                </select>
+              </div>
+            </div>
+            <div style={{ height: '240px' }}>
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart
+                  data={datosMovimientosEntradaMP}
+                  margin={{
+                    top: 5,
+                    right: 30,
+                    left: 20,
+                    bottom: 5,
+                  }}
+                >
+                  <CartesianGrid strokeDasharray="3 3" stroke="#dcdcdc" />
+                  <XAxis dataKey="name" tick={{ fill: '#2c3e50' }} />
+                  <YAxis tick={{ fill: '#2c3e50' }} />
+                  <Tooltip />
+                  <Legend />
+                  <ReferenceLine y={0} stroke="#000" />
+                  <Bar name="Entradas" dataKey="Entradas" fill="#6489fa" />
+                  <Bar name="Salidas" dataKey="Salidas" fill="#fa7864" />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+
+
         </div>
       )}
       {/* Contenido del tab Predicciones */}

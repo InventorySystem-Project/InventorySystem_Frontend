@@ -56,68 +56,62 @@ const SideMenu = ({ isCollapsed, toggleCollapse }) => {
       <div className="menu-section">
         {!isCollapsed && <p className="section-title">Gestión</p>}
 
-        <Link to="/dashboard" className="menu-item">
+        <Link to="/dashboard" className="menu-item" data-tooltip="Dashboard">
           <span className="menu-icon"><Home /></span>
           {!isCollapsed && <span>Dashboard</span>}
         </Link>
 
-        <Link to="/productos" className="menu-item">
+        <Link to="/productos" className="menu-item" data-tooltip="Productos">
           <span className="menu-icon"><Package /></span>
           {!isCollapsed && <span>Productos</span>}
         </Link>
 
-        <Link to="/materias-primas" className="menu-item">
+        <Link to="/materias-primas" className="menu-item" data-tooltip="Materias Primas">
           <span className="menu-icon"><Truck /></span>
           {!isCollapsed && <span>Materias Primas</span>}
         </Link>
 
-        <Link to="/almacenes" className="menu-item">
+        <Link to="/almacenes" className="menu-item" data-tooltip="Almacenes">
           <span className="menu-icon"><Warehouse /></span>
           {!isCollapsed && <span>Almacenes</span>}
         </Link>
 
-        <Link to="/proveedores" className="menu-item">
+        <Link to="/proveedores" className="menu-item" data-tooltip="Proveedores">
           <span className="menu-icon"><Users /></span>
           {!isCollapsed && <span>Proveedores</span>}
         </Link>
 
-        <Link to="/ordenes-compra" className="menu-item">
+        <Link to="/ordenes-compra" className="menu-item" data-tooltip="Órdenes de Compra">
           <span className="menu-icon"><FileText /></span>
           {!isCollapsed && <span>Órdenes de Compra</span>}
         </Link>
 
-        <Link to="/empresas" className="menu-item">
+        <Link to="/empresas" className="menu-item" data-tooltip="Empresas">
           <span className="menu-icon"><Building /></span>
           {!isCollapsed && <span>Empresas</span>}
         </Link>
 
-        <Link to="/movimientos" className="menu-item">
+        <Link to="/movimientos" className="menu-item" data-tooltip="Movimientos">
           <span className="menu-icon"><History /></span>
           {!isCollapsed && <span>Movimientos</span>}
         </Link>
-        {/* 
-        <Link to="/reportes" className="menu-item">
-          <span className="menu-icon"><BarChart3 /></span> 
-          {!isCollapsed && <span>Reportes</span>}
-        </Link>
-        */}
       </div>
 
       {/* Sección de Sistema */}
       <div className="menu-section">
         {!isCollapsed && <p className="section-title">Sistema</p>}
 
-        <Link to="/roles" className="menu-item">
+        <Link to="/roles" className="menu-item" data-tooltip="Roles">
           <span className="menu-icon"><UserCog /></span>
           {!isCollapsed && <span>Roles</span>}
         </Link>
 
-        <Link to="/usuarios" className="menu-item">
+        <Link to="/usuarios" className="menu-item" data-tooltip="Usuarios">
           <span className="menu-icon"><User /></span>
           {!isCollapsed && <span>Usuarios</span>}
         </Link>
 
-        <div className="menu-item" onClick={handleLogout}>
+        <div className="menu-item" onClick={handleLogout} data-tooltip="Salir">
           <span className="menu-icon"><LogOut /></span>
           {!isCollapsed && <span>Salir</span>}
         </div>

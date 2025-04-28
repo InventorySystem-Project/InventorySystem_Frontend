@@ -427,22 +427,17 @@ textarea {
 /* Modificar el espacio dentro del modal */
 .MuiBox-root {
   background: #fff;
-  /*padding: 30px;*/
+  
   border-radius: 10px;
   /*min-width: 400px;*/
   width: 60%;
   max-width: 600px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   overflow: hidden;
-  /*display: flex;*/
+  display: flex;
   flex-direction: column;
   gap: 15px;  /* Añadido espacio entre los elementos dentro del modal */
 }
-
-.MuiBox-root .sx{
-  flex-direction: column;
-}
-
 
 .MuiModal-root {
   display: flex;
@@ -764,7 +759,7 @@ textarea {
   left: 100%;
   top: 50%;
   transform: translateY(-50%);
-  /*background-color: #333;*/
+  background-color: #333;
   color: white;
   padding: 5px 10px;
   border-radius: 4px;
