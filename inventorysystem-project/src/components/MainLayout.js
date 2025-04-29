@@ -34,14 +34,14 @@ const MainLayout = ({ children }) => {
           isCollapsed={isMenuCollapsed}  // Pasar el estado del colapso al TopBar
           toggleCollapse={toggleMenuCollapse}  // Pasar la función para controlar el colapso
           style={{
-            marginLeft: isMenuCollapsed ? '70px' : '235px', // Ajusta la transición del TopBar
+            marginLeft: isMenuCollapsed ? '75px' : '255px', // Ajusta la transición del TopBar
             transition: 'margin-left 0.3s ease-in-out' // Aplicar transición
           }}
         />
         {/* Contenido de las páginas */}
         <div
           style={{
-            marginLeft: isLogin ? '0' : (isMenuCollapsed ? '75px' : '235px'), // Ajustar el margen dependiendo de si está colapsado
+            marginLeft: isLogin ? '0' : (isMenuCollapsed ? '95px' : '255px'), // Ajustar el margen dependiendo de si está colapsado
             backgroundColor: '#134ac1',
             height: '100%',
             overflowY: 'auto',
