@@ -634,15 +634,16 @@ textarea {
 /*--------------------*/
 .menu-header {
   display: flex;
-  align-items: center;
+  align-items: center; /* Alineación vertical centrada */
+  justify-content: center; /* Alineación horizontal centrada */
   padding: 15px;
   position: relative;
 }
 
 .logo-container {
   display: flex;
-  align-items: center;
-  gap: 12px;
+  align-items: center; /* Centrar verticalmente el logo */
+  justify-content: center; /* Centrar horizontalmente el logo */
 }
 
 .app-logo {
@@ -661,6 +662,7 @@ textarea {
 .app-title {
   display: flex;
   flex-direction: column;
+  margin-left: 10px;
 }
 
 .app-title h3 {

@@ -81,6 +81,11 @@ const Almacen = () => {
 
       {/* TABLA DE ALMACENES */}
       <div className="table-container">
+        <div className="table-header" style={{ paddingTop: '0px', width: '100%' }}>
+          <h3 style={{ marginTop: '10px', textAlign: 'left' }}>Lista de Almacenes</h3>
+          <p style={{ margin: 0, textAlign: 'left' }}>Administre sus almacenes</p>
+        </div>
+
         <Table>
           <TableHead>
             <TableRow>
