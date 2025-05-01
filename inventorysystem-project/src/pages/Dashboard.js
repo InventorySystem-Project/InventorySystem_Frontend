@@ -251,6 +251,91 @@ const styles = {
     marginTop: '10px',  // Espacio entre el spinner y el botón
   },
 };
+{/* Estilos para las tarjetas mejoradas */ }
+const cardStyles = {
+  statsContainer: {
+    display: 'flex',
+    justifyContent: 'center',
+    gap: '30px',
+    marginBottom: '30px',
+    width: '100%',
+
+    padding: '10px 0',
+  },
+  statCard: {
+    backgroundColor: 'white',
+    borderRadius: '12px',
+    padding: '20px',
+    width: '220px',
+    boxShadow: '0 6px 18px rgba(0,0,0,0.08)',
+    transition: 'all 0.3s ease',
+    border: '1px solid #f0f0f0',
+    position: 'relative',
+    overflow: 'hidden',
+    display: 'flex',
+    flexDirection: 'column',
+    justifyContent: 'space-between',
+    '&:hover': {
+      transform: 'translateY(-5px)',
+      boxShadow: '0 12px 24px rgba(0,0,0,0.12)',
+    }
+  },
+  cardContent: {
+    position: 'relative',
+    zIndex: 2,
+  },
+  iconContainer: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: '10px'
+  },
+  iconBackground: {
+    width: '40px',
+    height: '40px',
+    borderRadius: '12px',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  cardLabel: {
+    fontSize: '14px',
+    color: '#6B7280',
+    fontWeight: '500',
+    marginBottom: '8px',
+  },
+  cardValue: {
+    fontSize: '28px',
+    fontWeight: '700',
+    color: '#111827',
+    display: 'flex',
+    alignItems: 'center',
+  },
+  cardFooter: {
+    display: 'flex',
+    alignItems: 'center',
+    marginTop: '12px',
+    fontSize: '12px',
+  },
+  cardBadge: {
+    borderRadius: '9999px',
+    padding: '4px 10px',
+    fontSize: '12px',
+    fontWeight: '600',
+  },
+  cardDecoration: {
+    position: 'absolute',
+    right: '-10px',
+    bottom: '-15px',
+    width: '100px',
+    height: '100px',
+    borderRadius: '50%',
+    opacity: '0.08',
+    zIndex: 1,
+  }
+};
+
+
 
 const Dashboard = () => {
   const [activeTab, setActiveTab] = useState("inventario");
@@ -668,25 +753,211 @@ const Dashboard = () => {
     <div style={styles.dashboardContainer}>
       <h1 style={styles.dashboardTitle}>Dashboard de Inventario</h1>
 
-      {/* Contadores de totales */}
-      <div style={styles.statsWrapper}> {/* Contenedor para las tarjetas centradas */}
-        <div style={styles.statCardTop}>
-          <div style={styles.statLabelTop}>
-            <Boxes size={18} style={{ marginRight: '8px', color: '#3498db' }} /> {/* Icono de Boxes */}
-            Total Productos
+      {/* Contadores de totales con nuevo diseño */}
+      <div style={cardStyles.statsContainer}>
+        {/* Tarjeta de Total Productos */}
+        <div style={{
+          ...cardStyles.statCard,
+          borderTop: '4px solid #3B82F6',
+        }}>
+          <div style={cardStyles.cardContent}>
+            <div style={cardStyles.iconContainer}>
+              <div style={{
+                ...cardStyles.iconBackground,
+                backgroundColor: 'rgba(59, 130, 246, 0.1)',
+              }}>
+                <Package size={24} color="#3B82F6" />
+              </div>
+              <span style={{
+                ...cardStyles.cardBadge,
+                backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                color: '#3B82F6',
+              }}>
+                Productos
+              </span>
+            </div>
+
+            <div style={cardStyles.cardLabel}>Total Productos</div>
+            <div style={cardStyles.cardValue}>
+              {totalProductos}
+              <span style={{ fontSize: '16px', color: '#6B7280', marginLeft: '5px' }}>unidades</span>
+            </div>
+
+            <div style={cardStyles.cardFooter}>
+              <span style={{
+                color: '#10B981',
+                display: 'flex',
+                alignItems: 'center',
+                marginRight: '8px'
+              }}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M7 17L17 7M17 7H8M17 7V16" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+                5%
+              </span>
+              vs. mes anterior
+            </div>
           </div>
-          <div style={styles.statValueTop}>{totalProductos}</div>
+          <div style={{
+            ...cardStyles.cardDecoration,
+            backgroundColor: '#3B82F6',
+          }}></div>
         </div>
-        <div style={styles.statCardTop}>
-          <div style={styles.statLabelTop}>
-            <Package size={18} style={{ marginRight: '8px', color: '#3498db' }} /> {/* Icono de Package */}
-            Total Materias Primas
+
+        {/* Tarjeta de Total Materias Primas */}
+        <div style={{
+          ...cardStyles.statCard,
+          borderTop: '4px solid #F59E0B',
+        }}>
+          <div style={cardStyles.cardContent}>
+            <div style={cardStyles.iconContainer}>
+              <div style={{
+                ...cardStyles.iconBackground,
+                backgroundColor: 'rgba(245, 158, 11, 0.1)',
+              }}>
+                <Boxes size={24} color="#F59E0B" />
+              </div>
+              <span style={{
+                ...cardStyles.cardBadge,
+                backgroundColor: 'rgba(245, 158, 11, 0.1)',
+                color: '#F59E0B',
+              }}>
+                Materiales
+              </span>
+            </div>
+
+            <div style={cardStyles.cardLabel}>Total Materias Primas</div>
+            <div style={cardStyles.cardValue}>
+              {totalMateriasPrimas}
+              <span style={{ fontSize: '16px', color: '#6B7280', marginLeft: '5px' }}>unidades</span>
+            </div>
+
+            <div style={cardStyles.cardFooter}>
+              <span style={{
+                color: '#EF4444',
+                display: 'flex',
+                alignItems: 'center',
+                marginRight: '8px'
+              }}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M17 7L7 17M7 17H16M7 17V8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+                3%
+              </span>
+              vs. mes anterior
+            </div>
           </div>
-          <div style={styles.statValueTop}>{totalMateriasPrimas}</div>
+          <div style={{
+            ...cardStyles.cardDecoration,
+            backgroundColor: '#F59E0B',
+          }}></div>
+        </div>
+
+        {/* Tarjeta adicional de Almacenes */}
+        <div style={{
+          ...cardStyles.statCard,
+          borderTop: '4px solid #10B981',
+        }}>
+          <div style={cardStyles.cardContent}>
+            <div style={cardStyles.iconContainer}>
+              <div style={{
+                ...cardStyles.iconBackground,
+                backgroundColor: 'rgba(16, 185, 129, 0.1)',
+              }}>
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M19 3H5C3.89543 3 3 3.89543 3 5V19C3 20.1046 3.89543 21 5 21H19C20.1046 21 21 20.1046 21 19V5C21 3.89543 20.1046 3 19 3Z" stroke="#10B981" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                  <path d="M3 9H21" stroke="#10B981" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                  <path d="M9 21V9" stroke="#10B981" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </div>
+              <span style={{
+                ...cardStyles.cardBadge,
+                backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                color: '#10B981',
+              }}>
+                Bodegas
+              </span>
+            </div>
+
+            <div style={cardStyles.cardLabel}>Total Almacenes</div>
+            <div style={cardStyles.cardValue}>
+              {almacenes ? almacenes.length : 0}
+              <span style={{ fontSize: '16px', color: '#6B7280', marginLeft: '5px' }}>activos</span>
+            </div>
+
+            <div style={cardStyles.cardFooter}>
+              <span style={{
+                color: '#10B981',
+                display: 'flex',
+                alignItems: 'center',
+                marginRight: '8px'
+              }}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M7 17L17 7M17 7H8M17 7V16" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+                2%
+              </span>
+              Capacidad usada
+            </div>
+          </div>
+          <div style={{
+            ...cardStyles.cardDecoration,
+            backgroundColor: '#10B981',
+          }}></div>
+        </div>
+
+        {/* Tarjeta adicional de Valor del Inventario */}
+        <div style={{
+          ...cardStyles.statCard,
+          borderTop: '4px solid #8B5CF6',
+        }}>
+          <div style={cardStyles.cardContent}>
+            <div style={cardStyles.iconContainer}>
+              <div style={{
+                ...cardStyles.iconBackground,
+                backgroundColor: 'rgba(139, 92, 246, 0.1)',
+              }}>
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M12 1V23" stroke="#8B5CF6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                  <path d="M17 5H9.5C8.57174 5 7.6815 5.36875 7.02513 6.02513C6.36875 6.6815 6 7.57174 6 8.5C6 9.42826 6.36875 10.3185 7.02513 10.9749C7.6815 11.6313 8.57174 12 9.5 12H14.5C15.4283 12 16.3185 12.3687 16.9749 13.0251C17.6313 13.6815 18 14.5717 18 15.5C18 16.4283 17.6313 17.3185 16.9749 17.9749C16.3185 18.6313 15.4283 19 14.5 19H6" stroke="#8B5CF6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </div>
+              <span style={{
+                ...cardStyles.cardBadge,
+                backgroundColor: 'rgba(139, 92, 246, 0.1)',
+                color: '#8B5CF6',
+              }}>
+                Valor
+              </span>
+            </div>
+
+            <div style={cardStyles.cardLabel}>Valor del Inventario</div>
+            <div style={cardStyles.cardValue}>
+              $45,890
+              <span style={{ fontSize: '16px', color: '#6B7280', marginLeft: '5px' }}>USD</span>
+            </div>
+
+            <div style={cardStyles.cardFooter}>
+              <span style={{
+                color: '#10B981',
+                display: 'flex',
+                alignItems: 'center',
+                marginRight: '8px'
+              }}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M7 17L17 7M17 7H8M17 7V16" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+                8.2%
+              </span>
+              vs. mes anterior
+            </div>
+          </div>
+          <div style={{
+            ...cardStyles.cardDecoration,
+            backgroundColor: '#8B5CF6',
+          }}></div>
         </div>
       </div>
-
-
       {/* Productos y Materias Primas con stock bajo */}
       <div style={styles.statsContainer}>
         <div style={{ ...styles.statCard, overflow: 'auto', maxHeight: '300px' }}>
@@ -716,7 +987,6 @@ const Dashboard = () => {
                     <div style={{
                       backgroundColor: '#e74c3c',
                       color: 'white',
-                      padding: '2px 6px',
                       borderRadius: '4px',
                       fontSize: '12px',
                       width: '100px',
@@ -732,13 +1002,15 @@ const Dashboard = () => {
                       style={{
                         backgroundColor: '#3498db', // Azul
                         color: 'white',
-                        padding: '4px 10px',
                         borderRadius: '4px',
                         fontSize: '12px',
                         cursor: 'pointer',
                         border: 'none',
                         width: '100px',
-                        display: 'flex'
+                        height: '40px',
+                        display: 'flex',
+                        justifyContent: 'center',
+                        alignItems: 'center',
                       }}
                       onClick={() => iniciarAutomatizacion(producto.nombre)} // Llamada a iniciar automatización
                     >
@@ -780,7 +1052,6 @@ const Dashboard = () => {
                     <div style={{
                       backgroundColor: '#e74c3c',
                       color: 'white',
-                      padding: '2px 6px',
                       borderRadius: '4px',
                       fontSize: '12px',
                       width: '100px',
@@ -796,13 +1067,15 @@ const Dashboard = () => {
                       style={{
                         backgroundColor: '#3498db', // Azul
                         color: 'white',
-                        padding: '4px 10px',
                         borderRadius: '4px',
                         fontSize: '12px',
                         cursor: 'pointer',
                         border: 'none',
                         width: '100px',
-                        display: 'flex'
+                        height: '40px',
+                        display: 'flex',
+                        justifyContent: 'center',
+                        alignItems: 'center',
                       }}
                       onClick={() => iniciarAutomatizacion(materia.nombre)} // Llamada a iniciar automatización
                     >
@@ -821,31 +1094,31 @@ const Dashboard = () => {
 
       {/* Mostrar el formulario cuando showForm sea verdadero */}
       {showForm && (
-  <div style={styles.modalOverlay}>
-    <div style={styles.modalContainer}>
-      {loading ? (
-        <div style={styles.loadingContainer}>
-          <p>Iniciando automatización de Orden de compra...</p>
-          <ReactLoading type="spin" color="#3498db" height={50} width={50} />
-          {/* Botón de cancelar */}
-          <button 
-            style={styles.cancelButton} 
-            onClick={() => { 
-              setLoading(false); 
-              setShowForm(false); 
-            }}
-          >
-            Cancelar
-          </button>
-        </div>
-      ) : (
-        <div>
-          <p>La automatización fue completada exitosamente.</p>
+        <div style={styles.modalOverlay}>
+          <div style={styles.modalContainer}>
+            {loading ? (
+              <div style={styles.loadingContainer}>
+                <p>Iniciando automatización de Orden de compra...</p>
+                <ReactLoading type="spin" color="#3498db" height={50} width={50} />
+                {/* Botón de cancelar */}
+                <button
+                  style={styles.cancelButton}
+                  onClick={() => {
+                    setLoading(false);
+                    setShowForm(false);
+                  }}
+                >
+                  Cancelar
+                </button>
+              </div>
+            ) : (
+              <div>
+                <p>La automatización fue completada exitosamente.</p>
+              </div>
+            )}
+          </div>
         </div>
       )}
-    </div>
-  </div>
-)}
 
 
 
