@@ -4,6 +4,9 @@ import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Eye, EyeOff, ArrowLeft, ArrowRight, User, Lock, Mail } from 'lucide-react';
 import { getRoles, addRol } from '../services/RolService';
+import { environment } from '../environment/environment';
+
+const API_URL = `${environment.url}/almacenes`;
 
 const Login = () => {
   // States for different views
@@ -79,7 +82,7 @@ const Login = () => {
     setErrorMsg('');
 
     try {
-      const response = await axios.post('http://localhost:8080/authenticate', loginData);
+      const response = await axios.post(`${environment.url}/authenticate`, loginData);
       const token = response.data.jwttoken;
 
       if (token) {
@@ -145,7 +148,7 @@ const Login = () => {
       }
   
       // Replace with your actual registration endpoint
-      const response = await axios.post('http://localhost:8080/usuarios/registrar', apiData);
+      const response = await axios.post(`${environment.url}/authenticate/usuarios/registrar`, apiData);
 
       if (response.status === 201 || response.status === 200) {
         setSuccessMsg('Registro exitoso. Ahora puede iniciar sesión.');
@@ -194,7 +197,7 @@ const Login = () => {
 
     try {
       // Replace with your actual password recovery endpoint
-      await axios.post('http://localhost:8080/recover-password', { email: recoverEmail });
+      await axios.post(`${environment.url}/recover-password`, { email: recoverEmail });
 
       setSuccessMsg('Se ha enviado un código de verificación a su correo electrónico.');
       setTimeout(() => {
@@ -216,7 +219,7 @@ const Login = () => {
 
     try {
       // Replace with your actual code verification endpoint
-      await axios.post('http://localhost:8080/verify-code', {
+      await axios.post(`${environment.url}/verify-code`, {
         email: recoverEmail,
         code: recoveryCode
       });
@@ -247,7 +250,7 @@ const Login = () => {
 
     try {
       // Replace with your actual password reset endpoint
-      await axios.post('http://localhost:8080/reset-password', {
+      await axios.post(`${environment.url}/reset-password`, {
         email: recoverEmail,
         code: recoveryCode,
         newPassword: newPassword
