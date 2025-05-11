@@ -6,8 +6,6 @@ import { Eye, EyeOff, ArrowLeft, ArrowRight, User, Lock, Mail } from 'lucide-rea
 import { getRoles, addRol } from '../services/RolService';
 import { environment } from '../environment/environment';
 
-const API_URL = `${environment.url}/almacenes`;
-
 const Login = () => {
   // States for different views
   const [activeView, setActiveView] = useState('login'); // 'login', 'register', 'recover'
