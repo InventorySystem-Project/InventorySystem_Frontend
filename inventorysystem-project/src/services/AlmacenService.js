@@ -1,7 +1,7 @@
 import axios from 'axios';
+import { environment } from '../environment/environment';
 
-// URL base del endpoint de almacén
-const API_URL = 'http://localhost:8080/almacenes';
+const API_URL = `${environment.url}/almacenes`;
 
 // Obtener token del localStorage
 const getAuthToken = () => {

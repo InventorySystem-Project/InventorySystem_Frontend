@@ -1,8 +1,7 @@
 import axios from 'axios';
+import { environment } from '../environment/environment';
 
-// URL de la API
-const API_URL = 'http://localhost:8080/roles';
-
+const API_URL = `${environment.url}/roles`;
 // Función para obtener el token del almacenamiento local
 const getAuthToken = () => {
     const token = localStorage.getItem('token');

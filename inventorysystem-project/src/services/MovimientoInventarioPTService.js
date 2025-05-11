@@ -1,7 +1,7 @@
 import axios from 'axios';
+import { environment } from '../environment/environment';
 
-// URL de la API para producto terminado
-const API_URL = 'http://localhost:8080/movimientos-producto-terminado';
+const API_URL = `${environment.url}/movimientos-producto-terminado`;
 
 // Función para obtener el token del almacenamiento local
 const getAuthToken = () => {

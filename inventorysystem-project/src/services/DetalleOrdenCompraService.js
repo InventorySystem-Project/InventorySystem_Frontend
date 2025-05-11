@@ -1,7 +1,7 @@
 import axios from 'axios';
+import { environment } from '../environment/environment';
 
-// URL base del endpoint de detalle de orden de compra
-const API_URL = 'http://localhost:8080/detalle-orden-compra';
+const API_URL = `${environment.url}/detalle-orden-compra`;
 
 // Obtener token del localStorage
 const getAuthToken = () => {

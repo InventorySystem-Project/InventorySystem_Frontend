@@ -20,31 +20,33 @@ import MateriasPrimas from './pages/MateriasPrima';
 import Login from './pages/Login';
 import './App.css';
 import MovimientoInventario from './pages/MovimientoInventario';
-
+import Reclamo from './pages/Reclamo'
 
 const App = () => {
   return (
     <Router>
-<MainLayout>
-          <Routes>
-            <Route path="/" element={<Login />} />
-            <Route path="/dashboard" element={<Dashboard />} />
+      <MainLayout>
+        <Routes>
+          <Route path="/" element={<Login />} />
+          <Route path="/dashboard" element={<Dashboard />} />
 
-            <Route path="/roles" element={<Rol />} />
-            <Route path="/usuarios" element={<Usuario />} />
+          <Route path="/roles" element={<Rol />} />
+          <Route path="/usuarios" element={<Usuario />} />
 
-            <Route path="/empresas" element={<Empresa />} />
-            <Route path="/almacenes" element={<Almacen />} />
-            
-            <Route path="/proveedores" element={<Proveedor />} />
-            <Route path="/ordenes-compra" element={<OrdenCompra />} />
-            <Route path="/detalle-orden-compra" element={<DetalleOrdenCompra />} />
-            <Route path="/movimientos" element={<MovimientoInventario />} />
-            
-            <Route path="/productos" element={<Producto />} />
-            <Route path="/materias-primas" element={<MateriasPrimas />} />
-          </Routes>
-        </MainLayout>
+          <Route path="/empresas" element={<Empresa />} />
+          <Route path="/almacenes" element={<Almacen />} />
+
+          <Route path="/proveedores" element={<Proveedor />} />
+          <Route path="/ordenes-compra" element={<OrdenCompra />} />
+          <Route path="/detalle-orden-compra" element={<DetalleOrdenCompra />} />
+          <Route path="/movimientos" element={<MovimientoInventario />} />
+
+          <Route path="/productos" element={<Producto />} />
+          <Route path="/materias-primas" element={<MateriasPrimas />} />
+
+          <Route path="/reclamos" element={<Reclamo />} />
+        </Routes>
+      </MainLayout>
     </Router>
   );
 };

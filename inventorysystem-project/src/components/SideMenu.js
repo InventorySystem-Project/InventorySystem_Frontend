@@ -15,7 +15,8 @@ import {
   Warehouse,
   ChevronLeft,
   ChevronRight,
-  Boxes
+  Boxes,
+  Megaphone
 } from "lucide-react";
 
 const SideMenu = ({ isCollapsed, toggleCollapse }) => {
@@ -62,9 +63,9 @@ const SideMenu = ({ isCollapsed, toggleCollapse }) => {
       <div className="menu-section">
         {!isCollapsed && <p className="section-title">Gestión</p>}
 
-        <Link 
-          to="/dashboard" 
-          className={`menu-item ${activeItem === 'dashboard' ? 'active' : ''}`} 
+        <Link
+          to="/dashboard"
+          className={`menu-item ${activeItem === 'dashboard' ? 'active' : ''}`}
           data-tooltip="Dashboard"
           onClick={() => handleItemClick('dashboard')}
         >
@@ -72,9 +73,9 @@ const SideMenu = ({ isCollapsed, toggleCollapse }) => {
           {!isCollapsed && <span>Dashboard</span>}
         </Link>
 
-        <Link 
-          to="/productos" 
-          className={`menu-item ${activeItem === 'productos' ? 'active' : ''}`} 
+        <Link
+          to="/productos"
+          className={`menu-item ${activeItem === 'productos' ? 'active' : ''}`}
           data-tooltip="Productos"
           onClick={() => handleItemClick('productos')}
         >
@@ -82,9 +83,9 @@ const SideMenu = ({ isCollapsed, toggleCollapse }) => {
           {!isCollapsed && <span>Productos</span>}
         </Link>
 
-        <Link 
-          to="/materias-primas" 
-          className={`menu-item ${activeItem === 'materias-primas' ? 'active' : ''}`} 
+        <Link
+          to="/materias-primas"
+          className={`menu-item ${activeItem === 'materias-primas' ? 'active' : ''}`}
           data-tooltip="Materias Primas"
           onClick={() => handleItemClick('materias-primas')}
         >
@@ -92,9 +93,9 @@ const SideMenu = ({ isCollapsed, toggleCollapse }) => {
           {!isCollapsed && <span>Materias Primas</span>}
         </Link>
 
-        <Link 
-          to="/almacenes" 
-          className={`menu-item ${activeItem === 'almacenes' ? 'active' : ''}`} 
+        <Link
+          to="/almacenes"
+          className={`menu-item ${activeItem === 'almacenes' ? 'active' : ''}`}
           data-tooltip="Almacenes"
           onClick={() => handleItemClick('almacenes')}
         >
@@ -102,9 +103,9 @@ const SideMenu = ({ isCollapsed, toggleCollapse }) => {
           {!isCollapsed && <span>Almacenes</span>}
         </Link>
 
-        <Link 
-          to="/proveedores" 
-          className={`menu-item ${activeItem === 'proveedores' ? 'active' : ''}`} 
+        <Link
+          to="/proveedores"
+          className={`menu-item ${activeItem === 'proveedores' ? 'active' : ''}`}
           data-tooltip="Proveedores"
           onClick={() => handleItemClick('proveedores')}
         >
@@ -112,9 +113,9 @@ const SideMenu = ({ isCollapsed, toggleCollapse }) => {
           {!isCollapsed && <span>Proveedores</span>}
         </Link>
 
-        <Link 
-          to="/ordenes-compra" 
-          className={`menu-item ${activeItem === 'ordenes-compra' ? 'active' : ''}`} 
+        <Link
+          to="/ordenes-compra"
+          className={`menu-item ${activeItem === 'ordenes-compra' ? 'active' : ''}`}
           data-tooltip="Órdenes de Compra"
           onClick={() => handleItemClick('ordenes-compra')}
         >
@@ -122,9 +123,19 @@ const SideMenu = ({ isCollapsed, toggleCollapse }) => {
           {!isCollapsed && <span>Órdenes de Compra</span>}
         </Link>
 
-        <Link 
-          to="/empresas" 
-          className={`menu-item ${activeItem === 'empresas' ? 'active' : ''}`} 
+        <Link
+          to="/reclamos"
+          className={`menu-item ${activeItem === 'reclamos' ? 'active' : ''}`}
+          data-tooltip="Reclamos"
+          onClick={() => handleItemClick('reclamos')}
+        >
+          <span className="menu-icon"><Megaphone /></span>
+          {!isCollapsed && <span>Reclamos</span>}
+        </Link>
+
+        <Link
+          to="/empresas"
+          className={`menu-item ${activeItem === 'empresas' ? 'active' : ''}`}
           data-tooltip="Empresas"
           onClick={() => handleItemClick('empresas')}
         >
@@ -132,9 +143,9 @@ const SideMenu = ({ isCollapsed, toggleCollapse }) => {
           {!isCollapsed && <span>Empresas</span>}
         </Link>
 
-        <Link 
-          to="/movimientos" 
-          className={`menu-item ${activeItem === 'movimientos' ? 'active' : ''}`} 
+        <Link
+          to="/movimientos"
+          className={`menu-item ${activeItem === 'movimientos' ? 'active' : ''}`}
           data-tooltip="Movimientos"
           onClick={() => handleItemClick('movimientos')}
         >
@@ -147,9 +158,9 @@ const SideMenu = ({ isCollapsed, toggleCollapse }) => {
       <div className="menu-section">
         {!isCollapsed && <p className="section-title">Sistema</p>}
 
-        <Link 
-          to="/roles" 
-          className={`menu-item ${activeItem === 'roles' ? 'active' : ''}`} 
+        <Link
+          to="/roles"
+          className={`menu-item ${activeItem === 'roles' ? 'active' : ''}`}
           data-tooltip="Roles"
           onClick={() => handleItemClick('roles')}
         >
@@ -157,9 +168,9 @@ const SideMenu = ({ isCollapsed, toggleCollapse }) => {
           {!isCollapsed && <span>Roles</span>}
         </Link>
 
-        <Link 
-          to="/usuarios" 
-          className={`menu-item ${activeItem === 'usuarios' ? 'active' : ''}`} 
+        <Link
+          to="/usuarios"
+          className={`menu-item ${activeItem === 'usuarios' ? 'active' : ''}`}
           data-tooltip="Usuarios"
           onClick={() => handleItemClick('usuarios')}
         >
@@ -167,9 +178,9 @@ const SideMenu = ({ isCollapsed, toggleCollapse }) => {
           {!isCollapsed && <span>Usuarios</span>}
         </Link>
 
-        <div 
-          className="menu-item" 
-          onClick={handleLogout} 
+        <div
+          className="menu-item"
+          onClick={handleLogout}
           data-tooltip="Salir"
         >
           <span className="menu-icon"><LogOut /></span>

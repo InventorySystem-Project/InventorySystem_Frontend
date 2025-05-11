@@ -1,7 +1,7 @@
 import axios from 'axios';
+import { environment } from '../environment/environment';
 
-// URL base del endpoint de ordenes de compra
-const API_URL = 'http://localhost:8080/ordenes-compra';
+const API_URL = `${environment.url}/ordenes-compra`;
 
 // Obtener el token JWT desde el localStorage
 const getAuthToken = () => {
