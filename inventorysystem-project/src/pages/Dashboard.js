@@ -85,6 +85,11 @@ const styles = {
     fontSize: '24px',
     fontWeight: 'bold',
     color: '#2c3e50'
+  }, statsContainer: {
+    display: 'grid',  // Usamos grid solo para las dos tarjetas superiores
+    gridTemplateColumns: '1fr 1fr', // 2 columnas para las dos tarjetas
+    gap: '20px',  // Espacio entre las tarjetas
+    marginBottom: '20px',
   },
   statCardTop: {  // Estilo para las tarjetas de arriba (2 tarjetas)
     backgroundColor: 'white',
