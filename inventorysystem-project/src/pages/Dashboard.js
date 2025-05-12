@@ -23,7 +23,8 @@ import {
 } from '@mui/material';
 import {
   Package,
-  Boxes
+  Boxes,
+  Warehouse
 } from "lucide-react";
 import ReactLoading from 'react-loading';
 import { getProductosTerminados } from '../services/ProductoTerminadoService';
@@ -332,6 +333,7 @@ const Dashboard = () => {
   const [proveedorSeleccionadoId, setProveedorSeleccionadoId] = useState('');
   const [mostrarModalProveedor, setMostrarModalProveedor] = useState(false);
   const [itemParaAutomatizar, setItemParaAutomatizar] = useState(null); // Para guardar la materia prima o producto
+  const [cantidadAPedir, setCantidadAPedir] = useState(1); // Estado para la cantidad, inicializado en 1
 
 
   const calcularStock = (movimientos) => {
@@ -347,6 +349,7 @@ const Dashboard = () => {
         stockPorMateriaPrima[materiaPrimaId] -= cantidad;
       }
     });
+    console.log("Stock por materia prima: ", stockPorMateriaPrima);
     return stockPorMateriaPrima;
   };
 
@@ -363,6 +366,7 @@ const Dashboard = () => {
         stockPorProducto[productoTerminadoId] -= cantidad;
       }
     });
+    console.log("Stock por producto terminado: ", stockPorProducto);
     return stockPorProducto;
   };
 
@@ -382,7 +386,7 @@ const Dashboard = () => {
       cantidad: agrupados[nombre]
     }));
   };
-  
+
   const filtrarPorPeriodo = (datos, periodo, fechaActual = new Date()) => {
     return datos.filter(item => {
       if (!item.fechaMovimiento) return true; // o false, dependiendo de cómo quieras manejar datos sin fecha
@@ -439,7 +443,10 @@ const Dashboard = () => {
         setDistribucionMPData(distribucionMP);
         setDistribucionMateriasPrimas(distribucionMP); // Para el gráfico de pie/barra
 
-        const stockBajoMP = materiasData.filter(mp => (stockCalculadoMP[mp.id] || 0) < 5);
+        const stockBajoMP = materiasData.filter(mp => {
+          const stockActual = stockCalculadoMP[mp.id] || 0;
+          return stockActual < 5;
+        });
         setMateriasPrimasStockBajo(stockBajoMP);
 
         const stockCalculadoPT = calcularStockProductos(movimientosPTData);
@@ -451,13 +458,16 @@ const Dashboard = () => {
         });
         setDistribucionProductos(distribucionPT);
 
-        const stockBajoPT = productosData.filter(p => (stockCalculadoPT[p.id] || 0) < 5);
+        const stockBajoPT = productosData.filter(p => {
+          const stockActual = stockCalculadoPT[p.id] || 0;
+          return stockActual < 5;
+        });
         setProductosStockBajo(stockBajoPT);
 
         if (almacenesData.length > 0) {
           setAlmacenSeleccionado(almacenesData[0].id);
         }
-        
+
         // Procesar datos para gráficos de movimientos
         procesarDatosMovimientosGraficos(movimientosMPData, movimientosPTData, materiasData, productosData, periodoEntradas, periodoSalidas);
 
@@ -473,10 +483,10 @@ const Dashboard = () => {
 
   const procesarDatosMovimientosGraficos = (movimientosMPData, movimientosPTData, materiasData, productosData, periodoEnt, periodoSal) => {
     const hoy = new Date();
-    
+
     const movMPEntradasFiltrados = filtrarPorPeriodo(movimientosMPData.filter(m => m.tipoMovimiento === "Entrada"), periodoEnt, hoy);
     const movMPSalidasFiltrados = filtrarPorPeriodo(movimientosMPData.filter(m => m.tipoMovimiento === "Salida"), periodoSal, hoy);
-    
+
     const movPTEntradasFiltrados = filtrarPorPeriodo(movimientosPTData.filter(m => m.tipoMovimiento === "Entrada"), periodoEnt, hoy);
     const movPTSalidasFiltrados = filtrarPorPeriodo(movimientosPTData.filter(m => m.tipoMovimiento === "Salida"), periodoSal, hoy);
 
@@ -496,26 +506,26 @@ const Dashboard = () => {
   const agruparMovimientosPorItem = (movimientos, idKeyName, itemsData, soloEntradas = false, soloSalidas = false) => {
     const agrupados = {};
     movimientos.forEach(mov => {
-        const itemId = mov[idKeyName];
-        const item = itemsData.find(i => i.id === parseInt(itemId));
-        const nombreItem = item ? item.nombre : `Item ${itemId}`;
+      const itemId = mov[idKeyName];
+      const item = itemsData.find(i => i.id === parseInt(itemId));
+      const nombreItem = item ? item.nombre : `Item ${itemId}`;
 
-        if (!agrupados[nombreItem]) {
-            agrupados[nombreItem] = { Entradas: 0, Salidas: 0 };
-        }
-        if (mov.tipoMovimiento === "Entrada" && !soloSalidas) {
-            agrupados[nombreItem].Entradas += mov.cantidad;
-        } else if (mov.tipoMovimiento === "Salida" && !soloEntradas) {
-            agrupados[nombreItem].Salidas += mov.cantidad;
-        }
+      if (!agrupados[nombreItem]) {
+        agrupados[nombreItem] = { Entradas: 0, Salidas: 0 };
+      }
+      if (mov.tipoMovimiento === "Entrada" && !soloSalidas) {
+        agrupados[nombreItem].Entradas += mov.cantidad;
+      } else if (mov.tipoMovimiento === "Salida" && !soloEntradas) {
+        agrupados[nombreItem].Salidas += mov.cantidad;
+      }
     });
 
     return Object.keys(agrupados).map(nombre => ({
-        name: nombre,
-        Entradas: agrupados[nombre].Entradas,
-        Salidas: agrupados[nombre].Salidas
+      name: nombre,
+      Entradas: agrupados[nombre].Entradas,
+      Salidas: agrupados[nombre].Salidas
     }));
-};
+  };
 
 
   const prepararDatosEntradaSalida = (movimientos, idKeyName, itemsData, periodo) => {
@@ -552,6 +562,8 @@ const Dashboard = () => {
     setMostrarModalProveedor(false);
     setProveedorSeleccionadoId('');
     setItemParaAutomatizar(null);
+    setCantidadAPedir(1); // <-- Añade esta línea para resetear la cantidad
+
   };
 
   const iniciarConversacionWhatsApp = async () => {
@@ -577,8 +589,10 @@ const Dashboard = () => {
         telefonoProveedor: proveedorInfo.telefono,
         nombreProveedor: proveedorInfo.nombreEmpresaProveedor,
         materiaPrimaNombre: itemParaAutomatizar ? itemParaAutomatizar.nombre : null,
-        // Podrías enviar el ID de la materia prima si Glitch necesita hacer más consultas
-        // materiaPrimaId: itemParaAutomatizar ? itemParaAutomatizar.id : null 
+        cantidad: cantidadAPedir, // <-- Añade esta línea con la cantidad
+        proveedorId: proveedorSeleccionadoId, // <-- AÑADE ESTA LÍNEA
+
+        // materiaPrimaId: itemParaAutomatizar ? itemParaAutomatizar.id : null // Opcional
       });
 
       setFeedbackMessage(`Solicitud de inicio de conversación enviada a ${proveedorInfo.nombreEmpresaProveedor}. Por favor, revisa WhatsApp para continuar la negociación.`);
@@ -652,7 +666,7 @@ const Dashboard = () => {
                 Productos
               </span>
             </div>
-            <div style={cardStyles.cardLabel}>Total Productos en Catálogo</div>
+            <div style={cardStyles.cardLabel}>Total Productos terminados en Catálogo</div>
             <div style={cardStyles.cardValue}>
               {totalProductos}
               <span style={{ fontSize: '16px', color: '#6B7280', marginLeft: '5px' }}>tipos</span>
@@ -688,18 +702,14 @@ const Dashboard = () => {
         </div>
 
         {/* Tarjeta adicional de Almacenes */}
-        <div style={{ ...cardStyles.statCard, borderTop: '4px solid #10B981' }}>
+        <div style={{ ...cardStyles.statCard, borderTop: '4px solid rgb(15, 190, 94)' }}>
           <div style={cardStyles.cardContent}>
             <div style={cardStyles.iconContainer}>
               <div style={{ ...cardStyles.iconBackground, backgroundColor: 'rgba(16, 185, 129, 0.1)' }}>
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M19 3H5C3.89543 3 3 3.89543 3 5V19C3 20.1046 3.89543 21 5 21H19C20.1046 21 21 20.1046 21 19V5C21 3.89543 20.1046 3 19 3Z" stroke="#10B981" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                  <path d="M3 9H21" stroke="#10B981" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                  <path d="M9 21V9" stroke="#10B981" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
+                <Warehouse size={24} color='rgb(10, 192, 92)' />
               </div>
               <span style={{ ...cardStyles.cardBadge, backgroundColor: 'rgba(16, 185, 129, 0.1)', color: '#10B981' }}>
-                Bodegas
+                Almacenes
               </span>
             </div>
             <div style={cardStyles.cardLabel}>Total Almacenes</div>
@@ -712,75 +722,30 @@ const Dashboard = () => {
         </div>
 
         {/* Tarjeta adicional de Proveedores (Nueva) */}
-        <div style={{...cardStyles.statCard, borderTop: '4px solid #8B5CF6' }}>
-            <div style={cardStyles.cardContent}>
-                <div style={cardStyles.iconContainer}>
-                    <div style={{...cardStyles.iconBackground, backgroundColor: 'rgba(139, 92, 246, 0.1)'}}>
-                        {/* Icono de camión o similar para proveedores */}
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#8B5CF6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="1" y="3" width="15" height="13"></rect><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon><circle cx="5.5" cy="18.5" r="2.5"></circle><circle cx="18.5" cy="18.5" r="2.5"></circle></svg>
-                    </div>
-                    <span style={{...cardStyles.cardBadge, backgroundColor: 'rgba(139, 92, 246, 0.1)', color: '#8B5CF6'}}>
-                        Proveedores
-                    </span>
-                </div>
-                <div style={cardStyles.cardLabel}>Total Proveedores</div>
-                <div style={cardStyles.cardValue}>
-                    {proveedores ? proveedores.length : 0}
-                    <span style={{ fontSize: '16px', color: '#6B7280', marginLeft: '5px' }}>registrados</span>
-                </div>
+        <div style={{ ...cardStyles.statCard, borderTop: '4px solid #8B5CF6' }}>
+          <div style={cardStyles.cardContent}>
+            <div style={cardStyles.iconContainer}>
+              <div style={{ ...cardStyles.iconBackground, backgroundColor: 'rgba(139, 92, 246, 0.1)' }}>
+                {/* Icono de camión o similar para proveedores */}
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#8B5CF6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="1" y="3" width="15" height="13"></rect><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon><circle cx="5.5" cy="18.5" r="2.5"></circle><circle cx="18.5" cy="18.5" r="2.5"></circle></svg>
+              </div>
+              <span style={{ ...cardStyles.cardBadge, backgroundColor: 'rgba(139, 92, 246, 0.1)', color: '#8B5CF6' }}>
+                Proveedores
+              </span>
             </div>
-            <div style={{...cardStyles.cardDecoration, backgroundColor: '#8B5CF6'}}></div>
+            <div style={cardStyles.cardLabel}>Total Proveedores</div>
+            <div style={cardStyles.cardValue}>
+              {proveedores ? proveedores.length : 0}
+              <span style={{ fontSize: '16px', color: '#6B7280', marginLeft: '5px' }}>registrados</span>
+            </div>
+          </div>
+          <div style={{ ...cardStyles.cardDecoration, backgroundColor: '#8B5CF6' }}></div>
         </div>
       </div>
 
 
       {/* Productos y Materias Primas con stock bajo */}
       <div style={{ ...styles.statsContainer, gridTemplateColumns: '1fr 1fr' }}> {/* Asegura dos columnas */}
-        <div style={{ ...styles.statCard, overflowY: 'auto', maxHeight: '300px' }}> {/* Habilitar scroll vertical */}
-          <h2 style={styles.listTitle}>Materias Primas con Stock Bajo (menos de 5 unidades)</h2>
-          {materiasPrimasStockBajo.length > 0 ? (
-            <div>
-              {materiasPrimasStockBajo.map(materia => (
-                <div key={materia.id} style={{
-                  padding: '10px',
-                  borderBottom: '1px solid #e0e0e0',
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                }}>
-                  <div style={{ flex: 1, marginRight: '10px' }}>
-                    <div style={{ color: '#333', fontWeight: 'bold' }}>{materia.nombre}</div>
-                    <div style={{ fontSize: '12px', color: '#95a5a6' }}>
-                      Unidad: {materia.unidad}
-                    </div>
-                  </div>
-                  <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-                    <div style={{
-                      backgroundColor: '#e74c3c', color: 'white', borderRadius: '4px',
-                      fontSize: '12px', width: '100px', height: '40px',
-                      display: 'flex', justifyContent: 'center', alignItems: 'center',
-                    }}>
-                      Stock: {stockReal[materia.id] !== undefined ? stockReal[materia.id] : 'N/A'}
-                    </div>
-                    <button
-                      style={{
-                        backgroundColor: '#3498db', color: 'white', borderRadius: '4px',
-                        fontSize: '12px', cursor: 'pointer', border: 'none',
-                        width: '100px', height: '40px',
-                        display: 'flex', justifyContent: 'center', alignItems: 'center',
-                      }}
-                      onClick={() => handleAbrirModalProveedor(materia)}
-                    >
-                      Automatizar
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div style={styles.listEmpty}>No hay materias primas con stock bajo.</div>
-          )}
-        </div>
 
         <div style={{ ...styles.statCard, overflowY: 'auto', maxHeight: '300px' }}> {/* Habilitar scroll vertical */}
           <h2 style={styles.listTitle}>Productos con Stock Bajo (menos de 5 unidades)</h2>
@@ -795,7 +760,7 @@ const Dashboard = () => {
                   alignItems: 'center',
                 }}>
                   <div style={{ flex: 1, marginRight: '10px' }}>
-                    <div style={{ color: '#333', fontWeight: 'bold' }}>{producto.nombre}</div>
+                    <div style={{ color: '#333' }}>{producto.nombre}</div>
                     <div style={{ fontSize: '12px', color: '#95a5a6' }}>
                       Tipo: {producto.tipo}
                     </div>
@@ -805,7 +770,7 @@ const Dashboard = () => {
                     fontSize: '12px', width: '100px', height: '40px',
                     display: 'flex', justifyContent: 'center', alignItems: 'center',
                   }}>
-                    Stock: {stockRealProductos[producto.id] !== undefined ? stockRealProductos[producto.id] : 'N/A'}
+                    <div>Stock: {stockRealProductos[producto.id] || 0}</div>
                   </div>
                   {/* Aquí podrías añadir un botón de automatización si aplica a productos también */}
                 </div>
@@ -815,21 +780,93 @@ const Dashboard = () => {
             <div style={styles.listEmpty}>No hay productos con stock bajo.</div>
           )}
         </div>
+        <div style={{ ...styles.statCard, overflowY: 'auto', maxHeight: '300px' }}> {/* Habilitar scroll vertical */}
+          <h2 style={styles.listTitle}>Materias Primas con Stock Bajo (menos de 5 unidades)</h2>
+          {materiasPrimasStockBajo.length > 0 ? (
+            <div>
+              {materiasPrimasStockBajo.map(materia => (
+                <div key={materia.id} style={{
+                  padding: '10px',
+                  borderBottom: '1px solid #e0e0e0',
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                }}>
+                  <div style={{ flex: 1, marginRight: '10px' }}>
+                    <div style={{ color: '#333' }}>{materia.nombre}</div>
+                    <div style={{ fontSize: '12px', color: '#95a5a6' }}>
+                      Unidad: {materia.unidad}
+                    </div>
+                  </div>
+                  <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                    <div style={{
+                      backgroundColor: '#e74c3c', color: 'white', borderRadius: '4px',
+                      fontSize: '12px', width: '100px', height: '40px',
+                      display: 'flex', justifyContent: 'center', alignItems: 'center',
+                    }}>
+                      <div>Stock: {stockReal[materia.id] || 0}</div>
+                    </div>
+                    <button
+                      style={{
+                        backgroundColor: '#3498db', color: 'white', borderRadius: '4px',
+                        fontSize: '12px', cursor: 'pointer', border: 'none',
+                        width: '100px', height: '40px',
+                        display: 'flex', justifyContent: 'center', alignItems: 'center',
+                      }}
+                      onClick={() => handleAbrirModalProveedor(materia)}
+                    >
+                      Automatizar compra
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div style={styles.listEmpty}>No hay materias primas con stock bajo.</div>
+          )}
+        </div>
+
+
       </div>
 
 
       {/* Modal para seleccionar proveedor */}
       <Modal open={mostrarModalProveedor} onClose={handleCerrarModalProveedor}>
-        <Box sx={styles.modalStyleProveedor}>
-          <h2 style={{ marginTop: 0, marginBottom: '20px' }}>Seleccionar Proveedor para {itemParaAutomatizar?.nombre}</h2>
+        {/* Este Box es el contenedor principal del contenido del modal */}
+        <Box sx={{
+          // Estilos básicos para la apariencia del modal (puedes ajustarlos)
+          position: 'absolute',
+          top: '50%',
+          left: '50%',
+          transform: 'translate(-50%, -50%)',
+          width: 'auto', // O un ancho fijo como 400, 500, etc.
+          maxWidth: '90vw', // Para evitar que sea demasiado ancho en pantallas pequeñas
+          bgcolor: 'background.paper',
+          border: '2px solid #000', // O usa la elevación/sombra de MUI
+          boxShadow: 24,
+          p: 4, // Padding interno
+
+          // --- Estilos para centrar el contenido ---
+          display: 'flex',          // Habilita Flexbox
+          flexDirection: 'column',  // Apila los elementos verticalmente
+          alignItems: 'center',     // Centra los elementos horizontalmente
+          textAlign: 'center',      // Centra el texto dentro de los elementos (como el h2)
+        }}>
+          {/* Encabezado */}
+          <h2 style={{ marginTop: 0, marginBottom: '20px', width: '100%' }}> {/* Asegura que el h2 ocupe el ancho para centrar texto */}
+            Seleccionar Proveedor para {itemParaAutomatizar?.nombre}
+          </h2>
+
+          {/* Selector de Proveedor */}
           <TextField
             select
             label="Proveedor"
             value={proveedorSeleccionadoId}
             onChange={(e) => setProveedorSeleccionadoId(e.target.value)}
-            fullWidth
+            // fullWidth // Considera quitar fullWidth o ajustar el ancho del Box padre
             margin="normal"
             variant="outlined"
+            sx={{ width: '80%', mb: 3 }} // Ajusta el ancho como necesites para el centrado visual
           >
             <MenuItem value="" disabled>
               <em>-- Selecciona un proveedor --</em>
@@ -840,13 +877,35 @@ const Dashboard = () => {
               </MenuItem>
             ))}
           </TextField>
-          <Box sx={{ mt: 3, display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
+          {/* --- DENTRO DEL MODAL --- */}
+          {/* ... (después del TextField del Proveedor) ... */}
+
+          {/* Selector de Cantidad (NUEVO) */}
+          <TextField
+            label="Cantidad a Pedir"
+            type="number" // Para que sea un campo numérico
+            value={cantidadAPedir}
+            onChange={(e) => {
+              const value = parseInt(e.target.value, 10);
+              setCantidadAPedir(value > 0 ? value : 1); // Asegura que sea al menos 1
+            }}
+            InputProps={{ inputProps: { min: 1 } }} // Atributo HTML para mínimo 1
+            variant="outlined"
+            margin="normal"
+            sx={{ width: '80%', mb: 3 }} // Estilo similar al selector de proveedor
+          />
+
+          {/* ... (antes del Box de los botones Cancelar/Iniciar) ... */}
+          {/* --- FIN DE LA MODIFICACIÓN DENTRO DEL MODAL --- */}
+          {/* Contenedor de Botones */}
+          {/* Ajustado para centrar los botones dentro de este Box */}
+          <Box sx={{ mt: 3, display: 'flex', justifyContent: 'center', gap: '10px', width: '100%' }}>
             <Button onClick={handleCerrarModalProveedor} variant="outlined" color="secondary">
               Cancelar
             </Button>
-            <Button 
-              onClick={iniciarConversacionWhatsApp} 
-              variant="contained" 
+            <Button
+              onClick={iniciarConversacionWhatsApp}
+              variant="contained"
               color="primary"
               disabled={!proveedorSeleccionadoId || loadingAutomatizacion}
             >
@@ -855,7 +914,6 @@ const Dashboard = () => {
           </Box>
         </Box>
       </Modal>
-
       {/* Modal de feedback de la automatización */}
       {showFeedbackModal && (
         <div style={styles.modalOverlay}>
@@ -874,7 +932,7 @@ const Dashboard = () => {
                     setShowFeedbackModal(false);
                     // Opcionalmente, cerrar también el modal de selección de proveedor si aún está abierto
                     if (mostrarModalProveedor) {
-                        handleCerrarModalProveedor();
+                      handleCerrarModalProveedor();
                     }
                   }}
                   sx={{ mt: 2 }}
@@ -929,7 +987,7 @@ const Dashboard = () => {
                     cx="50%"
                     cy="50%"
                     labelLine={false}
-                    label={({ name, percent, value }) => percent > 0.05 ? `${name}: ${value}`: ''} // Mostrar solo si es relevante
+                    label={({ name, percent, value }) => percent > 0.05 ? `${name}: ${value}` : ''} // Mostrar solo si es relevante
                     outerRadius={90}
                     fill="#2c90e5"
                     dataKey="value"
@@ -955,18 +1013,18 @@ const Dashboard = () => {
             </div>
             <div style={{ height: '240px' }}>
               <ResponsiveContainer width="100%" height="100%">
-                 <BarChart data={materiaPrimaChartData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#dcdcdc" />
-                    <XAxis dataKey="name" tick={{ fill: '#2c3e50', fontSize: 10 }} interval={0} />
-                    <YAxis tick={{ fill: '#2c3e50' }} />
-                    <Tooltip content={<CustomTooltip />} />
-                    <Legend iconType="circle" iconSize={10} />
-                    <ReferenceLine y={0} stroke="#000" />
-                    <Bar name="Cantidad" dataKey="value" >
-                         {materiaPrimaChartData.map((entry, index) => (
-                            <Cell key={`cell-mp-${index}`} fill={COLORS[index % COLORS.length]} />
-                        ))}
-                    </Bar>
+                <BarChart data={materiaPrimaChartData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#dcdcdc" />
+                  <XAxis dataKey="name" tick={{ fill: '#2c3e50', fontSize: 10 }} interval={0} />
+                  <YAxis tick={{ fill: '#2c3e50' }} />
+                  <Tooltip content={<CustomTooltip />} />
+                  <Legend iconType="circle" iconSize={10} />
+                  <ReferenceLine y={0} stroke="#000" />
+                  <Bar name="Cantidad" dataKey="value" >
+                    {materiaPrimaChartData.map((entry, index) => (
+                      <Cell key={`cell-mp-${index}`} fill={COLORS[index % COLORS.length]} />
+                    ))}
+                  </Bar>
                 </BarChart>
               </ResponsiveContainer>
             </div>
