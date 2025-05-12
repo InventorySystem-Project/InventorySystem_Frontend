@@ -1,6 +1,6 @@
-
 // Dashboard.js
 import React, { useState, useEffect } from 'react';
+import axios from 'axios'; // Asegúrate de tener axios instalado e importado
 import {
   PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis,
   CartesianGrid, Tooltip, Legend, ResponsiveContainer, ReferenceLine
@@ -11,31 +11,32 @@ import {
   Box,
   TextField,
   MenuItem,
-  Table,
-  TableHead,
-  TableRow,
-  TableCell,
-  TableBody,
-  Pagination,
-  Tabs,
-  Container,
-  Tab
+  // Table,  // Comentado si no se usa directamente aquí para las órdenes de compra
+  // TableHead, // Comentado
+  // TableRow, // Comentado
+  // TableCell, // Comentado
+  // TableBody, // Comentado
+  // Pagination, // Comentado
+  // Tabs, // Comentado
+  // Container, // Comentado
+  // Tab // Comentado
 } from '@mui/material';
 import {
   Package,
   Boxes
 } from "lucide-react";
 import ReactLoading from 'react-loading';
-import { getProductosTerminados, addProductoTerminadoTerminado, updateProductoTerminadoTerminado, deleteProductoTerminadoTerminado } from '../services/ProductoTerminadoService';
-import { getAlmacenes, addAlmacen, updateAlmacen, deleteAlmacen } from '../services/AlmacenService';
-import { getMateriasPrimas, addMateriaPrima, updateMateriaPrima, deleteMateriaPrima } from '../services/MateriaPrimaService';
-import { getMovimientosInventarioMP, addMovimientoInventarioMP, updateMovimientoInventarioMP, deleteMovimientoInventarioMP } from '../services/MovimientoInventarioMPService';
+import { getProductosTerminados } from '../services/ProductoTerminadoService';
+import { getAlmacenes } from '../services/AlmacenService';
+import { getMateriasPrimas } from '../services/MateriaPrimaService';
+import { getMovimientosInventarioMP } from '../services/MovimientoInventarioMPService';
 import { getMovimientosInventarioPT } from '../services/MovimientoInventarioPTService';
+import { getProveedores } from '../services/ProveedorService'; // Importar servicio de proveedores
+
 // Colores para los gráficos
 const COLORS = ['#4e79a7', '#f28e2c', '#76b7b2', '#e15759', '#59a14f'];
 
-
-// Estilos definidos directamente en el componente
+// Estilos definidos directamente en el componente (tus estilos existentes)
 const styles = {
   dashboardContainer: {
     backgroundColor: '#ffffff',
@@ -66,16 +67,18 @@ const styles = {
     borderBottom: '2px solid #3498db'
   },
   statsContainer: {
-    display: 'flex',
-    justifyContent: 'center', // Centra las tarjetas horizontalmente
-    gap: '20px',
+    display: 'grid', // Usamos grid solo para las dos tarjetas superiores
+    gridTemplateColumns: '1fr 1fr', // 2 columnas para las dos tarjetas
+    gap: '20px', // Espacio entre las tarjetas
     marginBottom: '20px',
   },
-  statCard: {
+  statCard: { // Estilo general para las tarjetas de stock bajo
     backgroundColor: '#f8f9fa',
     padding: '15px',
     borderRadius: '5px',
-    boxShadow: '0 2px 4px rgba(0,0,0,0.05)'
+    boxShadow: '0 2px 4px rgba(0,0,0,0.05)',
+    // overflow: 'auto', // Movido a las tarjetas específicas que lo necesitan
+    // maxHeight: '300px' // Movido
   },
   statLabel: {
     fontSize: '14px',
@@ -85,43 +88,6 @@ const styles = {
     fontSize: '24px',
     fontWeight: 'bold',
     color: '#2c3e50'
-  }, statsContainer: {
-    display: 'grid',  // Usamos grid solo para las dos tarjetas superiores
-    gridTemplateColumns: '1fr 1fr', // 2 columnas para las dos tarjetas
-    gap: '20px',  // Espacio entre las tarjetas
-    marginBottom: '20px',
-  },
-  statCardTop: {  // Estilo para las tarjetas de arriba (2 tarjetas)
-    backgroundColor: 'white',
-    padding: '10px 15px',   // Menos padding
-    borderRadius: '5px',
-    boxShadow: '0 2px 4px rgba(0,0,0,0.05)',
-    maxWidth: '200px',     // Limita el ancho máximo de cada tarjeta
-    width: '100%',         // Ocupa el 100% del espacio disponible dentro del contenedor
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
-    border: '1px solid',  // Borde azul de 2px
-    borderColor: "lightgray",  // Color del borde
-  },
-  statLabelTop: {
-    fontSize: '14px',
-    color: '#7f8c8d',
-    textAlign: 'center',
-  },
-  statValueTop: {
-    fontSize: '20px',  // Fuente más grande
-    fontWeight: 'bold',
-    color: '#2c3e50',
-    textAlign: 'center',
-  }, statsWrapper: {
-    display: 'flex',
-    justifyContent: 'center', // Centra las dos tarjetas superiores
-    alignItems: 'center',      // Centra las tarjetas verticalmente
-    gap: '20px',
-    marginBottom: '20px',
-    // Esto asegura que las tarjetas estén centradas en la pantalla
   },
   listContainer: {
     marginBottom: '20px'
@@ -189,8 +155,56 @@ const styles = {
     marginTop: '20px',
     paddingTop: '20px'
   },
-  // Estilos para pantallas pequeñas
-  '@media (max-width: 768px)': {
+  modalOverlay: {
+    position: 'fixed',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 1000,
+  },
+  modalContainer: {
+    backgroundColor: '#fff',
+    padding: '20px',
+    borderRadius: '8px',
+    textAlign: 'center',
+    width: '300px',
+    boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
+  },
+  modalStyleProveedor: { // Estilo para el modal de selección de proveedor
+    position: 'absolute',
+    top: '50%',
+    left: '50%',
+    transform: 'translate(-50%, -50%)',
+    width: 400,
+    bgcolor: 'background.paper',
+    border: '2px solid #000',
+    boxShadow: 24,
+    p: 4,
+    borderRadius: '8px'
+  },
+  loadingContainer: {
+    display: 'flex',
+    flexDirection: 'column',
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: '10px',
+  },
+  cancelButton: {
+    backgroundColor: '#e74c3c',
+    color: 'white',
+    padding: '8px 15px',
+    borderRadius: '4px',
+    fontSize: '14px',
+    cursor: 'pointer',
+    border: 'none',
+    marginTop: '10px',
+  },
+  '@media (max-width: 768px)': { // Esto debe estar al final o dentro de un objeto de estilos que se procese correctamente
     statsContainer: {
       gridTemplateColumns: '1fr'
     },
@@ -198,68 +212,15 @@ const styles = {
       gridTemplateColumns: '1fr'
     }
   },
-  loader: {
-    border: '5px solid #f3f3f3',
-    borderTop: '5px solid #3498db',
-    borderRadius: '50%',
-    width: '50px',
-    height: '50px',
-    animation: 'spin 2s linear infinite'
-  },
-  '@keyframes spin': {
-    '0%': { transform: 'rotate(0deg)' },
-    '100%': { transform: 'rotate(360deg)' }
-  },
-  // Estilo del fondo opaco (overlay)
-  modalOverlay: {
-    position: 'fixed',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',  // Fondo oscuro semitransparente
-    display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center',
-    zIndex: 1000,  // Asegura que el modal esté sobre el contenido principal
-  },
-  // Estilo del contenedor del popup/modal
-  modalContainer: {
-    backgroundColor: '#fff',
-    padding: '20px',
-    borderRadius: '8px',
-    textAlign: 'center',
-    width: '300px',  // Ajusta el ancho según el diseño
-    boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
-
-  },
-  loadingContainer: {
-    display: 'flex',
-    flexDirection: 'column',  // Coloca el texto y el spinner en columna
-    justifyContent: 'center',
-    alignItems: 'center', // Centra el contenido
-    gap: '10px', // Espacio entre el texto y el spinner
-  },
-  cancelButton: {
-    backgroundColor: '#e74c3c', // Rojo para destacar
-    color: 'white',
-    padding: '8px 15px',
-    borderRadius: '4px',
-    fontSize: '14px',
-    cursor: 'pointer',
-    border: 'none',
-    marginTop: '10px',  // Espacio entre el spinner y el botón
-  },
 };
-{/* Estilos para las tarjetas mejoradas */ }
-const cardStyles = {
+
+const cardStyles = { // Tus cardStyles existentes
   statsContainer: {
     display: 'flex',
     justifyContent: 'center',
     gap: '30px',
     marginBottom: '30px',
     width: '100%',
-
     padding: '10px 0',
   },
   statCard: {
@@ -336,7 +297,6 @@ const cardStyles = {
 };
 
 
-
 const Dashboard = () => {
   const [activeTab, setActiveTab] = useState("inventario");
   const [totalProductos, setTotalProductos] = useState(0);
@@ -347,137 +307,99 @@ const Dashboard = () => {
   const [distribucionMateriasPrimas, setDistribucionMateriasPrimas] = useState([]);
   const [almacenSeleccionado, setAlmacenSeleccionado] = useState(null);
   const [almacenes, setAlmacenes] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(true); // Para la carga inicial de datos
   const [distribucionMPData, setDistribucionMPData] = useState([]);
   const [stockRealProductos, setStockRealProductos] = useState({});
   const [stockReal, setStockReal] = useState({});
-
-  // Nuevos estados para la funcionalidad de movimientos
   const [periodoEntradas, setPeriodoEntradas] = useState("mensual");
   const [periodoSalidas, setPeriodoSalidas] = useState("mensual");
   const [datosMovimientosEntrada, setDatosMovimientosEntrada] = useState([]);
   const [datosMovimientosSalida, setDatosMovimientosSalida] = useState([]);
   const [movimientosMP, setMovimientosMP] = useState([]);
   const [movimientosPT, setMovimientosPT] = useState([]);
-
-  // Añade estos nuevos estados
   const [datosMovimientosEntradaMP, setDatosMovimientosEntradaMP] = useState([]);
-  const [datosMovimientosSalidaMP, setDatosMovimientosSalidaMP] = useState([]);
+  const [datosMovimientosSalidaMP, setDatosMovimientosSalidaMP] = useState([]); // No parece usarse, considerar eliminar
   const [datosMovimientosEntradaPT, setDatosMovimientosEntradaPT] = useState([]);
-  const [datosMovimientosSalidaPT, setDatosMovimientosSalidaPT] = useState([]);
+  const [datosMovimientosSalidaPT, setDatosMovimientosSalidaPT] = useState([]); // No parece usarse, considerar eliminar
   const [materiasPrimas, setMateriasPrimas] = useState([]);
   const [productos, setProductos] = useState([]);
 
-  const [loading, setLoading] = useState(false);  // Estado para el círculo de carga
-  const [showForm, setShowForm] = useState(false); // Estado para mostrar el formulario
-
-  const iniciarAutomatizacion = (nombre) => {
-    setLoading(true);
-    setShowForm(true);
-
-    // Simulando un proceso de automatización
-    setTimeout(() => {
-      setLoading(false);
-      //alert(`Iniciando automatización para ${nombre}`);
-      setShowForm(false); // Cierra el popup después de 3 segundos
-    }, 3000);  // Simulación de 3 segundos de automatización
-  };
-
+  // Estados para la nueva funcionalidad de automatización
+  const [loadingAutomatizacion, setLoadingAutomatizacion] = useState(false); // Loading específico para la automatización
+  const [showFeedbackModal, setShowFeedbackModal] = useState(false); // Para el popup de feedback de automatización
+  const [feedbackMessage, setFeedbackMessage] = useState('');
+  const [proveedores, setProveedoresList] = useState([]); // Renombrado para evitar conflicto
+  const [proveedorSeleccionadoId, setProveedorSeleccionadoId] = useState('');
+  const [mostrarModalProveedor, setMostrarModalProveedor] = useState(false);
+  const [itemParaAutomatizar, setItemParaAutomatizar] = useState(null); // Para guardar la materia prima o producto
 
 
   const calcularStock = (movimientos) => {
     const stockPorMateriaPrima = {};
-
     movimientos.forEach((movimiento) => {
       const { materiaPrimaId, cantidad, tipoMovimiento } = movimiento;
-
       if (!stockPorMateriaPrima[materiaPrimaId]) {
         stockPorMateriaPrima[materiaPrimaId] = 0;
       }
-
       if (tipoMovimiento === "Entrada") {
         stockPorMateriaPrima[materiaPrimaId] += cantidad;
       } else if (tipoMovimiento === "Salida") {
         stockPorMateriaPrima[materiaPrimaId] -= cantidad;
       }
     });
-
-    console.log("Stock por materia prima: ", stockPorMateriaPrima);
     return stockPorMateriaPrima;
   };
 
   const calcularStockProductos = (movimientos) => {
     const stockPorProducto = {};
-
     movimientos.forEach((movimiento) => {
       const { productoTerminadoId, cantidad, tipoMovimiento } = movimiento;
-
       if (!stockPorProducto[productoTerminadoId]) {
         stockPorProducto[productoTerminadoId] = 0;
       }
-
       if (tipoMovimiento === "Entrada") {
         stockPorProducto[productoTerminadoId] += cantidad;
       } else if (tipoMovimiento === "Salida") {
         stockPorProducto[productoTerminadoId] -= cantidad;
       }
     });
-
-    console.log("Stock por producto terminado: ", stockPorProducto);
     return stockPorProducto;
   };
 
-  // Función para agrupar movimientos por producto
   const agruparMovimientosPorProducto = (movimientos) => {
     const agrupados = {};
-
     movimientos.forEach(movimiento => {
       const productoId = movimiento.productoTerminadoId;
-      // Buscar el nombre del producto usando su ID
       const producto = productos.find(p => p.id === productoId);
       const nombreProducto = producto ? producto.nombre : `Producto ${productoId}`;
-
       if (!agrupados[nombreProducto]) {
         agrupados[nombreProducto] = 0;
       }
-
       agrupados[nombreProducto] += movimiento.cantidad;
     });
-
     return Object.keys(agrupados).map(nombre => ({
       name: nombre,
       cantidad: agrupados[nombre]
     }));
   };
-
-
-
-  // Función para filtrar datos por periodo
+  
   const filtrarPorPeriodo = (datos, periodo, fechaActual = new Date()) => {
     return datos.filter(item => {
-      if (!item.fechaMovimiento) return true;
-
+      if (!item.fechaMovimiento) return true; // o false, dependiendo de cómo quieras manejar datos sin fecha
       const fechaMovimiento = new Date(item.fechaMovimiento);
-
       switch (periodo) {
         case 'semanal':
-          // Últimos 7 días
           const unaSemanaMenos = new Date(fechaActual);
           unaSemanaMenos.setDate(fechaActual.getDate() - 7);
-          return fechaMovimiento >= unaSemanaMenos;
-
+          return fechaMovimiento >= unaSemanaMenos && fechaMovimiento <= fechaActual;
         case 'mensual':
-          // Último mes
           const unMesMenos = new Date(fechaActual);
           unMesMenos.setMonth(fechaActual.getMonth() - 1);
-          return fechaMovimiento >= unMesMenos;
-
+          return fechaMovimiento >= unMesMenos && fechaMovimiento <= fechaActual;
         case 'trimestral':
-          // Últimos 3 meses
           const tresMesesMenos = new Date(fechaActual);
           tresMesesMenos.setMonth(fechaActual.getMonth() - 3);
-          return fechaMovimiento >= tresMesesMenos;
-
+          return fechaMovimiento >= tresMesesMenos && fechaMovimiento <= fechaActual;
         default:
           return true;
       }
@@ -486,89 +408,58 @@ const Dashboard = () => {
 
   useEffect(() => {
     const fetchData = async () => {
+      setIsLoading(true);
       try {
-        setIsLoading(true);
+        const [materiasData, productosData, movimientosMPData, movimientosPTData, almacenesData, proveedoresData] = await Promise.all([
+          getMateriasPrimas(),
+          getProductosTerminados(),
+          getMovimientosInventarioMP(),
+          getMovimientosInventarioPT(),
+          getAlmacenes(),
+          getProveedores() // Cargar proveedores
+        ]);
 
-        // Obtener los productos y las materias primas
-        const materiasData = await getMateriasPrimas();
-        const productosData = await getProductosTerminados();
-        console.log('Productos:', productosData); // Verifica que productosData tenga el nombre
-        console.log('Materias Primas:', materiasData); // Verifica que materiasData tenga el nombre
-
-        // Guardar los productos y materias primas
-        setTotalProductos(productosData.length);
-        setTotalMateriasPrimas(materiasData.length);
         setMateriasPrimas(materiasData);
         setProductos(productosData);
-
-        // Obtener los movimientos de inventario de materias primas
-        const movimientosMPData = await getMovimientosInventarioMP();
         setMovimientosMP(movimientosMPData);
-
-        // Calcular el stock real de materias primas en base a los movimientos
-        const stockCalculado = calcularStock(movimientosMPData);
-        setStockReal(stockCalculado);
-
-        // Crear datos para el gráfico de distribución de materias primas
-        const distribucionMPData = Object.keys(stockCalculado).map((materiaPrimaId) => {
-          // Buscar el nombre de la materia prima usando su ID
-          const materiaPrima = materiasData.find(mp => mp.id === parseInt(materiaPrimaId));
-          return {
-            name: materiaPrima ? materiaPrima.nombre : `Materia Prima ${materiaPrimaId}`,
-            value: stockCalculado[materiaPrimaId]
-          };
-        });
-        console.log("Distribución de materias primas:", distribucionMPData);
-        setDistribucionMPData(distribucionMPData);
-
-        // Obtener los movimientos de inventario de productos terminados
-        const movimientosPTData = await getMovimientosInventarioPT();
         setMovimientosPT(movimientosPTData);
+        setAlmacenes(almacenesData);
+        setProveedoresList(proveedoresData); // Guardar lista de proveedores
 
-        // Calcular el stock real de productos en base a los movimientos
+        setTotalProductos(productosData.length);
+        setTotalMateriasPrimas(materiasData.length);
+
+        const stockCalculadoMP = calcularStock(movimientosMPData);
+        setStockReal(stockCalculadoMP);
+
+        const distribucionMP = Object.keys(stockCalculadoMP).map((id) => {
+          const mp = materiasData.find(m => m.id === parseInt(id));
+          return { name: mp ? mp.nombre : `MP ${id}`, value: stockCalculadoMP[id] };
+        });
+        setDistribucionMPData(distribucionMP);
+        setDistribucionMateriasPrimas(distribucionMP); // Para el gráfico de pie/barra
+
+        const stockBajoMP = materiasData.filter(mp => (stockCalculadoMP[mp.id] || 0) < 5);
+        setMateriasPrimasStockBajo(stockBajoMP);
+
         const stockCalculadoPT = calcularStockProductos(movimientosPTData);
         setStockRealProductos(stockCalculadoPT);
 
-        // Crear datos para el gráfico de distribución de productos
-        const distribucionProductosData = Object.keys(stockCalculadoPT).map((productoId) => {
-          // Buscar el nombre del producto usando su ID
-          const producto = productosData.find(p => p.id === parseInt(productoId));
-          return {
-            name: producto ? producto.nombre : `Producto ${productoId}`,
-            value: stockCalculadoPT[productoId]
-          };
+        const distribucionPT = Object.keys(stockCalculadoPT).map((id) => {
+          const p = productosData.find(prod => prod.id === parseInt(id));
+          return { name: p ? p.nombre : `PT ${id}`, value: stockCalculadoPT[id] };
         });
-        console.log("Distribución de productos terminados:", distribucionProductosData);
-        setDistribucionProductos(distribucionProductosData);
+        setDistribucionProductos(distribucionPT);
 
-        // Filtrar productos con stock bajo basado en el stock calculado
-        const stockBajo = productosData.filter(p => {
-          const stockActual = stockCalculadoPT[p.id] || 0;
-          return stockActual < 5;
-        });
-        setProductosStockBajo(stockBajo);
+        const stockBajoPT = productosData.filter(p => (stockCalculadoPT[p.id] || 0) < 5);
+        setProductosStockBajo(stockBajoPT);
 
-        // Filtrar materias primas con stock bajo basado en el stock calculado
-        const materiasBajo = materiasData.filter(mp => {
-          const stockActual = stockCalculado[mp.id] || 0;
-          return stockActual < 5;
-        });
-        setMateriasPrimasStockBajo(materiasBajo);
-
-        // Obtener almacenes
-        const almacenesData = await getAlmacenes();
-        setAlmacenes(almacenesData);
         if (almacenesData.length > 0) {
           setAlmacenSeleccionado(almacenesData[0].id);
         }
-
-        // Procesar datos para los gráficos de movimientos
-        // Aquí pasamos `productosData` y `materiasData` a la función `agruparMovimientosPorItem`
-        const datosMateriasPrimas = agruparMovimientosPorItem(movimientosMPData, "materiaPrimaId", productosData, materiasData);
-        const datosProductos = agruparMovimientosPorItem(movimientosPTData, "productoTerminadoId", productosData, materiasData);
-
-        setDatosMovimientosEntradaMP(datosMateriasPrimas);
-        setDatosMovimientosEntradaPT(datosProductos);
+        
+        // Procesar datos para gráficos de movimientos
+        procesarDatosMovimientosGraficos(movimientosMPData, movimientosPTData, materiasData, productosData, periodoEntradas, periodoSalidas);
 
       } catch (error) {
         console.error("Error al cargar datos del dashboard:", error);
@@ -576,126 +467,63 @@ const Dashboard = () => {
         setIsLoading(false);
       }
     };
-
     fetchData();
-  }, []);
+  }, []); // Sin dependencias para que se ejecute solo una vez al montar
 
 
+  const procesarDatosMovimientosGraficos = (movimientosMPData, movimientosPTData, materiasData, productosData, periodoEnt, periodoSal) => {
+    const hoy = new Date();
+    
+    const movMPEntradasFiltrados = filtrarPorPeriodo(movimientosMPData.filter(m => m.tipoMovimiento === "Entrada"), periodoEnt, hoy);
+    const movMPSalidasFiltrados = filtrarPorPeriodo(movimientosMPData.filter(m => m.tipoMovimiento === "Salida"), periodoSal, hoy);
+    
+    const movPTEntradasFiltrados = filtrarPorPeriodo(movimientosPTData.filter(m => m.tipoMovimiento === "Entrada"), periodoEnt, hoy);
+    const movPTSalidasFiltrados = filtrarPorPeriodo(movimientosPTData.filter(m => m.tipoMovimiento === "Salida"), periodoSal, hoy);
 
-  // Añade esta función a tu componente
-  const prepararDatosEntradaSalida = (movimientos, idKeyName, itemsData) => {
-    // Agrupar entradas y salidas
-    const entradas = {};
-    const salidas = {};
+    setDatosMovimientosEntradaMP(agruparMovimientosPorItem(movMPEntradasFiltrados, "materiaPrimaId", materiasData, true));
+    // Para el gráfico combinado de entradas y salidas de MP:
+    const datosCombinadosMP = prepararDatosEntradaSalida(movimientosMPData, "materiaPrimaId", materiasData, periodoEnt); // Usar el mismo periodo para E/S o diferentes según se necesite
+    setDatosMovimientosEntradaMP(datosCombinadosMP);
 
-    // Procesar movimientos
-    movimientos.forEach(mov => {
-      const itemId = mov[idKeyName];
-      // Buscar el nombre del ítem
-      const item = itemsData.find(i => i.id === parseInt(itemId));
-      const nombreItem = item ? item.nombre : `Item ${itemId}`;
 
-      if (mov.tipoMovimiento === "Entrada") {
-        entradas[nombreItem] = (entradas[nombreItem] || 0) + mov.cantidad;
-      } else if (mov.tipoMovimiento === "Salida") {
-        salidas[nombreItem] = (salidas[nombreItem] || 0) + mov.cantidad;
-      }
-    });
-
-    // Combinar datos para el gráfico
-    const datosFormateados = Object.keys({ ...entradas, ...salidas }).map(nombre => ({
-      name: nombre,
-      Entradas: entradas[nombre] || 0,
-      Salidas: salidas[nombre] || 0
-    }));
-
-    return datosFormateados;
+    // Para el gráfico combinado de entradas y salidas de PT:
+    const datosCombinadosPT = prepararDatosEntradaSalida(movimientosPTData, "productoTerminadoId", productosData, periodoSal);
+    setDatosMovimientosEntradaPT(datosCombinadosPT);
   };
 
-  // Función para procesar los datos de movimientos
-  // Primero, modifica la función para procesar los datos de movimientos
-  // Reemplaza tu función procesarDatosMovimientos con esta
-  const procesarDatosMovimientos = (movimientosMPData, movimientosPTData) => {
-    try {
-      // Filtrar por periodo actual
-      const movimientosMPFiltrados = filtrarPorPeriodo(movimientosMPData, periodoEntradas);
-      const movimientosPTFiltrados = filtrarPorPeriodo(movimientosPTData, periodoSalidas);
 
-      // Procesar datos de materias primas
-      const datosMateriasPrimas = agruparMovimientosPorItem(movimientosMPFiltrados, "materiaPrimaId");
-      setDatosMovimientosEntradaMP(datosMateriasPrimas);
-
-      // Procesar datos de productos terminados
-      const datosProductos = agruparMovimientosPorItem(movimientosPTFiltrados, "productoTerminadoId");
-      setDatosMovimientosEntradaPT(datosProductos);
-
-    } catch (error) {
-      console.error("Error al procesar datos de movimientos:", error);
-    }
-  };
-
-  // Nueva función para agrupar movimientos por ítem específico
-  const agruparMovimientosPorItem = (movimientos, idKey, productosData, materiasPrimas) => {
+  // Función para agrupar movimientos por ítem (materia prima o producto)
+  const agruparMovimientosPorItem = (movimientos, idKeyName, itemsData, soloEntradas = false, soloSalidas = false) => {
     const agrupados = {};
+    movimientos.forEach(mov => {
+        const itemId = mov[idKeyName];
+        const item = itemsData.find(i => i.id === parseInt(itemId));
+        const nombreItem = item ? item.nombre : `Item ${itemId}`;
 
-    movimientos.forEach(movimiento => {
-      let itemId, itemName;
-
-      // Si el idKey es "materiaPrimaId", buscamos el nombre en materiasPrimas
-      if (idKey === "materiaPrimaId") {
-        itemId = movimiento[idKey];
-        const materiaPrima = materiasPrimas.find(mp => mp.id === parseInt(itemId));
-        itemName = materiaPrima ? materiaPrima.nombre : `Materia Prima ${itemId}`;
-      } else if (idKey === "productoTerminadoId") {  // Si el idKey es "productoTerminadoId", buscamos en productosData
-        itemId = movimiento[idKey];
-        const producto = productosData.find(p => p.id === parseInt(itemId));
-        itemName = producto ? producto.nombre : `Producto ${itemId}`;
-      }
-
-      // Si no existe el ítem, lo inicializamos
-      if (!agrupados[itemName]) {
-        agrupados[itemName] = {
-          Entradas: 0,
-          Salidas: 0
-        };
-      }
-
-      // Sumar la cantidad dependiendo del tipo de movimiento
-      if (movimiento.tipoMovimiento === "Entrada") {
-        agrupados[itemName].Entradas += movimiento.cantidad;
-      } else if (movimiento.tipoMovimiento === "Salida") {
-        agrupados[itemName].Salidas += movimiento.cantidad;
-      }
+        if (!agrupados[nombreItem]) {
+            agrupados[nombreItem] = { Entradas: 0, Salidas: 0 };
+        }
+        if (mov.tipoMovimiento === "Entrada" && !soloSalidas) {
+            agrupados[nombreItem].Entradas += mov.cantidad;
+        } else if (mov.tipoMovimiento === "Salida" && !soloEntradas) {
+            agrupados[nombreItem].Salidas += mov.cantidad;
+        }
     });
 
-    // Convertir el objeto agrupado en formato para gráfico
-    return Object.keys(agrupados).map(name => ({
-      name,
-      Entradas: agrupados[name].Entradas,
-      Salidas: agrupados[name].Salidas
+    return Object.keys(agrupados).map(nombre => ({
+        name: nombre,
+        Entradas: agrupados[nombre].Entradas,
+        Salidas: agrupados[nombre].Salidas
     }));
+};
+
+
+  const prepararDatosEntradaSalida = (movimientos, idKeyName, itemsData, periodo) => {
+    const hoy = new Date();
+    const movimientosFiltrados = filtrarPorPeriodo(movimientos, periodo, hoy);
+    return agruparMovimientosPorItem(movimientosFiltrados, idKeyName, itemsData);
   };
 
-
-
-
-  // Función para obtener el nombre del ítem
-  const getItemName = (id, idKey) => {
-    const parsedId = parseInt(id);
-    console.log(`Buscando ${idKey} con ID: ${id} (parsed: ${parsedId})`);
-
-    if (idKey === "materiaPrimaId") {
-      console.log("Materias primas disponibles:", materiasPrimas);
-      const materiaPrima = materiasPrimas.find(mp => mp.id === parsedId);
-      console.log("Materia prima encontrada:", materiaPrima);
-      return materiaPrima ? materiaPrima.nombre : `Materia Prima ${id}`;
-    } else {
-      console.log("Productos disponibles:", productos);
-      const producto = productos.find(p => p.id === parsedId);
-      console.log("Producto encontrado:", producto);
-      return producto ? producto.nombre : `Productoxd ${id}`;
-    }
-  };
 
   const handleAlmacenChange = (e) => {
     setAlmacenSeleccionado(e.target.value);
@@ -704,33 +532,73 @@ const Dashboard = () => {
   const handlePeriodoEntradasChange = (e) => {
     const nuevoPeriodo = e.target.value;
     setPeriodoEntradas(nuevoPeriodo);
-
-    // Obtener los movimientos de entrada y filtrarlos por el nuevo periodo
-    const entradasMP = movimientosMP.filter(m => m.tipoMovimiento === "Entrada");
-    const entradasPT = movimientosPT.filter(m => m.tipoMovimiento === "Entrada");
-
-    const entradasFiltradas = filtrarPorPeriodo([...entradasMP, ...entradasPT], nuevoPeriodo);
-    const datosAgrupados = agruparMovimientosPorProducto(entradasFiltradas);
-
-    setDatosMovimientosEntrada(datosAgrupados);
+    procesarDatosMovimientosGraficos(movimientosMP, movimientosPT, materiasPrimas, productos, nuevoPeriodo, periodoSalidas);
   };
 
   const handlePeriodoSalidasChange = (e) => {
     const nuevoPeriodo = e.target.value;
     setPeriodoSalidas(nuevoPeriodo);
-
-    // Obtener los movimientos de salida y filtrarlos por el nuevo periodo
-    const salidasMP = movimientosMP.filter(m => m.tipoMovimiento === "Salida");
-    const salidasPT = movimientosPT.filter(m => m.tipoMovimiento === "Salida");
-
-    const salidasFiltradas = filtrarPorPeriodo([...salidasMP, ...salidasPT], nuevoPeriodo);
-    const datosAgrupados = agruparMovimientosPorProducto(salidasFiltradas);
-
-    setDatosMovimientosSalida(datosAgrupados);
+    procesarDatosMovimientosGraficos(movimientosMP, movimientosPT, materiasPrimas, productos, periodoEntradas, nuevoPeriodo);
   };
 
-  // Datos de ejemplo para el gráfico de pie (distribución de productos)
-  const productChartData = distribucionProductos.length > 0 ? distribucionProductos : [];
+
+  // Funciones para la automatización
+  const handleAbrirModalProveedor = (item) => {
+    setItemParaAutomatizar(item);
+    setMostrarModalProveedor(true);
+  };
+
+  const handleCerrarModalProveedor = () => {
+    setMostrarModalProveedor(false);
+    setProveedorSeleccionadoId('');
+    setItemParaAutomatizar(null);
+  };
+
+  const iniciarConversacionWhatsApp = async () => {
+    if (!proveedorSeleccionadoId) {
+      alert("Por favor, selecciona un proveedor.");
+      return;
+    }
+
+    const proveedorInfo = proveedores.find(p => p.id === proveedorSeleccionadoId);
+    if (!proveedorInfo || !proveedorInfo.telefono) {
+      alert("El proveedor seleccionado no tiene un número de teléfono configurado o no se encontró la información del proveedor.");
+      return;
+    }
+
+    setLoadingAutomatizacion(true);
+    setShowFeedbackModal(true);
+    setFeedbackMessage("Iniciando solicitud de compra con el proveedor...");
+
+    try {
+      const glitchWebhookUrl = 'https://system-inventory-whatsapp-api.glitch.me/iniciar-compra-proveedor'; // ¡¡¡REEMPLAZA ESTO!!!
+
+      await axios.post(glitchWebhookUrl, {
+        telefonoProveedor: proveedorInfo.telefono,
+        nombreProveedor: proveedorInfo.nombreEmpresaProveedor,
+        materiaPrimaNombre: itemParaAutomatizar ? itemParaAutomatizar.nombre : null,
+        // Podrías enviar el ID de la materia prima si Glitch necesita hacer más consultas
+        // materiaPrimaId: itemParaAutomatizar ? itemParaAutomatizar.id : null 
+      });
+
+      setFeedbackMessage(`Solicitud de inicio de conversación enviada a ${proveedorInfo.nombreEmpresaProveedor}. Por favor, revisa WhatsApp para continuar la negociación.`);
+      // Mantener el modal de feedback abierto por un momento, luego limpiar.
+      // No cerramos inmediatamente el modal de proveedor aquí, podría hacerse después del feedback.
+      // setTimeout(() => {
+      //   setShowFeedbackModal(false); // Opcional: cerrar el feedback automáticamente
+      //   handleCerrarModalProveedor();
+      // }, 5000); 
+
+    } catch (error) {
+      console.error("Error al iniciar la conversación por WhatsApp:", error.response ? error.response.data : error.message);
+      setFeedbackMessage("Hubo un error al intentar iniciar la conversación. Revisa la consola e inténtalo de nuevo.");
+    } finally {
+      setLoadingAutomatizacion(false);
+      // No cerramos el modal de proveedor aquí para que el usuario pueda ver el feedback.
+      // Se podría añadir un botón "Cerrar" al modal de feedback o cerrar el modal de proveedor manualmente.
+    }
+  };
+
 
   const CustomTooltip = ({ active, payload, label }) => {
     if (active && payload && payload.length) {
@@ -742,12 +610,30 @@ const Dashboard = () => {
           color: '#333',
           boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
         }}>
-          <p>{`${label || payload[0].name} : ${payload[0].value} unidades`}</p>
+          <p style={{ margin: 0, fontWeight: 'bold' }}>{label || payload[0].name}</p>
+          {payload.map((entry, index) => (
+            <p key={`item-${index}`} style={{ margin: '2px 0', color: entry.color }}>
+              {`${entry.name} : ${entry.value} unidades`}
+            </p>
+          ))}
         </div>
       );
     }
     return null;
   };
+
+
+  if (isLoading) {
+    return (
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', ...styles.dashboardContainer }}>
+        <ReactLoading type="spin" color="#3498db" height={100} width={100} />
+      </div>
+    );
+  }
+
+  const productChartData = distribucionProductos.length > 0 ? distribucionProductos : [{ name: 'Sin Datos', value: 1 }];
+  const materiaPrimaChartData = distribucionMateriasPrimas.length > 0 ? distribucionMateriasPrimas : [{ name: 'Sin Datos', value: 1 }];
+
 
   return (
     <div style={styles.dashboardContainer}>
@@ -756,277 +642,102 @@ const Dashboard = () => {
       {/* Contadores de totales con nuevo diseño */}
       <div style={cardStyles.statsContainer}>
         {/* Tarjeta de Total Productos */}
-        <div style={{
-          ...cardStyles.statCard,
-          borderTop: '4px solid #3B82F6',
-        }}>
+        <div style={{ ...cardStyles.statCard, borderTop: '4px solid #3B82F6' }}>
           <div style={cardStyles.cardContent}>
             <div style={cardStyles.iconContainer}>
-              <div style={{
-                ...cardStyles.iconBackground,
-                backgroundColor: 'rgba(59, 130, 246, 0.1)',
-              }}>
+              <div style={{ ...cardStyles.iconBackground, backgroundColor: 'rgba(59, 130, 246, 0.1)' }}>
                 <Package size={24} color="#3B82F6" />
               </div>
-              <span style={{
-                ...cardStyles.cardBadge,
-                backgroundColor: 'rgba(59, 130, 246, 0.1)',
-                color: '#3B82F6',
-              }}>
+              <span style={{ ...cardStyles.cardBadge, backgroundColor: 'rgba(59, 130, 246, 0.1)', color: '#3B82F6' }}>
                 Productos
               </span>
             </div>
-
-            <div style={cardStyles.cardLabel}>Total Productos</div>
+            <div style={cardStyles.cardLabel}>Total Productos en Catálogo</div>
             <div style={cardStyles.cardValue}>
               {totalProductos}
-              <span style={{ fontSize: '16px', color: '#6B7280', marginLeft: '5px' }}>unidades</span>
+              <span style={{ fontSize: '16px', color: '#6B7280', marginLeft: '5px' }}>tipos</span>
             </div>
-
-            <div style={cardStyles.cardFooter}>
-              <span style={{
-                color: '#10B981',
-                display: 'flex',
-                alignItems: 'center',
-                marginRight: '8px'
-              }}>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M7 17L17 7M17 7H8M17 7V16" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-                5%
-              </span>
-              vs. mes anterior
-            </div>
+            {/* <div style={cardStyles.cardFooter}> 
+              Actualizaciones dinámicas si las tienes
+            </div> */}
           </div>
-          <div style={{
-            ...cardStyles.cardDecoration,
-            backgroundColor: '#3B82F6',
-          }}></div>
+          <div style={{ ...cardStyles.cardDecoration, backgroundColor: '#3B82F6' }}></div>
         </div>
 
         {/* Tarjeta de Total Materias Primas */}
-        <div style={{
-          ...cardStyles.statCard,
-          borderTop: '4px solid #F59E0B',
-        }}>
+        <div style={{ ...cardStyles.statCard, borderTop: '4px solid #F59E0B' }}>
           <div style={cardStyles.cardContent}>
             <div style={cardStyles.iconContainer}>
-              <div style={{
-                ...cardStyles.iconBackground,
-                backgroundColor: 'rgba(245, 158, 11, 0.1)',
-              }}>
+              <div style={{ ...cardStyles.iconBackground, backgroundColor: 'rgba(245, 158, 11, 0.1)' }}>
                 <Boxes size={24} color="#F59E0B" />
               </div>
-              <span style={{
-                ...cardStyles.cardBadge,
-                backgroundColor: 'rgba(245, 158, 11, 0.1)',
-                color: '#F59E0B',
-              }}>
+              <span style={{ ...cardStyles.cardBadge, backgroundColor: 'rgba(245, 158, 11, 0.1)', color: '#F59E0B' }}>
                 Materiales
               </span>
             </div>
-
-            <div style={cardStyles.cardLabel}>Total Materias Primas</div>
+            <div style={cardStyles.cardLabel}>Total Materias Primas en Catálogo</div>
             <div style={cardStyles.cardValue}>
               {totalMateriasPrimas}
-              <span style={{ fontSize: '16px', color: '#6B7280', marginLeft: '5px' }}>unidades</span>
+              <span style={{ fontSize: '16px', color: '#6B7280', marginLeft: '5px' }}>tipos</span>
             </div>
-
-            <div style={cardStyles.cardFooter}>
-              <span style={{
-                color: '#EF4444',
-                display: 'flex',
-                alignItems: 'center',
-                marginRight: '8px'
-              }}>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M17 7L7 17M7 17H16M7 17V8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-                3%
-              </span>
-              vs. mes anterior
-            </div>
+            {/* <div style={cardStyles.cardFooter}>
+              Actualizaciones dinámicas si las tienes
+            </div> */}
           </div>
-          <div style={{
-            ...cardStyles.cardDecoration,
-            backgroundColor: '#F59E0B',
-          }}></div>
+          <div style={{ ...cardStyles.cardDecoration, backgroundColor: '#F59E0B' }}></div>
         </div>
 
         {/* Tarjeta adicional de Almacenes */}
-        <div style={{
-          ...cardStyles.statCard,
-          borderTop: '4px solid #10B981',
-        }}>
+        <div style={{ ...cardStyles.statCard, borderTop: '4px solid #10B981' }}>
           <div style={cardStyles.cardContent}>
             <div style={cardStyles.iconContainer}>
-              <div style={{
-                ...cardStyles.iconBackground,
-                backgroundColor: 'rgba(16, 185, 129, 0.1)',
-              }}>
+              <div style={{ ...cardStyles.iconBackground, backgroundColor: 'rgba(16, 185, 129, 0.1)' }}>
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <path d="M19 3H5C3.89543 3 3 3.89543 3 5V19C3 20.1046 3.89543 21 5 21H19C20.1046 21 21 20.1046 21 19V5C21 3.89543 20.1046 3 19 3Z" stroke="#10B981" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                   <path d="M3 9H21" stroke="#10B981" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                   <path d="M9 21V9" stroke="#10B981" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
               </div>
-              <span style={{
-                ...cardStyles.cardBadge,
-                backgroundColor: 'rgba(16, 185, 129, 0.1)',
-                color: '#10B981',
-              }}>
+              <span style={{ ...cardStyles.cardBadge, backgroundColor: 'rgba(16, 185, 129, 0.1)', color: '#10B981' }}>
                 Bodegas
               </span>
             </div>
-
             <div style={cardStyles.cardLabel}>Total Almacenes</div>
             <div style={cardStyles.cardValue}>
               {almacenes ? almacenes.length : 0}
               <span style={{ fontSize: '16px', color: '#6B7280', marginLeft: '5px' }}>activos</span>
             </div>
-
-            <div style={cardStyles.cardFooter}>
-              <span style={{
-                color: '#10B981',
-                display: 'flex',
-                alignItems: 'center',
-                marginRight: '8px'
-              }}>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M7 17L17 7M17 7H8M17 7V16" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-                2%
-              </span>
-              Capacidad usada
-            </div>
           </div>
-          <div style={{
-            ...cardStyles.cardDecoration,
-            backgroundColor: '#10B981',
-          }}></div>
+          <div style={{ ...cardStyles.cardDecoration, backgroundColor: '#10B981' }}></div>
         </div>
 
-        {/* Tarjeta adicional de Valor del Inventario */}
-        <div style={{
-          ...cardStyles.statCard,
-          borderTop: '4px solid #8B5CF6',
-        }}>
-          <div style={cardStyles.cardContent}>
-            <div style={cardStyles.iconContainer}>
-              <div style={{
-                ...cardStyles.iconBackground,
-                backgroundColor: 'rgba(139, 92, 246, 0.1)',
-              }}>
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M12 1V23" stroke="#8B5CF6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                  <path d="M17 5H9.5C8.57174 5 7.6815 5.36875 7.02513 6.02513C6.36875 6.6815 6 7.57174 6 8.5C6 9.42826 6.36875 10.3185 7.02513 10.9749C7.6815 11.6313 8.57174 12 9.5 12H14.5C15.4283 12 16.3185 12.3687 16.9749 13.0251C17.6313 13.6815 18 14.5717 18 15.5C18 16.4283 17.6313 17.3185 16.9749 17.9749C16.3185 18.6313 15.4283 19 14.5 19H6" stroke="#8B5CF6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-              </div>
-              <span style={{
-                ...cardStyles.cardBadge,
-                backgroundColor: 'rgba(139, 92, 246, 0.1)',
-                color: '#8B5CF6',
-              }}>
-                Valor
-              </span>
+        {/* Tarjeta adicional de Proveedores (Nueva) */}
+        <div style={{...cardStyles.statCard, borderTop: '4px solid #8B5CF6' }}>
+            <div style={cardStyles.cardContent}>
+                <div style={cardStyles.iconContainer}>
+                    <div style={{...cardStyles.iconBackground, backgroundColor: 'rgba(139, 92, 246, 0.1)'}}>
+                        {/* Icono de camión o similar para proveedores */}
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#8B5CF6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="1" y="3" width="15" height="13"></rect><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon><circle cx="5.5" cy="18.5" r="2.5"></circle><circle cx="18.5" cy="18.5" r="2.5"></circle></svg>
+                    </div>
+                    <span style={{...cardStyles.cardBadge, backgroundColor: 'rgba(139, 92, 246, 0.1)', color: '#8B5CF6'}}>
+                        Proveedores
+                    </span>
+                </div>
+                <div style={cardStyles.cardLabel}>Total Proveedores</div>
+                <div style={cardStyles.cardValue}>
+                    {proveedores ? proveedores.length : 0}
+                    <span style={{ fontSize: '16px', color: '#6B7280', marginLeft: '5px' }}>registrados</span>
+                </div>
             </div>
-
-            <div style={cardStyles.cardLabel}>Valor del Inventario</div>
-            <div style={cardStyles.cardValue}>
-              $45,890
-              <span style={{ fontSize: '16px', color: '#6B7280', marginLeft: '5px' }}>USD</span>
-            </div>
-
-            <div style={cardStyles.cardFooter}>
-              <span style={{
-                color: '#10B981',
-                display: 'flex',
-                alignItems: 'center',
-                marginRight: '8px'
-              }}>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M7 17L17 7M17 7H8M17 7V16" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-                8.2%
-              </span>
-              vs. mes anterior
-            </div>
-          </div>
-          <div style={{
-            ...cardStyles.cardDecoration,
-            backgroundColor: '#8B5CF6',
-          }}></div>
+            <div style={{...cardStyles.cardDecoration, backgroundColor: '#8B5CF6'}}></div>
         </div>
       </div>
-      {/* Productos y Materias Primas con stock bajo */}
-      <div style={styles.statsContainer}>
-        <div style={{ ...styles.statCard, overflow: 'auto', maxHeight: '300px' }}>
-          <h2 style={styles.listTitle}>Productos con Stock Bajo</h2>
-          {productosStockBajo.length > 0 ? (
-            <div>
-              {productosStockBajo.map(producto => (
-                <div key={producto.id} style={{
-                  padding: '10px',
-                  borderBottom: '1px solid #e0e0e0',
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                }}>
-                  <div style={{ flex: 1, marginRight: '10px' }}>
-                    <div style={{ color: '#333' }}>{producto.nombre}</div>
-                    <div style={{ fontSize: '12px', color: '#95a5a6' }}>
-                      Categoría: {producto.tipo}
-                    </div>
-                  </div>
-                  <div style={{
-                    display: 'flex',
-                    justifyContent: 'flex-end',
-                    gap: '10px',
-                    alignItems: 'center',
-                  }}>
-                    <div style={{
-                      backgroundColor: '#e74c3c',
-                      color: 'white',
-                      borderRadius: '4px',
-                      fontSize: '12px',
-                      width: '100px',
-                      height: '40px',
-                      display: 'flex',
-                      justifyContent: 'center',
-                      alignItems: 'center',
-                    }}>
-                      <div>Stock: {stockRealProductos[producto.id] || 0}</div>
-                    </div>
-                    {/* Botón de automatización */}
-                    <button
-                      style={{
-                        backgroundColor: '#3498db', // Azul
-                        color: 'white',
-                        borderRadius: '4px',
-                        fontSize: '12px',
-                        cursor: 'pointer',
-                        border: 'none',
-                        width: '100px',
-                        height: '40px',
-                        display: 'flex',
-                        justifyContent: 'center',
-                        alignItems: 'center',
-                      }}
-                      onClick={() => iniciarAutomatizacion(producto.nombre)} // Llamada a iniciar automatización
-                    >
-                      Iniciar Automatización
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div style={styles.listEmpty}>No hay productos con stock bajo</div>
-          )}
-        </div>
 
-        <div style={{ ...styles.statCard, overflow: 'auto', maxHeight: '300px' }}>
-          <h2 style={styles.listTitle}>Materias Primas con Stock Bajo</h2>
+
+      {/* Productos y Materias Primas con stock bajo */}
+      <div style={{ ...styles.statsContainer, gridTemplateColumns: '1fr 1fr' }}> {/* Asegura dos columnas */}
+        <div style={{ ...styles.statCard, overflowY: 'auto', maxHeight: '300px' }}> {/* Habilitar scroll vertical */}
+          <h2 style={styles.listTitle}>Materias Primas con Stock Bajo (menos de 5 unidades)</h2>
           {materiasPrimasStockBajo.length > 0 ? (
             <div>
               {materiasPrimasStockBajo.map(materia => (
@@ -1038,82 +749,138 @@ const Dashboard = () => {
                   alignItems: 'center',
                 }}>
                   <div style={{ flex: 1, marginRight: '10px' }}>
-                    <div style={{ color: '#333' }}>{materia.nombre}</div>
+                    <div style={{ color: '#333', fontWeight: 'bold' }}>{materia.nombre}</div>
                     <div style={{ fontSize: '12px', color: '#95a5a6' }}>
                       Unidad: {materia.unidad}
                     </div>
                   </div>
-                  <div style={{
-                    display: 'flex',
-                    justifyContent: 'flex-end',
-                    gap: '10px',
-                    alignItems: 'center',
-                  }}>
+                  <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
                     <div style={{
-                      backgroundColor: '#e74c3c',
-                      color: 'white',
-                      borderRadius: '4px',
-                      fontSize: '12px',
-                      width: '100px',
-                      height: '40px',
-                      display: 'flex',
-                      justifyContent: 'center',
-                      alignItems: 'center',
+                      backgroundColor: '#e74c3c', color: 'white', borderRadius: '4px',
+                      fontSize: '12px', width: '100px', height: '40px',
+                      display: 'flex', justifyContent: 'center', alignItems: 'center',
                     }}>
-                      <div>Stock: {stockReal[materia.id] || 0}</div>
+                      Stock: {stockReal[materia.id] !== undefined ? stockReal[materia.id] : 'N/A'}
                     </div>
-                    {/* Botón de automatización */}
                     <button
                       style={{
-                        backgroundColor: '#3498db', // Azul
-                        color: 'white',
-                        borderRadius: '4px',
-                        fontSize: '12px',
-                        cursor: 'pointer',
-                        border: 'none',
-                        width: '100px',
-                        height: '40px',
-                        display: 'flex',
-                        justifyContent: 'center',
-                        alignItems: 'center',
+                        backgroundColor: '#3498db', color: 'white', borderRadius: '4px',
+                        fontSize: '12px', cursor: 'pointer', border: 'none',
+                        width: '100px', height: '40px',
+                        display: 'flex', justifyContent: 'center', alignItems: 'center',
                       }}
-                      onClick={() => iniciarAutomatizacion(materia.nombre)} // Llamada a iniciar automatización
+                      onClick={() => handleAbrirModalProveedor(materia)}
                     >
-                      Iniciar Automatización
+                      Automatizar
                     </button>
-
                   </div>
                 </div>
               ))}
             </div>
           ) : (
-            <div style={styles.listEmpty}>No hay materias primas con stock bajo</div>
+            <div style={styles.listEmpty}>No hay materias primas con stock bajo.</div>
+          )}
+        </div>
+
+        <div style={{ ...styles.statCard, overflowY: 'auto', maxHeight: '300px' }}> {/* Habilitar scroll vertical */}
+          <h2 style={styles.listTitle}>Productos con Stock Bajo (menos de 5 unidades)</h2>
+          {productosStockBajo.length > 0 ? (
+            <div>
+              {productosStockBajo.map(producto => (
+                <div key={producto.id} style={{
+                  padding: '10px',
+                  borderBottom: '1px solid #e0e0e0',
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                }}>
+                  <div style={{ flex: 1, marginRight: '10px' }}>
+                    <div style={{ color: '#333', fontWeight: 'bold' }}>{producto.nombre}</div>
+                    <div style={{ fontSize: '12px', color: '#95a5a6' }}>
+                      Tipo: {producto.tipo}
+                    </div>
+                  </div>
+                  <div style={{
+                    backgroundColor: '#e74c3c', color: 'white', borderRadius: '4px',
+                    fontSize: '12px', width: '100px', height: '40px',
+                    display: 'flex', justifyContent: 'center', alignItems: 'center',
+                  }}>
+                    Stock: {stockRealProductos[producto.id] !== undefined ? stockRealProductos[producto.id] : 'N/A'}
+                  </div>
+                  {/* Aquí podrías añadir un botón de automatización si aplica a productos también */}
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div style={styles.listEmpty}>No hay productos con stock bajo.</div>
           )}
         </div>
       </div>
 
-      {/* Mostrar el formulario cuando showForm sea verdadero */}
-      {showForm && (
+
+      {/* Modal para seleccionar proveedor */}
+      <Modal open={mostrarModalProveedor} onClose={handleCerrarModalProveedor}>
+        <Box sx={styles.modalStyleProveedor}>
+          <h2 style={{ marginTop: 0, marginBottom: '20px' }}>Seleccionar Proveedor para {itemParaAutomatizar?.nombre}</h2>
+          <TextField
+            select
+            label="Proveedor"
+            value={proveedorSeleccionadoId}
+            onChange={(e) => setProveedorSeleccionadoId(e.target.value)}
+            fullWidth
+            margin="normal"
+            variant="outlined"
+          >
+            <MenuItem value="" disabled>
+              <em>-- Selecciona un proveedor --</em>
+            </MenuItem>
+            {proveedores.map((proveedor) => (
+              <MenuItem key={proveedor.id} value={proveedor.id}>
+                {proveedor.nombreEmpresaProveedor} (Tel: {proveedor.telefono || 'N/A'})
+              </MenuItem>
+            ))}
+          </TextField>
+          <Box sx={{ mt: 3, display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
+            <Button onClick={handleCerrarModalProveedor} variant="outlined" color="secondary">
+              Cancelar
+            </Button>
+            <Button 
+              onClick={iniciarConversacionWhatsApp} 
+              variant="contained" 
+              color="primary"
+              disabled={!proveedorSeleccionadoId || loadingAutomatizacion}
+            >
+              {loadingAutomatizacion ? 'Iniciando...' : 'Iniciar Conversación'}
+            </Button>
+          </Box>
+        </Box>
+      </Modal>
+
+      {/* Modal de feedback de la automatización */}
+      {showFeedbackModal && (
         <div style={styles.modalOverlay}>
           <div style={styles.modalContainer}>
-            {loading ? (
+            {loadingAutomatizacion ? (
               <div style={styles.loadingContainer}>
-                <p>Iniciando automatización de Orden de compra...</p>
+                <p>{feedbackMessage || "Procesando..."}</p>
                 <ReactLoading type="spin" color="#3498db" height={50} width={50} />
-                {/* Botón de cancelar */}
-                <button
-                  style={styles.cancelButton}
-                  onClick={() => {
-                    setLoading(false);
-                    setShowForm(false);
-                  }}
-                >
-                  Cancelar
-                </button>
               </div>
             ) : (
               <div>
-                <p>La automatización fue completada exitosamente.</p>
+                <p>{feedbackMessage}</p>
+                <Button
+                  variant="contained"
+                  onClick={() => {
+                    setShowFeedbackModal(false);
+                    // Opcionalmente, cerrar también el modal de selección de proveedor si aún está abierto
+                    if (mostrarModalProveedor) {
+                        handleCerrarModalProveedor();
+                    }
+                  }}
+                  sx={{ mt: 2 }}
+                >
+                  Cerrar
+                </Button>
               </div>
             )}
           </div>
@@ -1121,37 +888,22 @@ const Dashboard = () => {
       )}
 
 
-
-
-
-
-
-
-      {/* Tabs de Inventario y Movimientos (Movido abajo) */}
+      {/* Tabs de Inventario y Movimientos */}
       <div style={styles.contentTabs}>
         <button
-          style={{
-            ...styles.tabButton,
-            ...(activeTab === "inventario" ? styles.activeTab : {})
-          }}
+          style={{ ...styles.tabButton, ...(activeTab === "inventario" ? styles.activeTab : {}) }}
           onClick={() => setActiveTab("inventario")}
         >
-          Inventario
+          Inventario Actual
         </button>
         <button
-          style={{
-            ...styles.tabButton,
-            ...(activeTab === "movimientos" ? styles.activeTab : {})
-          }}
+          style={{ ...styles.tabButton, ...(activeTab === "movimientos" ? styles.activeTab : {}) }}
           onClick={() => setActiveTab("movimientos")}
         >
           Movimientos
         </button>
         <button
-          style={{
-            ...styles.tabButton,
-            ...(activeTab === "predicciones" ? styles.activeTab : {})
-          }}
+          style={{ ...styles.tabButton, ...(activeTab === "predicciones" ? styles.activeTab : {}) }}
           onClick={() => setActiveTab("predicciones")}
         >
           Predicciones
@@ -1164,22 +916,10 @@ const Dashboard = () => {
           <div style={styles.chartCard}>
             <div style={styles.chartHeader}>
               <div style={styles.chartTitleContainer}>
-                <h2 style={styles.chartTitle}>Distribución de Productos</h2>
-                <div style={styles.chartSubtitle}>Stock actual por tipo de billetera</div>
+                <h2 style={styles.chartTitle}>Distribución de Productos Terminados</h2>
+                <div style={styles.chartSubtitle}>Stock actual por tipo</div>
               </div>
-              <div style={{ width: '150px' }}>
-                <select
-                  value={almacenSeleccionado || ''}
-                  onChange={handleAlmacenChange}
-                  style={styles.almacenSelect}
-                >
-                  {almacenes.map(almacen => (
-                    <option key={almacen.id} value={almacen.id}>
-                      {almacen.nombre}
-                    </option>
-                  ))}
-                </select>
-              </div>
+              {/* Selector de Almacén (si aplica a este gráfico) */}
             </div>
             <div style={{ height: '240px' }}>
               <ResponsiveContainer width="100%" height="100%">
@@ -1188,14 +928,14 @@ const Dashboard = () => {
                     data={productChartData}
                     cx="50%"
                     cy="50%"
-                    labelLine={true}
-                    label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
-                    outerRadius={100}
+                    labelLine={false}
+                    label={({ name, percent, value }) => percent > 0.05 ? `${name}: ${value}`: ''} // Mostrar solo si es relevante
+                    outerRadius={90}
                     fill="#2c90e5"
                     dataKey="value"
                   >
                     {productChartData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                      <Cell key={`cell-pt-${index}`} fill={COLORS[index % COLORS.length]} />
                     ))}
                   </Pie>
                   <Tooltip content={<CustomTooltip />} />
@@ -1205,54 +945,32 @@ const Dashboard = () => {
             </div>
           </div>
 
-          {distribucionMPData && distribucionMPData.length > 0 ? (
-            <div style={styles.chartCard}>
-              <div style={styles.chartHeader}>
-                <div style={styles.chartTitleContainer}>
-                  <h2 style={styles.chartTitle}>Distribución de Materias Primas</h2>
-                  <div style={styles.chartSubtitle}>Stock actual por tipo de material</div>
-                </div>
-                <div style={{ width: '150px' }}>
-                  <select
-                    value={almacenSeleccionado || ''}
-                    onChange={handleAlmacenChange}
-                    style={styles.almacenSelect}
-                  >
-                    {almacenes.map(almacen => (
-                      <option key={almacen.id} value={almacen.id}>
-                        {almacen.nombre}
-                      </option>
-                    ))}
-                  </select>
-                </div>
+          <div style={styles.chartCard}>
+            <div style={styles.chartHeader}>
+              <div style={styles.chartTitleContainer}>
+                <h2 style={styles.chartTitle}>Distribución de Materias Primas</h2>
+                <div style={styles.chartSubtitle}>Stock actual por tipo</div>
               </div>
-              <div style={{ height: '240px' }}>
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart
-                    data={distribucionMPData}
-                    margin={{
-                      top: 5,
-                      right: 30,
-                      left: 20,
-                      bottom: 5,
-                    }}
-                  >
+              {/* Selector de Almacén (si aplica a este gráfico) */}
+            </div>
+            <div style={{ height: '240px' }}>
+              <ResponsiveContainer width="100%" height="100%">
+                 <BarChart data={materiaPrimaChartData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#dcdcdc" />
-                    <XAxis dataKey="name" tick={{ fill: '#2c3e50' }} />
+                    <XAxis dataKey="name" tick={{ fill: '#2c3e50', fontSize: 10 }} interval={0} />
                     <YAxis tick={{ fill: '#2c3e50' }} />
                     <Tooltip content={<CustomTooltip />} />
                     <Legend iconType="circle" iconSize={10} />
                     <ReferenceLine y={0} stroke="#000" />
-                    <Bar name="Cantidad" dataKey="value" fill="#ff6347" /> {/* Color rojo tomate para las barras */}
-                  </BarChart>
-                </ResponsiveContainer>
-
-              </div>
+                    <Bar name="Cantidad" dataKey="value" >
+                         {materiaPrimaChartData.map((entry, index) => (
+                            <Cell key={`cell-mp-${index}`} fill={COLORS[index % COLORS.length]} />
+                        ))}
+                    </Bar>
+                </BarChart>
+              </ResponsiveContainer>
             </div>
-          ) : (
-            <div style={styles.listEmpty}>No hay datos disponibles para mostrar.</div>
-          )}
-
+          </div>
         </div>
       )}
 
@@ -1263,14 +981,10 @@ const Dashboard = () => {
             <div style={styles.chartHeader}>
               <div style={styles.chartTitleContainer}>
                 <h2 style={styles.chartTitle}>Entradas y Salidas - Productos Terminados</h2>
-                <div style={styles.chartSubtitle}>Movimientos por producto terminado</div>
+                <div style={styles.chartSubtitle}>Movimientos por producto</div>
               </div>
               <div style={{ width: '150px' }}>
-                <select
-                  value={periodoSalidas}
-                  onChange={handlePeriodoSalidasChange}
-                  style={styles.almacenSelect}
-                >
+                <select value={periodoSalidas} onChange={handlePeriodoSalidasChange} style={styles.almacenSelect}>
                   <option value="semanal">Semanal</option>
                   <option value="mensual">Mensual</option>
                   <option value="trimestral">Trimestral</option>
@@ -1279,19 +993,11 @@ const Dashboard = () => {
             </div>
             <div style={{ height: '240px' }}>
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart
-                  data={datosMovimientosEntradaPT}
-                  margin={{
-                    top: 5,
-                    right: 30,
-                    left: 20,
-                    bottom: 5,
-                  }}
-                >
+                <BarChart data={datosMovimientosEntradaPT} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#dcdcdc" />
-                  <XAxis dataKey="name" tick={{ fill: '#2c3e50' }} />
+                  <XAxis dataKey="name" tick={{ fill: '#2c3e50', fontSize: 10 }} interval={0} />
                   <YAxis tick={{ fill: '#2c3e50' }} />
-                  <Tooltip />
+                  <Tooltip content={<CustomTooltip />} />
                   <Legend />
                   <ReferenceLine y={0} stroke="#000" />
                   <Bar name="Entradas" dataKey="Entradas" fill="#6489fa" />
@@ -1300,18 +1006,15 @@ const Dashboard = () => {
               </ResponsiveContainer>
             </div>
           </div>
+
           <div style={styles.chartCard}>
             <div style={styles.chartHeader}>
               <div style={styles.chartTitleContainer}>
                 <h2 style={styles.chartTitle}>Entradas y Salidas - Materias Primas</h2>
-                <div style={styles.chartSubtitle}>Movimientos por materia prima</div>
+                <div style={styles.chartSubtitle}>Movimientos por material</div>
               </div>
               <div style={{ width: '150px' }}>
-                <select
-                  value={periodoEntradas}
-                  onChange={handlePeriodoEntradasChange}
-                  style={styles.almacenSelect}
-                >
+                <select value={periodoEntradas} onChange={handlePeriodoEntradasChange} style={styles.almacenSelect}>
                   <option value="semanal">Semanal</option>
                   <option value="mensual">Mensual</option>
                   <option value="trimestral">Trimestral</option>
@@ -1320,19 +1023,11 @@ const Dashboard = () => {
             </div>
             <div style={{ height: '240px' }}>
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart
-                  data={datosMovimientosEntradaMP}
-                  margin={{
-                    top: 5,
-                    right: 30,
-                    left: 20,
-                    bottom: 5,
-                  }}
-                >
+                <BarChart data={datosMovimientosEntradaMP} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#dcdcdc" />
-                  <XAxis dataKey="name" tick={{ fill: '#2c3e50' }} />
+                  <XAxis dataKey="name" tick={{ fill: '#2c3e50', fontSize: 10 }} interval={0} />
                   <YAxis tick={{ fill: '#2c3e50' }} />
-                  <Tooltip />
+                  <Tooltip content={<CustomTooltip />} />
                   <Legend />
                   <ReferenceLine y={0} stroke="#000" />
                   <Bar name="Entradas" dataKey="Entradas" fill="#6489fa" />
@@ -1341,10 +1036,9 @@ const Dashboard = () => {
               </ResponsiveContainer>
             </div>
           </div>
-
-
         </div>
       )}
+
       {/* Contenido del tab Predicciones */}
       {activeTab === "predicciones" && (
         <div style={styles.chartsContainer}>
@@ -1352,45 +1046,18 @@ const Dashboard = () => {
             <div style={styles.chartHeader}>
               <div style={styles.chartTitleContainer}>
                 <h2 style={styles.chartTitle}>Predicción de Demanda</h2>
-                <div style={styles.chartSubtitle}>Proyección de ventas para los próximos 30 días</div>
-              </div>
-              <div style={{ width: '150px' }}>
-                <select
-                  value={almacenSeleccionado || ''}
-                  onChange={handleAlmacenChange}
-                  style={styles.almacenSelect}
-                >
-                  {almacenes.map(almacen => (
-                    <option key={almacen.id} value={almacen.id}>
-                      {almacen.nombre}
-                    </option>
-                  ))}
-                </select>
+                <div style={styles.chartSubtitle}>Proyección para los próximos 30 días</div>
               </div>
             </div>
             <div style={styles.listEmpty}>
               La funcionalidad de predicciones se implementará próximamente.
             </div>
           </div>
-
           <div style={styles.chartCard}>
             <div style={styles.chartHeader}>
               <div style={styles.chartTitleContainer}>
                 <h2 style={styles.chartTitle}>Alertas de Reabastecimiento</h2>
-                <div style={styles.chartSubtitle}>Productos que necesitarán reabastecimiento pronto</div>
-              </div>
-              <div style={{ width: '150px' }}>
-                <select
-                  value={almacenSeleccionado || ''}
-                  onChange={handleAlmacenChange}
-                  style={styles.almacenSelect}
-                >
-                  {almacenes.map(almacen => (
-                    <option key={almacen.id} value={almacen.id}>
-                      {almacen.nombre}
-                    </option>
-                  ))}
-                </select>
+                <div style={styles.chartSubtitle}>Productos que necesitarán reabastecimiento</div>
               </div>
             </div>
             <div style={styles.listEmpty}>
