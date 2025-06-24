@@ -420,20 +420,35 @@ const Dashboard = () => {
           getMovimientosInventarioMP(),
           getMovimientosInventarioPT(),
           getAlmacenes(),
-          getProveedores() // Cargar proveedores
+          getProveedores()
         ]);
+
+        // CAMBIO 1: Filtrar los movimientos para incluir solo los confirmados.
+        // Para Materias Primas, filtramos por 'estadoRecepcion'.
+        const movimientosMPConfirmados = movimientosMPData.filter(
+          mov => mov.estadoRecepcion === true
+        );
+
+        // Para Productos Terminados, filtramos por 'estadoEntrega'.
+        const movimientosPTConfirmados = movimientosPTData.filter(
+          mov => mov.estadoEntrega === true
+        );
 
         setMateriasPrimas(materiasData);
         setProductos(productosData);
-        setMovimientosMP(movimientosMPData);
-        setMovimientosPT(movimientosPTData);
+
+        // CAMBIO 2: Guardar en el estado los movimientos ya filtrados (confirmados).
+        setMovimientosMP(movimientosMPConfirmados);
+        setMovimientosPT(movimientosPTConfirmados);
+
         setAlmacenes(almacenesData);
-        setProveedoresList(proveedoresData); // Guardar lista de proveedores
+        setProveedoresList(proveedoresData);
 
         setTotalProductos(productosData.length);
         setTotalMateriasPrimas(materiasData.length);
 
-        const stockCalculadoMP = calcularStock(movimientosMPData);
+        // CAMBIO 3: Usar los movimientos confirmados para calcular el stock real.
+        const stockCalculadoMP = calcularStock(movimientosMPConfirmados);
         setStockReal(stockCalculadoMP);
 
         const distribucionMP = Object.keys(stockCalculadoMP).map((id) => {
@@ -441,7 +456,7 @@ const Dashboard = () => {
           return { name: mp ? mp.nombre : `MP ${id}`, value: stockCalculadoMP[id] };
         });
         setDistribucionMPData(distribucionMP);
-        setDistribucionMateriasPrimas(distribucionMP); // Para el gráfico de pie/barra
+        setDistribucionMateriasPrimas(distribucionMP);
 
         const stockBajoMP = materiasData.filter(mp => {
           const stockActual = stockCalculadoMP[mp.id] || 0;
@@ -449,7 +464,8 @@ const Dashboard = () => {
         });
         setMateriasPrimasStockBajo(stockBajoMP);
 
-        const stockCalculadoPT = calcularStockProductos(movimientosPTData);
+        // CAMBIO 4: Usar los movimientos confirmados para calcular el stock de productos.
+        const stockCalculadoPT = calcularStockProductos(movimientosPTConfirmados);
         setStockRealProductos(stockCalculadoPT);
 
         const distribucionPT = Object.keys(stockCalculadoPT).map((id) => {
@@ -468,8 +484,8 @@ const Dashboard = () => {
           setAlmacenSeleccionado(almacenesData[0].id);
         }
 
-        // Procesar datos para gráficos de movimientos
-        procesarDatosMovimientosGraficos(movimientosMPData, movimientosPTData, materiasData, productosData, periodoEntradas, periodoSalidas);
+        // CAMBIO 5: Pasar los movimientos confirmados para procesar los gráficos de Entradas/Salidas.
+        procesarDatosMovimientosGraficos(movimientosMPConfirmados, movimientosPTConfirmados, materiasData, productosData, periodoEntradas, periodoSalidas);
 
       } catch (error) {
         console.error("Error al cargar datos del dashboard:", error);
@@ -479,7 +495,6 @@ const Dashboard = () => {
     };
     fetchData();
   }, []); // Sin dependencias para que se ejecute solo una vez al montar
-
 
   const procesarDatosMovimientosGraficos = (movimientosMPData, movimientosPTData, materiasData, productosData, periodoEnt, periodoSal) => {
     const hoy = new Date();
@@ -583,7 +598,7 @@ const Dashboard = () => {
     setFeedbackMessage("Iniciando solicitud de compra con el proveedor...");
 
     try {
-      const glitchWebhookUrl = 'https://system-inventory-whatsapp-api.glitch.me/iniciar-compra-proveedor'; // ¡¡¡REEMPLAZA ESTO!!!
+      const glitchWebhookUrl = 'https://jhonsikos2.app.n8n.cloud/webhook/prueba1'; // ¡¡¡REEMPLAZA ESTO!!!
 
       await axios.post(glitchWebhookUrl, {
         telefonoProveedor: proveedorInfo.telefono,

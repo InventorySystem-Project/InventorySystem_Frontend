@@ -13,6 +13,8 @@ import {
     Pagination,
     Tabs,
     Container,
+    FormControlLabel,
+    Checkbox,
     Tab
 } from '@mui/material';
 import { Plus, Edit, Trash2 } from "lucide-react";
@@ -36,7 +38,8 @@ const MovimientoInventario = () => {
         materiaPrimaId: '',
         tipoMovimiento: 'Entrada',
         cantidad: '',
-        motivo: ''
+        motivo: '',
+        estadoRecepcion: ''
     });
 
     // Estados para movimientos de Productos Terminados
@@ -46,7 +49,8 @@ const MovimientoInventario = () => {
         productoTerminadoId: '',
         tipoMovimiento: 'Entrada',
         cantidad: '',
-        motivo: ''
+        motivo: '',
+        estadoEntrega: ''
     });
 
     // Estados comunes
@@ -140,6 +144,39 @@ const MovimientoInventario = () => {
         setTipoInventarioForm(newValue);
         console.log("Cambiado tipo de inventario en formulario a:", newValue);
     }
+    const handleCheckboxChange = async (e, id, tipoInventario) => {
+        const nuevoEstado = e.target.checked;
+
+        try {
+            let movimientoActualizado;
+
+            if (tipoInventario === 'materiasPrimas') {
+                // Encuentra el movimiento específico sin cambiar el orden de los elementos
+                movimientoActualizado = movimientosMP.find(m => m.id === id);
+                movimientoActualizado.estadoRecepcion = nuevoEstado;
+
+                // Actualiza la base de datos
+                await updateMovimientoInventarioMP(movimientoActualizado);
+
+                // No necesitas ordenar, solo actualizas el estado
+                setMovimientosMP([...movimientosMP]);
+            } else {
+                // Encuentra el movimiento específico sin cambiar el orden de los elementos
+                movimientoActualizado = movimientosPT.find(m => m.id === id);
+                movimientoActualizado.estadoEntrega = nuevoEstado;
+
+                // Actualiza la base de datos
+                await updateMovimientoInventarioPT(movimientoActualizado);
+
+                // No necesitas ordenar, solo actualizas el estado
+                setMovimientosPT([...movimientosPT]);
+            }
+        } catch (error) {
+            console.error('Error al actualizar el estado del movimiento', error);
+            alert('Error al actualizar el estado: ' + error.message);
+        }
+    };
+
 
     // Función para agregar o actualizar un movimiento
     const handleAgregarMovimiento = async () => {
@@ -163,10 +200,10 @@ const MovimientoInventario = () => {
                 // Si está editando un movimiento existente
                 if (movimientoEditando) {
                     movimientoConFecha.id = movimientoEditando.id;
-                    await updateMovimientoInventarioMP(movimientoConFecha);
+                    await updateMovimientoInventarioMP(movimientoConFecha);  // Actualiza el estado en la BD
                 } else {
                     // Si es un nuevo movimiento
-                    await addMovimientoInventarioMP(movimientoConFecha);
+                    await addMovimientoInventarioMP(movimientoConFecha);  // Registra el nuevo estado en la BD
                 }
 
                 // Refrescar lista desde backend después de agregar o actualizar
@@ -179,16 +216,16 @@ const MovimientoInventario = () => {
                     materiaPrimaId: '',
                     tipoMovimiento: 'Entrada',
                     cantidad: '',
-                    motivo: ''
+                    motivo: '',
+                    estadoRecepcion: false // Asegúrate de resetear el estado también
                 });
             } else {
-                // Validación de campos para PT
+                // Similar para Productos Terminados
                 if (!nuevoMovimientoPT.almacenId || !nuevoMovimientoPT.productoTerminadoId || !nuevoMovimientoPT.cantidad || !nuevoMovimientoPT.motivo) {
                     alert('Por favor complete los campos obligatorios');
                     return;
                 }
 
-                // Añadir fecha automáticamente
                 const movimientoConFecha = {
                     ...nuevoMovimientoPT,
                     fechaMovimiento: new Date()
@@ -196,26 +233,23 @@ const MovimientoInventario = () => {
 
                 console.log('Datos PT a enviar:', movimientoConFecha);
 
-                // Si está editando un movimiento existente
                 if (movimientoEditando) {
                     movimientoConFecha.id = movimientoEditando.id;
                     await updateMovimientoInventarioPT(movimientoConFecha);
                 } else {
-                    // Si es un nuevo movimiento
                     await addMovimientoInventarioPT(movimientoConFecha);
                 }
 
-                // Refrescar lista desde backend después de agregar o actualizar
                 const dataPT = await getMovimientosInventarioPT();
                 setMovimientosPT(dataPT || []);
 
-                // Limpiar formulario PT
                 setNuevoMovimientoPT({
                     almacenId: '',
                     productoTerminadoId: '',
                     tipoMovimiento: 'Entrada',
                     cantidad: '',
-                    motivo: ''
+                    motivo: '',
+                    estadoEntrega: false // Resetear también este estado
                 });
             }
 
@@ -227,6 +261,7 @@ const MovimientoInventario = () => {
             alert('Error al registrar el movimiento: ' + error.message);
         }
     };
+
 
     const handleCancelar = () => {
         setMostrarFormulario(false);
@@ -505,6 +540,7 @@ const MovimientoInventario = () => {
                                 <TableCell style={{ fontWeight: 'bold', color: '#748091' }}>Tipo</TableCell>
                                 <TableCell style={{ fontWeight: 'bold', color: '#748091' }}>Cantidad</TableCell>
                                 <TableCell style={{ fontWeight: 'bold', color: '#748091' }}>Motivo</TableCell>
+                                <TableCell style={{ fontWeight: 'bold', color: '#748091' }}>¿Movimiento confirmado?</TableCell>
                                 <TableCell style={{ fontWeight: 'bold', color: '#748091' }}>Acciones</TableCell>
                             </TableRow>
                         </TableHead>
@@ -529,6 +565,21 @@ const MovimientoInventario = () => {
                                                 }
                                             </TableCell>
                                             <TableCell>{movimiento.motivo || '-'}</TableCell>
+                                            <TableCell style={{ fontWeight: 'bold', color: '#748091', textAlign: 'center' }}>
+                                                {/* Estado de Recepción o Estado de Entrega con checkbox */}
+                                                {tipoInventario === 'materiasPrimas' ? (
+                                                    <Checkbox
+                                                        checked={movimiento.estadoRecepcion || false}
+                                                        onChange={(e) => handleCheckboxChange(e, movimiento.id, 'materiasPrimas')}
+                                                    />
+                                                ) : (
+                                                    <Checkbox
+                                                        checked={movimiento.estadoEntrega || false}
+                                                        onChange={(e) => handleCheckboxChange(e, movimiento.id, 'productosTerminados')}
+                                                    />
+                                                )}
+                                            </TableCell>
+
                                             <TableCell>
                                                 <Button color="primary" onClick={() => handleEditarMovimiento(movimiento, tipoInventario)}>
                                                     <Edit size={18} />
@@ -548,6 +599,7 @@ const MovimientoInventario = () => {
                                 </TableRow>
                             )}
                         </TableBody>
+
                     </Table>
 
                     {movimientosActuales.length > movimientosPorPagina && (
@@ -700,7 +752,6 @@ const MovimientoInventario = () => {
                             </TextField>
 
                             <TextField
-                                type="number"
                                 label="Cantidad"
                                 name="cantidad"
                                 value={nuevoMovimientoMP.cantidad}
@@ -708,6 +759,9 @@ const MovimientoInventario = () => {
                                 fullWidth
                                 style={{ marginBottom: '15px' }}
                                 InputProps={{ inputProps: { min: 0 } }}
+                                InputLabelProps={{
+                                    shrink: true,
+                                }}
                                 error={!nuevoMovimientoMP.cantidad && nuevoMovimientoMP.cantidad !== ''}
                                 helperText={!nuevoMovimientoMP.cantidad && nuevoMovimientoMP.cantidad !== '' ? 'Ingrese una cantidad válida' : ''}
                             />
@@ -720,8 +774,22 @@ const MovimientoInventario = () => {
                                 placeholder="Motivo del movimiento"
                                 fullWidth
                                 style={{ marginBottom: '20px' }}
+                                InputLabelProps={{ shrink: true }}
                                 error={!nuevoMovimientoMP.motivo && nuevoMovimientoMP.motivo !== ''}
                                 helperText={!nuevoMovimientoMP.motivo && nuevoMovimientoMP.motivo !== '' ? 'Ingrese un motivo' : ''}
+                            />
+                            {/* Agregar Checkbox para "Estado" */}
+                            <FormControlLabel
+                                control={
+                                    <Checkbox
+                                        checked={nuevoMovimientoMP.estadoRecepcion || false}  // Verifica si está marcado o no
+                                        onChange={(e) => setNuevoMovimientoMP({ ...nuevoMovimientoMP, estadoRecepcion: e.target.checked })}
+                                        name="estadoRecepcion"
+                                        color="primary"
+                                    />
+                                }
+                                label="Estado de Recepción"
+                                style={{ marginBottom: '15px' }}
                             />
                         </>
                     )}
@@ -802,7 +870,7 @@ const MovimientoInventario = () => {
                                 onChange={handleInputChangePT}
                                 fullWidth
                                 style={{ marginBottom: '15px' }}
-                                InputProps={{ inputProps: { min: 0 } }}
+                                InputLabelProps={{ shrink: true }}
                                 error={!nuevoMovimientoPT.cantidad && nuevoMovimientoPT.cantidad !== ''}
                                 helperText={!nuevoMovimientoPT.cantidad && nuevoMovimientoPT.cantidad !== '' ? 'Ingrese una cantidad válida' : ''}
                             />
@@ -815,8 +883,21 @@ const MovimientoInventario = () => {
                                 placeholder="Motivo del movimiento"
                                 fullWidth
                                 style={{ marginBottom: '20px' }}
+                                InputLabelProps={{ shrink: true }}
                                 error={!nuevoMovimientoPT.motivo && nuevoMovimientoPT.motivo !== ''}
                                 helperText={!nuevoMovimientoPT.motivo && nuevoMovimientoPT.motivo !== '' ? 'Ingrese un motivo' : ''}
+                            />
+                            <FormControlLabel
+                                control={
+                                    <Checkbox
+                                        checked={nuevoMovimientoPT.estadoEntrega || false} // Verifica si está marcado o no
+                                        onChange={(e) => setNuevoMovimientoPT({ ...nuevoMovimientoPT, estadoEntrega: e.target.checked })}
+                                        name="estadoEntrega"
+                                        color="primary"
+                                    />
+                                }
+                                label="Estado de Entrega" // Etiqueta del checkbox
+                                style={{ marginBottom: '15px' }}
                             />
                         </>
                     )}
