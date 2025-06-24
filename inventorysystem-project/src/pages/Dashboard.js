@@ -975,12 +975,15 @@ const Dashboard = () => {
         >
           Movimientos
         </button>
+        {/* Tabs de Inventario y Movimientos 
+
         <button
           style={{ ...styles.tabButton, ...(activeTab === "predicciones" ? styles.activeTab : {}) }}
           onClick={() => setActiveTab("predicciones")}
         >
           Predicciones
         </button>
+        */}
       </div>
 
       {/* Contenido del tab Inventario */}
@@ -992,28 +995,22 @@ const Dashboard = () => {
                 <h2 style={styles.chartTitle}>Distribución de Productos Terminados</h2>
                 <div style={styles.chartSubtitle}>Stock actual por tipo</div>
               </div>
-              {/* Selector de Almacén (si aplica a este gráfico) */}
             </div>
             <div style={{ height: '240px' }}>
               <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie
-                    data={productChartData}
-                    cx="50%"
-                    cy="50%"
-                    labelLine={false}
-                    label={({ name, percent, value }) => percent > 0.05 ? `${name}: ${value}` : ''} // Mostrar solo si es relevante
-                    outerRadius={90}
-                    fill="#2c90e5"
-                    dataKey="value"
-                  >
+                <BarChart data={productChartData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#dcdcdc" />
+                  <XAxis dataKey="name" tick={{ fill: '#2c3e50', fontSize: 10 }} interval={0} />
+                  <YAxis tick={{ fill: '#2c3e50' }} />
+                  <Tooltip content={<CustomTooltip />} />
+                  <Legend iconType="circle" iconSize={10} />
+                  <ReferenceLine y={0} stroke="#000" />
+                  <Bar name="Cantidad" dataKey="value" >
                     {productChartData.map((entry, index) => (
                       <Cell key={`cell-pt-${index}`} fill={COLORS[index % COLORS.length]} />
                     ))}
-                  </Pie>
-                  <Tooltip content={<CustomTooltip />} />
-                  <Legend />
-                </PieChart>
+                  </Bar>
+                </BarChart>
               </ResponsiveContainer>
             </div>
           </div>
