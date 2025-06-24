@@ -13,6 +13,8 @@ import {
     Pagination,
     Tabs,
     Container,
+    FormControlLabel,
+    Checkbox,
     Tab
 } from '@mui/material';
 import { Plus, Edit, Trash2 } from "lucide-react";
@@ -23,11 +25,16 @@ import { getMateriasPrimas } from '../services/MateriaPrimaService';
 import { getProductosTerminados } from '../services/ProductoTerminadoService';
 
 const MovimientoInventario = () => {
-    // Estado para el tipo de inventario seleccionado (MP o PT)
-    const [tipoInventario, setTipoInventario] = useState('materiasPrimas');
+    // CAMBIO 1: Leer el estado inicial desde localStorage.
+    // Usamos una función en useState para que se ejecute solo la primera vez.
+    const [tipoInventario, setTipoInventario] = useState(() => {
+        const savedTab = localStorage.getItem('movimientoInventario_activeTab');
+        // Si hay una pestaña guardada, úsala; si no, usa 'productosTerminados' como defecto.
+        return savedTab || 'productosTerminados';
+    });
 
     // Estado para el tipo de inventario en el formulario
-    const [tipoInventarioForm, setTipoInventarioForm] = useState('materiasPrimas');
+    const [tipoInventarioForm, setTipoInventarioForm] = useState('productosTerminados');
 
     // Estados para movimientos de Materias Primas
     const [movimientosMP, setMovimientosMP] = useState([]);
@@ -36,7 +43,8 @@ const MovimientoInventario = () => {
         materiaPrimaId: '',
         tipoMovimiento: 'Entrada',
         cantidad: '',
-        motivo: ''
+        motivo: '',
+        estadoRecepcion: false
     });
 
     // Estados para movimientos de Productos Terminados
@@ -46,7 +54,8 @@ const MovimientoInventario = () => {
         productoTerminadoId: '',
         tipoMovimiento: 'Entrada',
         cantidad: '',
-        motivo: ''
+        motivo: '',
+        estadoEntrega: false
     });
 
     // Estados comunes
@@ -60,6 +69,12 @@ const MovimientoInventario = () => {
     const [materiasPrimas, setMateriasPrimas] = useState([]);
     const [productosTerminados, setProductosTerminados] = useState([]);
 
+    // CAMBIO 2: Guardar la pestaña seleccionada en localStorage cada vez que cambie.
+    useEffect(() => {
+        localStorage.setItem('movimientoInventario_activeTab', tipoInventario);
+    }, [tipoInventario]);
+
+
     useEffect(() => {
         fetchMovimientos();
         fetchAlmacenes();
@@ -67,15 +82,13 @@ const MovimientoInventario = () => {
         fetchProductosTerminados();
     }, []);
 
-    // Función para cargar todos los movimientos según el tipo seleccionado
+    // ... (El resto del código de tus funciones no necesita cambios)
+    // fetchMovimientos, fetchAlmacenes, handleInputChangeMP, etc... todo sigue igual
     const fetchMovimientos = async () => {
         try {
-            // Cargar movimientos de materias primas
             const dataMP = await getMovimientosInventarioMP();
             console.log('Movimientos MP:', dataMP);
             setMovimientosMP(dataMP || []);
-
-            // Cargar movimientos de productos terminados
             const dataPT = await getMovimientosInventarioPT();
             console.log('Movimientos PT:', dataPT);
             setMovimientosPT(dataPT || []);
@@ -83,7 +96,6 @@ const MovimientoInventario = () => {
             console.error('Error al obtener movimientos de inventario', error);
         }
     };
-
     const fetchAlmacenes = async () => {
         try {
             const data = await getAlmacenes();
@@ -94,7 +106,6 @@ const MovimientoInventario = () => {
             setAlmacenes([]);
         }
     };
-
     const fetchMateriasPrimas = async () => {
         try {
             const data = await getMateriasPrimas();
@@ -105,7 +116,6 @@ const MovimientoInventario = () => {
             setMateriasPrimas([]);
         }
     };
-
     const fetchProductosTerminados = async () => {
         try {
             const data = await getProductosTerminados();
@@ -116,110 +126,97 @@ const MovimientoInventario = () => {
             setProductosTerminados([]);
         }
     };
-
-    // Manejadores de cambio para Materias Primas
     const handleInputChangeMP = (e) => {
         const { name, value } = e.target;
         setNuevoMovimientoMP(prev => ({ ...prev, [name]: value }));
     };
-
-    // Manejadores de cambio para Productos Terminados
     const handleInputChangePT = (e) => {
         const { name, value } = e.target;
         setNuevoMovimientoPT(prev => ({ ...prev, [name]: value }));
     };
-
-    // Función para manejar el cambio de tipo de inventario
     const handleChangeTipoInventario = (event, newValue) => {
         setTipoInventario(newValue);
-        setPaginaActual(1); // Resetear la paginación al cambiar de tipo
+        setPaginaActual(1);
     };
-
-    // Función mejorada para manejar el cambio de tipo de inventario en el formulario
     const handleChangeTipoInventarioForm = (event, newValue) => {
         setTipoInventarioForm(newValue);
         console.log("Cambiado tipo de inventario en formulario a:", newValue);
     }
-
-    // Función para agregar o actualizar un movimiento
+    const handleCheckboxChange = async (e, id, tipoInventario) => {
+        const nuevoEstado = e.target.checked;
+        try {
+            let movimientoActualizado;
+            if (tipoInventario === 'materiasPrimas') {
+                movimientoActualizado = movimientosMP.find(m => m.id === id);
+                movimientoActualizado.estadoRecepcion = nuevoEstado;
+                await updateMovimientoInventarioMP(movimientoActualizado);
+                setMovimientosMP([...movimientosMP]);
+            } else {
+                movimientoActualizado = movimientosPT.find(m => m.id === id);
+                movimientoActualizado.estadoEntrega = nuevoEstado;
+                await updateMovimientoInventarioPT(movimientoActualizado);
+                setMovimientosPT([...movimientosPT]);
+            }
+        } catch (error) {
+            console.error('Error al actualizar el estado del movimiento', error);
+            alert('Error al actualizar el estado: ' + error.message);
+        }
+    };
     const handleAgregarMovimiento = async () => {
         try {
-            // Determinar si estamos procesando un movimiento de MP o PT
             if (tipoInventarioForm === 'materiasPrimas') {
-                // Validación de campos para MP
                 if (!nuevoMovimientoMP.almacenId || !nuevoMovimientoMP.materiaPrimaId || !nuevoMovimientoMP.cantidad || !nuevoMovimientoMP.motivo) {
                     alert('Por favor complete los campos obligatorios');
                     return;
                 }
-
-                // Añadir fecha automáticamente
                 const movimientoConFecha = {
                     ...nuevoMovimientoMP,
                     fechaMovimiento: new Date()
                 };
-
                 console.log('Datos MP a enviar:', movimientoConFecha);
-
-                // Si está editando un movimiento existente
                 if (movimientoEditando) {
                     movimientoConFecha.id = movimientoEditando.id;
                     await updateMovimientoInventarioMP(movimientoConFecha);
                 } else {
-                    // Si es un nuevo movimiento
                     await addMovimientoInventarioMP(movimientoConFecha);
                 }
-
-                // Refrescar lista desde backend después de agregar o actualizar
                 const dataMP = await getMovimientosInventarioMP();
                 setMovimientosMP(dataMP || []);
-
-                // Limpiar formulario MP
                 setNuevoMovimientoMP({
                     almacenId: '',
                     materiaPrimaId: '',
                     tipoMovimiento: 'Entrada',
                     cantidad: '',
-                    motivo: ''
+                    motivo: '',
+                    estadoRecepcion: false
                 });
             } else {
-                // Validación de campos para PT
                 if (!nuevoMovimientoPT.almacenId || !nuevoMovimientoPT.productoTerminadoId || !nuevoMovimientoPT.cantidad || !nuevoMovimientoPT.motivo) {
                     alert('Por favor complete los campos obligatorios');
                     return;
                 }
-
-                // Añadir fecha automáticamente
                 const movimientoConFecha = {
                     ...nuevoMovimientoPT,
                     fechaMovimiento: new Date()
                 };
-
                 console.log('Datos PT a enviar:', movimientoConFecha);
-
-                // Si está editando un movimiento existente
                 if (movimientoEditando) {
                     movimientoConFecha.id = movimientoEditando.id;
                     await updateMovimientoInventarioPT(movimientoConFecha);
                 } else {
-                    // Si es un nuevo movimiento
                     await addMovimientoInventarioPT(movimientoConFecha);
                 }
-
-                // Refrescar lista desde backend después de agregar o actualizar
                 const dataPT = await getMovimientosInventarioPT();
                 setMovimientosPT(dataPT || []);
-
-                // Limpiar formulario PT
                 setNuevoMovimientoPT({
                     almacenId: '',
                     productoTerminadoId: '',
                     tipoMovimiento: 'Entrada',
                     cantidad: '',
-                    motivo: ''
+                    motivo: '',
+                    estadoEntrega: false
                 });
             }
-
-            // Resetear estados comunes
             setMovimientoEditando(null);
             setMostrarFormulario(false);
         } catch (error) {
@@ -227,11 +224,9 @@ const MovimientoInventario = () => {
             alert('Error al registrar el movimiento: ' + error.message);
         }
     };
-
     const handleCancelar = () => {
         setMostrarFormulario(false);
         setMovimientoEditando(null);
-        // Resetear ambos formularios
         setNuevoMovimientoMP({
             almacenId: '',
             materiaPrimaId: '',
@@ -247,14 +242,10 @@ const MovimientoInventario = () => {
             motivo: ''
         });
     };
-
-    // Función para editar un movimiento según su tipo
     const handleEditarMovimiento = (movimiento, tipo) => {
         if (!movimiento) return;
-
         console.log(`Movimiento ${tipo} a editar:`, movimiento);
         setMovimientoEditando(movimiento);
-
         if (tipo === 'materiasPrimas') {
             setTipoInventarioForm('materiasPrimas');
             setNuevoMovimientoMP({
@@ -274,33 +265,25 @@ const MovimientoInventario = () => {
                 motivo: movimiento.motivo || ''
             });
         }
-
         setMostrarFormulario(true);
     };
-
-    // Función para eliminar un movimiento según su tipo
     const handleEliminarMovimiento = async (id, tipo) => {
         if (!id) return;
-
         if (window.confirm('¿Está seguro que desea eliminar este movimiento?')) {
             try {
                 if (tipo === 'materiasPrimas') {
                     await deleteMovimientoInventarioMP(id);
-                    // Eliminar el movimiento de la lista de movimientos MP
                     const nuevosMovimientosMP = movimientosMP.filter(m => m.id !== id);
                     setMovimientosMP(nuevosMovimientosMP);
                 } else {
                     await deleteMovimientoInventarioPT(id);
-                    // Eliminar el movimiento de la lista de movimientos PT
                     const nuevosMovimientosPT = movimientosPT.filter(m => m.id !== id);
                     setMovimientosPT(nuevosMovimientosPT);
                 }
-
-                // Verificar si la página actual está vacía
                 const movimientosActuales = tipo === 'materiasPrimas' ? movimientosMP : movimientosPT;
                 const totalPages = Math.ceil(movimientosActuales.length / movimientosPorPagina);
                 if (paginaActual > totalPages) {
-                    setPaginaActual(totalPages > 0 ? totalPages : 1); // Cambiar a la última página si la actual ya no tiene registros
+                    setPaginaActual(totalPages > 0 ? totalPages : 1);
                 }
             } catch (error) {
                 console.error('Error al eliminar movimiento de inventario', error);
@@ -308,18 +291,14 @@ const MovimientoInventario = () => {
             }
         }
     };
-
     const handleChangePage = (event, value) => {
         setPaginaActual(value);
     };
-
-    // Calcular paginación según el tipo de inventario seleccionado
     const movimientosActuales = tipoInventario === 'materiasPrimas' ? movimientosMP : movimientosPT;
     const indexOfLast = paginaActual * movimientosPorPagina;
     const indexOfFirst = indexOfLast - movimientosPorPagina;
     const movimientosPaginados = movimientosActuales.slice(indexOfFirst, indexOfLast);
     const totalPages = Math.ceil(movimientosActuales.length / movimientosPorPagina);
-
     const formatDate = (dateString) => {
         if (!dateString) return '-';
         try {
@@ -335,67 +314,32 @@ const MovimientoInventario = () => {
             return '-';
         }
     };
-
-    // Obtener el nombre del almacén a partir del ID
     const getAlmacenNombre = (almacenId) => {
         const almacen = almacenes.find(a => a.id === almacenId);
         return almacen ? almacen.nombre : '-';
     };
-
-    // Obtener el nombre de la materia prima a partir del ID
     const getMateriaPrimaNombre = (materiaPrimaId) => {
         const materiaPrima = materiasPrimas.find(mp => mp.id === materiaPrimaId);
         return materiaPrima ? materiaPrima.nombre : '-';
     };
-
-    // Obtener la unidad de la materia prima a partir del ID
     const getMateriaPrimaUnidad = (materiaPrimaId) => {
         const materiaPrima = materiasPrimas.find(mp => mp.id === materiaPrimaId);
         return materiaPrima ? materiaPrima.unidad : '';
     };
-
-    // Obtener el nombre del producto terminado a partir del ID
     const getProductoTerminadoNombre = (productoTerminadoId) => {
         const producto = productosTerminados.find(pt => pt.id === productoTerminadoId);
         return producto ? producto.nombre : '-';
     };
-
-    // Obtener la unidad del producto terminado a partir del ID
     const getProductoTerminadoUnidad = (productoTerminadoId) => {
         const producto = productosTerminados.find(pt => pt.id === productoTerminadoId);
         return producto && producto.unidad ? producto.unidad : 'unid';
     };
-
     const renderBackgroundTipoMovimiento = (tipoMovimiento) => {
         switch (tipoMovimiento) {
             case "Entrada":
-                return (
-                    <div style={{
-                        backgroundColor: '#4ade80', // Color verde
-                        color: 'white',
-                        padding: '4px 10px',
-                        borderRadius: '20px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        width: 'fit-content'
-                    }}>
-                        Entrada
-                    </div>
-                );
+                return ( <div style = {{ backgroundColor: '#4ade80', color: 'white', padding: '4px 10px', borderRadius: '20px', display: 'flex', alignItems: 'center', width: 'fit-content' }} > Entrada </div>);
             case "Salida":
-                return (
-                    <div style={{
-                        backgroundColor: '#f97316', // Color naranja
-                        color: 'white',
-                        padding: '4px 10px',
-                        borderRadius: '20px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        width: 'fit-content'
-                    }}>
-                        Salida
-                    </div>
-                );
+                return ( <div style = {{ backgroundColor: '#f97316', color: 'white', padding: '4px 10px', borderRadius: '20px', display: 'flex', alignItems: 'center', width: 'fit-content' }} > Salida </div>);
             default:
                 return tipoMovimiento;
         }
@@ -403,76 +347,21 @@ const MovimientoInventario = () => {
 
     return (
         <div className="container-general">
-            <div style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                width: '100%'
-            }}>
+            {/* El JSX de tu return no necesita cambios, funcionará con la nueva lógica de estado */}
+            {/* ... todo tu return sigue igual ... */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
                 <h2>Gestión de Movimientos de Inventario</h2>
-                <Button
-                    variant="contained"
-                    color="primary"
-                    onClick={() => {
-                        setMostrarFormulario(true);
-                        setTipoInventarioForm(tipoInventario); // Sincroniza el tipo del formulario con el alternador
-                    }}
-                >
+                <Button variant="contained" color="primary" onClick={() => { setMostrarFormulario(true); setTipoInventarioForm(tipoInventario); }}>
                     <Plus size={16} /> Nuevo Movimiento
                 </Button>
             </div>
-
-            {/* Tabs para cambiar entre Materias Primas y Productos Terminados */}
-            <Container sx={{
-                width: 'auto',
-                display: 'flex',
-                justifyContent: 'flex-start',
-
-                maxWidth: 'none', // Esto elimina cualquier restricción de max-width
-                marginLeft: '0',
-
-                //backgroundColor: '#0747A6',
-                paddingLeft: 'none'
-            }}>
-                <Box sx={{
-                    borderBottom: 0,
-                    backgroundColor: '#f5f7fa',
-                    borderRadius: '8px',
-                    padding: '4px',
-                    marginTop: 2,
-                    display: 'flex',
-                    justifyContent: 'flex-start',
-                    alignItems: 'center',
-                    width: '100%', // Asegura que el Box ocupe todo el espacio disponible sin moverse
-                }}>
-                    <Tabs
-                        value={tipoInventario}
-                        onChange={handleChangeTipoInventario}
-                        aria-label="tipo de inventario tabs"
-                        indicatorColor="primary"
-                        textColor="primary"
-                        variant="standard"
-                        sx={{
-                            minHeight: '36px',
-                            '& .MuiTab-root': {
-                                minHeight: '36px',
-                                textTransform: 'none',
-                                fontSize: '14px',
-                                fontWeight: 500,
-                                // padding: '6px 16px',
-                                color: '#64748B',
-                                transition: 'color 0.3s ease, background-color 0.3s ease',
-                                '&:hover': {
-                                    color: '#0F172A',
-                                    backgroundColor: 'rgba(15, 23, 42, 0.04)',
-                                },
-                                '&.Mui-selected': {
-                                    color: '#0F172A',
-                                    fontWeight: 600,
-                                    '&:hover': {
-                                        color: '#0F172A',
-                                        backgroundColor: 'rgba(15, 23, 42, 0.04)',
-                                    }
+            <Container sx={{ width: 'auto', display: 'flex', justifyContent: 'flex-start', maxWidth: 'none', marginLeft: '0', paddingLeft: 'none' }}>
+                <Box sx={{ borderBottom: 0, backgroundColor: '#f5f7fa', borderRadius: '8px', padding: '4px', marginTop: 2, display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%', }}>
+                    <Tabs value={tipoInventario} onChange={handleChangeTipoInventario} aria-label="tipo de inventario tabs" indicatorColor="primary" textColor="primary" variant="standard"
+                        sx={{ minHeight: '36px', '& .MuiTab-root': { minHeight: '36px', textTransform: 'none', fontSize: '14px', fontWeight: 500, color: '#64748B', transition: 'color 0.3s ease, background-color 0.3s ease',
+                                '&:hover': { color: '#0F172A', backgroundColor: 'rgba(15, 23, 42, 0.04)', },
+                                '&.Mui-selected': { color: '#0F172A', fontWeight: 600,
+                                    '&:hover': { color: '#0F172A', backgroundColor: 'rgba(15, 23, 42, 0.04)', }
                                 }
                             }
                         }}
@@ -482,7 +371,6 @@ const MovimientoInventario = () => {
                     </Tabs>
                 </Box>
             </Container>
-
             <div className="table-container">
                 <div className="table-header" style={{ paddingTop: '0px', width: '100%' }}>
                     <h3 style={{ marginTop: '10px', textAlign: 'left' }}>
@@ -492,7 +380,6 @@ const MovimientoInventario = () => {
                         Administre los movimientos de entrada y salida de {tipoInventario === 'materiasPrimas' ? 'materias primas' : 'productos terminados'}
                     </p>
                 </div>
-
                 <div style={{ padding: '0px', borderRadius: '8px' }}>
                     <Table>
                         <TableHead>
@@ -505,6 +392,7 @@ const MovimientoInventario = () => {
                                 <TableCell style={{ fontWeight: 'bold', color: '#748091' }}>Tipo</TableCell>
                                 <TableCell style={{ fontWeight: 'bold', color: '#748091' }}>Cantidad</TableCell>
                                 <TableCell style={{ fontWeight: 'bold', color: '#748091' }}>Motivo</TableCell>
+                                <TableCell style={{ fontWeight: 'bold', color: '#748091' }}>¿Movimiento confirmado?</TableCell>
                                 <TableCell style={{ fontWeight: 'bold', color: '#748091' }}>Acciones</TableCell>
                             </TableRow>
                         </TableHead>
@@ -529,6 +417,19 @@ const MovimientoInventario = () => {
                                                 }
                                             </TableCell>
                                             <TableCell>{movimiento.motivo || '-'}</TableCell>
+                                            <TableCell style={{ fontWeight: 'bold', color: '#748091', textAlign: 'center' }}>
+                                                {tipoInventario === 'materiasPrimas' ? (
+                                                    <Checkbox
+                                                        checked={movimiento.estadoRecepcion || false}
+                                                        onChange={(e) => handleCheckboxChange(e, movimiento.id, 'materiasPrimas')}
+                                                    />
+                                                ) : (
+                                                    <Checkbox
+                                                        checked={movimiento.estadoEntrega || false}
+                                                        onChange={(e) => handleCheckboxChange(e, movimiento.id, 'productosTerminados')}
+                                                    />
+                                                )}
+                                            </TableCell>
                                             <TableCell>
                                                 <Button color="primary" onClick={() => handleEditarMovimiento(movimiento, tipoInventario)}>
                                                     <Edit size={18} />
@@ -542,14 +443,13 @@ const MovimientoInventario = () => {
                                 ))
                             ) : (
                                 <TableRow>
-                                    <TableCell colSpan={7} align="center">
+                                    <TableCell colSpan={8} align="center">
                                         No hay movimientos registrados
                                     </TableCell>
                                 </TableRow>
                             )}
                         </TableBody>
                     </Table>
-
                     {movimientosActuales.length > movimientosPorPagina && (
                         <Pagination
                             count={totalPages}
@@ -562,8 +462,6 @@ const MovimientoInventario = () => {
                     )}
                 </div>
             </div>
-
-            {/* Modal para Agregar/Editar Movimientos */}
             <Modal open={mostrarFormulario} onClose={() => setMostrarFormulario(false)} style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
                 <Box style={{ background: '#fff', padding: '20px', borderRadius: '10px', minWidth: '400px' }}>
                     <h3>{movimientoEditando ? 'Editar Movimiento' : 'Registrar Movimiento'}</h3>
@@ -572,15 +470,8 @@ const MovimientoInventario = () => {
                             ? 'Modifique los datos del movimiento'
                             : 'Registra entradas o salidas de inventario'}
                     </p>
-
-                    {/* Botones para elegir tipo de movimiento a registrar */}
                     <div
-                        style={{
-                            display: 'flex',        // Alinea los elementos horizontalmente
-                            gap: '10px',            // Espacio entre los botones
-                            marginBottom: '16px',   // Espacio debajo del contenedor
-                            width: '100%',          // Asegura que el contenedor ocupe todo el ancho disponible
-                        }}
+                        style={{ display: 'flex', gap: '10px', marginBottom: '16px', width: '100%', }}
                     >
                         <Button
                             fullWidth
@@ -592,14 +483,12 @@ const MovimientoInventario = () => {
                                     backgroundColor: tipoInventarioForm === 'productosTerminados' ? '#6d28d9' : '#c7c7ff',
                                     boxShadow: tipoInventarioForm === 'productosTerminados' ? '0 2px 5px rgba(0,0,0,0.2)' : 'none',
                                     transform: 'translateY(-1px)',
-                                    //transition: 'all 0.2s ease-in-out',
                                 },
                                 borderRadius: '8px',
                                 textTransform: 'none',
                                 fontWeight: 500,
                                 padding: '10px',
                                 border: tipoInventarioForm === 'productosTerminados' ? 'none' : '1px solid #e2e8f0',
-                                //transition: 'all 0.2s ease-in-out',
                             }}
                             onClick={() => handleChangeTipoInventarioForm(null, 'productosTerminados')}
                         >
@@ -615,223 +504,71 @@ const MovimientoInventario = () => {
                                     backgroundColor: tipoInventarioForm === 'materiasPrimas' ? '#6d28d9' : '#c7c7ff',
                                     borderColor: tipoInventarioForm === 'materiasPrimas' ? '0 2px 5px rgba(0,0,0,0.2)' : 'none',
                                     transform: 'translateY(-1px)',
-                                    //transition: 'all 0.2s ease-in-out',
                                 },
                                 borderRadius: '8px',
                                 textTransform: 'none',
                                 fontWeight: 500,
                                 padding: '10px',
                                 border: '1px solid #e2e8f0',
-                                //transition: 'all 0.2s ease-in-out',
                             }}
                             onClick={() => handleChangeTipoInventarioForm(null, 'materiasPrimas')}
                         >
                             Materias Primas
                         </Button>
                     </div>
-
-
-                    {/* Formulario para Materias Primas */}
                     {tipoInventarioForm === 'materiasPrimas' && (
                         <>
-                            <TextField
-                                select
-                                label="Tipo de Movimiento"
-                                name="tipoMovimiento"
-                                value={nuevoMovimientoMP.tipoMovimiento}
-                                onChange={handleInputChangeMP}
-                                fullWidth
-                                style={{ marginBottom: '15px' }}
-                            >
+                            <TextField select label="Tipo de Movimiento" name="tipoMovimiento" value={nuevoMovimientoMP.tipoMovimiento} onChange={handleInputChangeMP} fullWidth style={{ marginBottom: '15px' }} >
                                 <MenuItem value="Entrada">Entrada</MenuItem>
                                 <MenuItem value="Salida">Salida</MenuItem>
                             </TextField>
-
-                            <TextField
-                                select
-                                label="Almacén"
-                                name="almacenId"
-                                value={nuevoMovimientoMP.almacenId}
-                                onChange={handleInputChangeMP}
-                                fullWidth
-                                style={{ marginBottom: '15px' }}
-                                error={!nuevoMovimientoMP.almacenId && nuevoMovimientoMP.almacenId !== ''}
-                                helperText={!nuevoMovimientoMP.almacenId && nuevoMovimientoMP.almacenId !== '' ? 'Seleccione un almacén' : ''}
-                            >
+                            <TextField select label="Almacén" name="almacenId" value={nuevoMovimientoMP.almacenId} onChange={handleInputChangeMP} fullWidth style={{ marginBottom: '15px' }} error={!nuevoMovimientoMP.almacenId && nuevoMovimientoMP.almacenId !== ''} helperText={!nuevoMovimientoMP.almacenId && nuevoMovimientoMP.almacenId !== '' ? 'Seleccione un almacén' : ''} >
                                 {almacenes.length > 0 ? (
                                     almacenes.map((almacen) => (
-                                        almacen && almacen.id ? (
-                                            <MenuItem key={almacen.id} value={almacen.id}>
-                                                {almacen.nombre}
-                                            </MenuItem>
-                                        ) : null
+                                        almacen && almacen.id ? ( <MenuItem key={almacen.id} value={almacen.id}> {almacen.nombre} </MenuItem> ) : null
                                     ))
-                                ) : (
-                                    <MenuItem value="" disabled>
-                                        No hay almacenes disponibles
-                                    </MenuItem>
-                                )}
+                                ) : ( <MenuItem value="" disabled> No hay almacenes disponibles </MenuItem> )}
                             </TextField>
-
-                            <TextField
-                                select
-                                label="Materia Prima"
-                                name="materiaPrimaId"
-                                value={nuevoMovimientoMP.materiaPrimaId}
-                                onChange={handleInputChangeMP}
-                                fullWidth
-                                style={{ marginBottom: '15px' }}
-                                error={!nuevoMovimientoMP.materiaPrimaId && nuevoMovimientoMP.materiaPrimaId !== ''}
-                                helperText={!nuevoMovimientoMP.materiaPrimaId && nuevoMovimientoMP.materiaPrimaId !== '' ? 'Seleccione una materia prima' : ''}
-                            >
+                            <TextField select label="Materia Prima" name="materiaPrimaId" value={nuevoMovimientoMP.materiaPrimaId} onChange={handleInputChangeMP} fullWidth style={{ marginBottom: '15px' }} error={!nuevoMovimientoMP.materiaPrimaId && nuevoMovimientoMP.materiaPrimaId !== ''} helperText={!nuevoMovimientoMP.materiaPrimaId && nuevoMovimientoMP.materiaPrimaId !== '' ? 'Seleccione una materia prima' : ''} >
                                 {materiasPrimas.length > 0 ? (
                                     materiasPrimas.map((materiaPrima) => (
-                                        materiaPrima && materiaPrima.id ? (
-                                            <MenuItem key={materiaPrima.id} value={materiaPrima.id}>
-                                                {materiaPrima.nombre} ({materiaPrima.unidad || 'Sin unidad'})
-                                            </MenuItem>
-                                        ) : null
+                                        materiaPrima && materiaPrima.id ? ( <MenuItem key={materiaPrima.id} value={materiaPrima.id}> {materiaPrima.nombre} ({materiaPrima.unidad || 'Sin unidad'}) </MenuItem> ) : null
                                     ))
-                                ) : (
-                                    <MenuItem value="" disabled>
-                                        No hay materias primas disponibles
-                                    </MenuItem>
-                                )}
+                                ) : ( <MenuItem value="" disabled> No hay materias primas disponibles </MenuItem> )}
                             </TextField>
-
-                            <TextField
-                                type="number"
-                                label="Cantidad"
-                                name="cantidad"
-                                value={nuevoMovimientoMP.cantidad}
-                                onChange={handleInputChangeMP}
-                                fullWidth
-                                style={{ marginBottom: '15px' }}
-                                InputProps={{ inputProps: { min: 0 } }}
-                                error={!nuevoMovimientoMP.cantidad && nuevoMovimientoMP.cantidad !== ''}
-                                helperText={!nuevoMovimientoMP.cantidad && nuevoMovimientoMP.cantidad !== '' ? 'Ingrese una cantidad válida' : ''}
-                            />
-
-                            <TextField
-                                label="Motivo"
-                                name="motivo"
-                                value={nuevoMovimientoMP.motivo}
-                                onChange={handleInputChangeMP}
-                                placeholder="Motivo del movimiento"
-                                fullWidth
-                                style={{ marginBottom: '20px' }}
-                                error={!nuevoMovimientoMP.motivo && nuevoMovimientoMP.motivo !== ''}
-                                helperText={!nuevoMovimientoMP.motivo && nuevoMovimientoMP.motivo !== '' ? 'Ingrese un motivo' : ''}
-                            />
+                            <TextField label="Cantidad" name="cantidad" value={nuevoMovimientoMP.cantidad} onChange={handleInputChangeMP} fullWidth style={{ marginBottom: '15px' }} InputProps={{ inputProps: { min: 0 } }} InputLabelProps={{ shrink: true, }} error={!nuevoMovimientoMP.cantidad && nuevoMovimientoMP.cantidad !== ''} helperText={!nuevoMovimientoMP.cantidad && nuevoMovimientoMP.cantidad !== '' ? 'Ingrese una cantidad válida' : ''} />
+                            <TextField label="Motivo" name="motivo" value={nuevoMovimientoMP.motivo} onChange={handleInputChangeMP} placeholder="Motivo del movimiento" fullWidth style={{ marginBottom: '20px' }} InputLabelProps={{ shrink: true }} error={!nuevoMovimientoMP.motivo && nuevoMovimientoMP.motivo !== ''} helperText={!nuevoMovimientoMP.motivo && nuevoMovimientoMP.motivo !== '' ? 'Ingrese un motivo' : ''} />
+                            <FormControlLabel control={ <Checkbox checked={nuevoMovimientoMP.estadoRecepcion || false} onChange={(e) => setNuevoMovimientoMP({ ...nuevoMovimientoMP, estadoRecepcion: e.target.checked })} name="estadoRecepcion" color="primary" /> } label="Estado de Recepción" style={{ marginBottom: '15px' }} />
                         </>
                     )}
-
-                    {/* Formulario para Productos Terminados */}
                     {tipoInventarioForm === 'productosTerminados' && (
                         <>
-                            <TextField
-                                select
-                                label="Tipo de Movimiento"
-                                name="tipoMovimiento"
-                                value={nuevoMovimientoPT.tipoMovimiento}
-                                onChange={handleInputChangePT}
-                                fullWidth
-                                style={{ marginBottom: '15px' }}
-                            >
+                            <TextField select label="Tipo de Movimiento" name="tipoMovimiento" value={nuevoMovimientoPT.tipoMovimiento} onChange={handleInputChangePT} fullWidth style={{ marginBottom: '15px' }} >
                                 <MenuItem value="Entrada">Entrada</MenuItem>
                                 <MenuItem value="Salida">Salida</MenuItem>
                             </TextField>
-
-                            <TextField
-                                select
-                                label="Almacén"
-                                name="almacenId"
-                                value={nuevoMovimientoPT.almacenId}
-                                onChange={handleInputChangePT}
-                                fullWidth
-                                style={{ marginBottom: '15px' }}
-                                error={!nuevoMovimientoPT.almacenId && nuevoMovimientoPT.almacenId !== ''}
-                                helperText={!nuevoMovimientoPT.almacenId && nuevoMovimientoPT.almacenId !== '' ? 'Seleccione un almacén' : ''}
-                            >
+                            <TextField select label="Almacén" name="almacenId" value={nuevoMovimientoPT.almacenId} onChange={handleInputChangePT} fullWidth style={{ marginBottom: '15px' }} error={!nuevoMovimientoPT.almacenId && nuevoMovimientoPT.almacenId !== ''} helperText={!nuevoMovimientoPT.almacenId && nuevoMovimientoPT.almacenId !== '' ? 'Seleccione un almacén' : ''} >
                                 {almacenes.length > 0 ? (
                                     almacenes.map((almacen) => (
-                                        almacen && almacen.id ? (
-                                            <MenuItem key={almacen.id} value={almacen.id}>
-                                                {almacen.nombre}
-                                            </MenuItem>
-                                        ) : null
+                                        almacen && almacen.id ? ( <MenuItem key={almacen.id} value={almacen.id}> {almacen.nombre} </MenuItem> ) : null
                                     ))
-                                ) : (
-                                    <MenuItem value="" disabled>
-                                        No hay almacenes disponibles
-                                    </MenuItem>
-                                )}
+                                ) : ( <MenuItem value="" disabled> No hay almacenes disponibles </MenuItem> )}
                             </TextField>
-
-                            <TextField
-                                select
-                                label="Producto Terminado"
-                                name="productoTerminadoId"
-                                value={nuevoMovimientoPT.productoTerminadoId}
-                                onChange={handleInputChangePT}
-                                fullWidth
-                                style={{ marginBottom: '15px' }}
-                                error={!nuevoMovimientoPT.productoTerminadoId && nuevoMovimientoPT.productoTerminadoId !== ''}
-                                helperText={!nuevoMovimientoPT.productoTerminadoId && nuevoMovimientoPT.productoTerminadoId !== '' ? 'Seleccione un producto terminado' : ''}
-                            >
+                            <TextField select label="Producto Terminado" name="productoTerminadoId" value={nuevoMovimientoPT.productoTerminadoId} onChange={handleInputChangePT} fullWidth style={{ marginBottom: '15px' }} error={!nuevoMovimientoPT.productoTerminadoId && nuevoMovimientoPT.productoTerminadoId !== ''} helperText={!nuevoMovimientoPT.productoTerminadoId && nuevoMovimientoPT.productoTerminadoId !== '' ? 'Seleccione un producto terminado' : ''} >
                                 {productosTerminados.length > 0 ? (
                                     productosTerminados.map((producto) => (
-                                        producto && producto.id ? (
-                                            <MenuItem key={producto.id} value={producto.id}>
-                                                {producto.nombre} ({producto.unidad || 'unid'})
-                                            </MenuItem>
-                                        ) : null
+                                        producto && producto.id ? ( <MenuItem key={producto.id} value={producto.id}> {producto.nombre} ({producto.unidad || 'unid'}) </MenuItem> ) : null
                                     ))
-                                ) : (
-                                    <MenuItem value="" disabled>
-                                        No hay productos terminados disponibles
-                                    </MenuItem>
-                                )}
+                                ) : ( <MenuItem value="" disabled> No hay productos terminados disponibles </MenuItem> )}
                             </TextField>
-
-                            <TextField
-                                type="number"
-                                label="Cantidad"
-                                name="cantidad"
-                                value={nuevoMovimientoPT.cantidad}
-                                onChange={handleInputChangePT}
-                                fullWidth
-                                style={{ marginBottom: '15px' }}
-                                InputProps={{ inputProps: { min: 0 } }}
-                                error={!nuevoMovimientoPT.cantidad && nuevoMovimientoPT.cantidad !== ''}
-                                helperText={!nuevoMovimientoPT.cantidad && nuevoMovimientoPT.cantidad !== '' ? 'Ingrese una cantidad válida' : ''}
-                            />
-
-                            <TextField
-                                label="Motivo"
-                                name="motivo"
-                                value={nuevoMovimientoPT.motivo}
-                                onChange={handleInputChangePT}
-                                placeholder="Motivo del movimiento"
-                                fullWidth
-                                style={{ marginBottom: '20px' }}
-                                error={!nuevoMovimientoPT.motivo && nuevoMovimientoPT.motivo !== ''}
-                                helperText={!nuevoMovimientoPT.motivo && nuevoMovimientoPT.motivo !== '' ? 'Ingrese un motivo' : ''}
-                            />
+                            <TextField type="number" label="Cantidad" name="cantidad" value={nuevoMovimientoPT.cantidad} onChange={handleInputChangePT} fullWidth style={{ marginBottom: '15px' }} InputLabelProps={{ shrink: true }} error={!nuevoMovimientoPT.cantidad && nuevoMovimientoPT.cantidad !== ''} helperText={!nuevoMovimientoPT.cantidad && nuevoMovimientoPT.cantidad !== '' ? 'Ingrese una cantidad válida' : ''} />
+                            <TextField label="Motivo" name="motivo" value={nuevoMovimientoPT.motivo} onChange={handleInputChangePT} placeholder="Motivo del movimiento" fullWidth style={{ marginBottom: '20px' }} InputLabelProps={{ shrink: true }} error={!nuevoMovimientoPT.motivo && nuevoMovimientoPT.motivo !== ''} helperText={!nuevoMovimientoPT.motivo && nuevoMovimientoPT.motivo !== '' ? 'Ingrese un motivo' : ''} />
+                            <FormControlLabel control={ <Checkbox checked={nuevoMovimientoPT.estadoEntrega || false} onChange={(e) => setNuevoMovimientoPT({ ...nuevoMovimientoPT, estadoEntrega: e.target.checked })} name="estadoEntrega" color="primary" /> } label="Estado de Entrega" style={{ marginBottom: '15px' }} />
                         </>
                     )}
-
                     <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '10px' }}>
-                        <Button variant="outlined" onClick={handleCancelar}>
-                            Cancelar
-                        </Button>
-                        <Button
-                            variant="contained"
-                            color="primary"
-                            onClick={handleAgregarMovimiento}
-                        >
-                            {movimientoEditando ? 'Actualizar' : 'Registrar'}
-                        </Button>
+                        <Button variant="outlined" onClick={handleCancelar}> Cancelar </Button>
+                        <Button variant="contained" color="primary" onClick={handleAgregarMovimiento} > {movimientoEditando ? 'Actualizar' : 'Registrar'} </Button>
                     </div>
                 </Box>
             </Modal>
