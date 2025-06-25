@@ -201,7 +201,7 @@ const Proveedores = () => {
                                     <TableCell>
                                         {/* Contenedor para la bandera y el nombre del país */}
                                         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                                            <img
+                                              {/*<img
                                                 src={`https://flagcdn.com/w320/${proveedor.pais.toLowerCase()}.png`}
                                                 alt={proveedor.pais}
                                                 style={{
@@ -209,7 +209,7 @@ const Proveedores = () => {
                                                     height: '16px',
                                                     borderRadius: '2px',  // Borde redondeado solo en la imagen
                                                 }}
-                                            />
+                                            />*/}
                                             <span>{paisesNombreCompleto[proveedor.pais] || proveedor.pais}</span> {/* Aquí mostramos el nombre completo del país */}
                                         </div>
                                     </TableCell>

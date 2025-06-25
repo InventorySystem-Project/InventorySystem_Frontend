@@ -1,6 +1,7 @@
 // Dashboard.js
 import React, { useState, useEffect } from 'react';
 import axios from 'axios'; // Asegúrate de tener axios instalado e importado
+import { useNavigate } from 'react-router-dom';
 import {
   PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis,
   CartesianGrid, Tooltip, Legend, ResponsiveContainer, ReferenceLine
@@ -334,7 +335,11 @@ const Dashboard = () => {
   const [mostrarModalProveedor, setMostrarModalProveedor] = useState(false);
   const [itemParaAutomatizar, setItemParaAutomatizar] = useState(null); // Para guardar la materia prima o producto
   const [cantidadAPedir, setCantidadAPedir] = useState(1); // Estado para la cantidad, inicializado en 1
+    const navigate = useNavigate(); // <-- AÑADE ESTA LÍNEA
 
+ const handleGestionarCompras = () => {
+        navigate('/ordenes-compra');
+    };
 
   const calcularStock = (movimientos) => {
     const stockPorMateriaPrima = {};
@@ -795,51 +800,71 @@ const Dashboard = () => {
             <div style={styles.listEmpty}>No hay productos con stock bajo.</div>
           )}
         </div>
-        <div style={{ ...styles.statCard, overflowY: 'auto', maxHeight: '300px' }}> {/* Habilitar scroll vertical */}
-          <h2 style={styles.listTitle}>Materias Primas con Stock Bajo (menos de 5 unidades)</h2>
-          {materiasPrimasStockBajo.length > 0 ? (
-            <div>
-              {materiasPrimasStockBajo.map(materia => (
-                <div key={materia.id} style={{
-                  padding: '10px',
-                  borderBottom: '1px solid #e0e0e0',
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                }}>
-                  <div style={{ flex: 1, marginRight: '10px' }}>
-                    <div style={{ color: '#333' }}>{materia.nombre}</div>
-                    <div style={{ fontSize: '12px', color: '#95a5a6' }}>
-                      Unidad: {materia.unidad}
-                    </div>
-                  </div>
-                  <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-                    <div style={{
-                      backgroundColor: '#e74c3c', color: 'white', borderRadius: '4px',
-                      fontSize: '12px', width: '100px', height: '40px',
-                      display: 'flex', justifyContent: 'center', alignItems: 'center',
-                    }}>
-                      <div>Stock: {stockReal[materia.id] || 0}</div>
-                    </div>
-                    <button
-                      style={{
-                        backgroundColor: '#3498db', color: 'white', borderRadius: '4px',
-                        fontSize: '12px', cursor: 'pointer', border: 'none',
-                        width: '100px', height: '40px',
-                        display: 'flex', justifyContent: 'center', alignItems: 'center',
-                      }}
-                      onClick={() => handleAbrirModalProveedor(materia)}
-                    >
-                      Automatizar compra
-                    </button>
-                  </div>
+{/* Reemplaza el div anterior por este bloque completo */}
+<div style={{ ...styles.statCard, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', minHeight: '300px' }}>
+    
+    {/* Contenedor para el título y la lista */}
+    <div>
+        <h2 style={styles.listTitle}>Materias Primas con Stock Bajo (menos de 5 unidades)</h2>
+        <div style={{ maxHeight: '180px', overflowY: 'auto' }}> {/* Contenedor de la lista con scroll */}
+            {materiasPrimasStockBajo.length > 0 ? (
+                <div>
+                    {materiasPrimasStockBajo.map(materia => (
+                        <div key={materia.id} style={{
+                            padding: '10px',
+                            borderBottom: '1px solid #e0e0e0',
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            alignItems: 'center',
+                        }}>
+                            <div style={{ flex: 1, marginRight: '10px' }}>
+                                <div style={{ color: '#333' }}>{materia.nombre}</div>
+                                <div style={{ fontSize: '12px', color: '#95a5a6' }}>
+                                    Unidad: {materia.unidad}
+                                </div>
+                            </div>
+                            <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                                <div style={{
+                                    backgroundColor: '#e74c3c', color: 'white', borderRadius: '4px',
+                                    fontSize: '12px', width: '100px', height: '40px',
+                                    display: 'flex', justifyContent: 'center', alignItems: 'center',
+                                }}>
+                                    <div>Stock: {stockReal[materia.id] || 0}</div>
+                                </div>
+                                {/* 
+                                <button
+                                    style={{
+                                        backgroundColor: '#3498db', color: 'white', borderRadius: '4px',
+                                        fontSize: '12px', cursor: 'pointer', border: 'none',
+                                        width: '100px', height: '40px',
+                                        display: 'flex', justifyContent: 'center', alignItems: 'center',
+                                    }}
+                                    onClick={() => handleAbrirModalProveedor(materia)}
+                                >
+                                    Automatizar compra
+                                </button>*/}
+                            </div>
+                        </div>
+                    ))}
                 </div>
-              ))}
-            </div>
-          ) : (
-            <div style={styles.listEmpty}>No hay materias primas con stock bajo.</div>
-          )}
+            ) : (
+                <div style={styles.listEmpty}>No hay materias primas con stock bajo.</div>
+            )}
         </div>
+    </div>
+
+    {/* Contenedor para el nuevo botón */}
+    <div style={{ marginTop: '15px', alignSelf: 'flex-end' }}>
+        <Button
+            variant="contained"
+            color="primary"
+            size="small"
+            onClick={handleGestionarCompras}
+        >
+            Gestionar compras
+        </Button>
+    </div>
+</div>
 
 
       </div>
