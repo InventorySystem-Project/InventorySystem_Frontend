@@ -84,18 +84,25 @@ const MovimientoInventario = () => {
 
     // ... (El resto del código de tus funciones no necesita cambios)
     // fetchMovimientos, fetchAlmacenes, handleInputChangeMP, etc... todo sigue igual
-    const fetchMovimientos = async () => {
-        try {
-            const dataMP = await getMovimientosInventarioMP();
-            console.log('Movimientos MP:', dataMP);
-            setMovimientosMP(dataMP || []);
-            const dataPT = await getMovimientosInventarioPT();
-            console.log('Movimientos PT:', dataPT);
-            setMovimientosPT(dataPT || []);
-        } catch (error) {
-            console.error('Error al obtener movimientos de inventario', error);
-        }
-    };
+const fetchMovimientos = async () => {
+    try {
+        const dataMP = await getMovimientosInventarioMP();
+        const dataPT = await getMovimientosInventarioPT();
+
+        // --- LA CORRECCIÓN ESTÁ AQUÍ ---
+        // Para ordenar del más reciente al más antiguo (descendente), restamos a de b.
+        // new Date(b.fecha...) - new Date(a.fecha...)
+        const sortedMP = (dataMP || []).sort((a, b) => new Date(b.fechaMovimiento) - new Date(a.fechaMovimiento));
+        const sortedPT = (dataPT || []).sort((a, b) => new Date(b.fechaMovimiento) - new Date(a.fechaMovimiento));
+
+        // Guardamos los datos ya ordenados en el estado
+        setMovimientosMP(sortedMP);
+        setMovimientosPT(sortedPT);
+
+    } catch (error) {
+        console.error('Error al obtener movimientos de inventario', error);
+    }
+};
     const fetchAlmacenes = async () => {
         try {
             const data = await getAlmacenes();
@@ -162,68 +169,83 @@ const MovimientoInventario = () => {
             alert('Error al actualizar el estado: ' + error.message);
         }
     };
-    const handleAgregarMovimiento = async () => {
-        try {
-            if (tipoInventarioForm === 'materiasPrimas') {
-                if (!nuevoMovimientoMP.almacenId || !nuevoMovimientoMP.materiaPrimaId || !nuevoMovimientoMP.cantidad || !nuevoMovimientoMP.motivo) {
-                    alert('Por favor complete los campos obligatorios');
-                    return;
-                }
-                const movimientoConFecha = {
-                    ...nuevoMovimientoMP,
-                    fechaMovimiento: new Date()
-                };
-                console.log('Datos MP a enviar:', movimientoConFecha);
-                if (movimientoEditando) {
-                    movimientoConFecha.id = movimientoEditando.id;
-                    await updateMovimientoInventarioMP(movimientoConFecha);
-                } else {
-                    await addMovimientoInventarioMP(movimientoConFecha);
-                }
-                const dataMP = await getMovimientosInventarioMP();
-                setMovimientosMP(dataMP || []);
-                setNuevoMovimientoMP({
-                    almacenId: '',
-                    materiaPrimaId: '',
-                    tipoMovimiento: 'Entrada',
-                    cantidad: '',
-                    motivo: '',
-                    estadoRecepcion: false
-                });
-            } else {
-                if (!nuevoMovimientoPT.almacenId || !nuevoMovimientoPT.productoTerminadoId || !nuevoMovimientoPT.cantidad || !nuevoMovimientoPT.motivo) {
-                    alert('Por favor complete los campos obligatorios');
-                    return;
-                }
-                const movimientoConFecha = {
-                    ...nuevoMovimientoPT,
-                    fechaMovimiento: new Date()
-                };
-                console.log('Datos PT a enviar:', movimientoConFecha);
-                if (movimientoEditando) {
-                    movimientoConFecha.id = movimientoEditando.id;
-                    await updateMovimientoInventarioPT(movimientoConFecha);
-                } else {
-                    await addMovimientoInventarioPT(movimientoConFecha);
-                }
-                const dataPT = await getMovimientosInventarioPT();
-                setMovimientosPT(dataPT || []);
-                setNuevoMovimientoPT({
-                    almacenId: '',
-                    productoTerminadoId: '',
-                    tipoMovimiento: 'Entrada',
-                    cantidad: '',
-                    motivo: '',
-                    estadoEntrega: false
-                });
+const handleAgregarMovimiento = async () => {
+    try {
+        if (tipoInventarioForm === 'materiasPrimas') {
+            if (!nuevoMovimientoMP.almacenId || !nuevoMovimientoMP.materiaPrimaId || !nuevoMovimientoMP.cantidad || !nuevoMovimientoMP.motivo) {
+                alert('Por favor complete los campos obligatorios');
+                return;
             }
-            setMovimientoEditando(null);
-            setMostrarFormulario(false);
-        } catch (error) {
-            console.error('Error al registrar movimiento de inventario', error);
-            alert('Error al registrar el movimiento: ' + error.message);
+            const movimientoConFecha = {
+                ...nuevoMovimientoMP,
+                fechaMovimiento: new Date()
+            };
+            console.log('Datos MP a enviar:', movimientoConFecha);
+            if (movimientoEditando) {
+                movimientoConFecha.id = movimientoEditando.id;
+                await updateMovimientoInventarioMP(movimientoConFecha);
+            } else {
+                await addMovimientoInventarioMP(movimientoConFecha);
+            }
+            
+            const dataMP = await getMovimientosInventarioMP();
+            
+            // ADAPTACIÓN: Ordena la lista antes de mostrarla en la tabla.
+            const sortedMP = (dataMP || []).sort((a, b) => new Date(b.fechaMovimiento) - new Date(a.fechaMovimiento));
+            
+            setMovimientosMP(sortedMP); // Usamos la lista ya ordenada.
+            
+            setNuevoMovimientoMP({
+                almacenId: '',
+                materiaPrimaId: '',
+                tipoMovimiento: 'Entrada',
+                cantidad: '',
+                motivo: '',
+                estadoRecepcion: false
+            });
+
+        } else { // Para Productos Terminados
+            if (!nuevoMovimientoPT.almacenId || !nuevoMovimientoPT.productoTerminadoId || !nuevoMovimientoPT.cantidad || !nuevoMovimientoPT.motivo) {
+                alert('Por favor complete los campos obligatorios');
+                return;
+            }
+            const movimientoConFecha = {
+                ...nuevoMovimientoPT,
+                fechaMovimiento: new Date()
+            };
+            console.log('Datos PT a enviar:', movimientoConFecha);
+            if (movimientoEditando) {
+                movimientoConFecha.id = movimientoEditando.id;
+                await updateMovimientoInventarioPT(movimientoConFecha);
+            } else {
+                await addMovimientoInventarioPT(movimientoConFecha);
+            }
+
+            const dataPT = await getMovimientosInventarioPT();
+
+            // ADAPTACIÓN: Ordena la lista antes de mostrarla en la tabla.
+            const sortedPT = (dataPT || []).sort((a, b) => new Date(b.fechaMovimiento) - new Date(a.fechaMovimiento));
+
+            setMovimientosPT(sortedPT); // Usamos la lista ya ordenada.
+            
+            setNuevoMovimientoPT({
+                almacenId: '',
+                productoTerminadoId: '',
+                tipoMovimiento: 'Entrada',
+                cantidad: '',
+                motivo: '',
+                estadoEntrega: false
+            });
         }
-    };
+        
+        setMovimientoEditando(null);
+        setMostrarFormulario(false);
+
+    } catch (error) {
+        console.error('Error al registrar movimiento de inventario', error);
+        alert('Error al registrar el movimiento: ' + (error.response?.data?.message || error.message));
+    }
+};
     const handleCancelar = () => {
         setMostrarFormulario(false);
         setMovimientoEditando(null);
@@ -538,7 +560,7 @@ const MovimientoInventario = () => {
                             </TextField>
                             <TextField label="Cantidad" name="cantidad" value={nuevoMovimientoMP.cantidad} onChange={handleInputChangeMP} fullWidth style={{ marginBottom: '15px' }} InputProps={{ inputProps: { min: 0 } }} InputLabelProps={{ shrink: true, }} error={!nuevoMovimientoMP.cantidad && nuevoMovimientoMP.cantidad !== ''} helperText={!nuevoMovimientoMP.cantidad && nuevoMovimientoMP.cantidad !== '' ? 'Ingrese una cantidad válida' : ''} />
                             <TextField label="Motivo" name="motivo" value={nuevoMovimientoMP.motivo} onChange={handleInputChangeMP} placeholder="Motivo del movimiento" fullWidth style={{ marginBottom: '20px' }} InputLabelProps={{ shrink: true }} error={!nuevoMovimientoMP.motivo && nuevoMovimientoMP.motivo !== ''} helperText={!nuevoMovimientoMP.motivo && nuevoMovimientoMP.motivo !== '' ? 'Ingrese un motivo' : ''} />
-                            <FormControlLabel control={ <Checkbox checked={nuevoMovimientoMP.estadoRecepcion || false} onChange={(e) => setNuevoMovimientoMP({ ...nuevoMovimientoMP, estadoRecepcion: e.target.checked })} name="estadoRecepcion" color="primary" /> } label="Estado de Recepción" style={{ marginBottom: '15px' }} />
+                            {/*<FormControlLabel control={ <Checkbox checked={nuevoMovimientoMP.estadoRecepcion || false} onChange={(e) => setNuevoMovimientoMP({ ...nuevoMovimientoMP, estadoRecepcion: e.target.checked })} name="estadoRecepcion" color="primary" /> } label="Estado de Recepción" style={{ marginBottom: '15px' }} />*/}
                         </>
                     )}
                     {tipoInventarioForm === 'productosTerminados' && (
@@ -563,7 +585,7 @@ const MovimientoInventario = () => {
                             </TextField>
                             <TextField type="number" label="Cantidad" name="cantidad" value={nuevoMovimientoPT.cantidad} onChange={handleInputChangePT} fullWidth style={{ marginBottom: '15px' }} InputLabelProps={{ shrink: true }} error={!nuevoMovimientoPT.cantidad && nuevoMovimientoPT.cantidad !== ''} helperText={!nuevoMovimientoPT.cantidad && nuevoMovimientoPT.cantidad !== '' ? 'Ingrese una cantidad válida' : ''} />
                             <TextField label="Motivo" name="motivo" value={nuevoMovimientoPT.motivo} onChange={handleInputChangePT} placeholder="Motivo del movimiento" fullWidth style={{ marginBottom: '20px' }} InputLabelProps={{ shrink: true }} error={!nuevoMovimientoPT.motivo && nuevoMovimientoPT.motivo !== ''} helperText={!nuevoMovimientoPT.motivo && nuevoMovimientoPT.motivo !== '' ? 'Ingrese un motivo' : ''} />
-                            <FormControlLabel control={ <Checkbox checked={nuevoMovimientoPT.estadoEntrega || false} onChange={(e) => setNuevoMovimientoPT({ ...nuevoMovimientoPT, estadoEntrega: e.target.checked })} name="estadoEntrega" color="primary" /> } label="Estado de Entrega" style={{ marginBottom: '15px' }} />
+                            {/*<FormControlLabel control={ <Checkbox checked={nuevoMovimientoPT.estadoEntrega || false} onChange={(e) => setNuevoMovimientoPT({ ...nuevoMovimientoPT, estadoEntrega: e.target.checked })} name="estadoEntrega" color="primary" /> } label="Estado de Entrega" style={{ marginBottom: '15px' }} />*/}
                         </>
                     )}
                     <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '10px' }}>

@@ -148,7 +148,7 @@ const Empresa = () => {
                                     <TableCell>
                                         {/* Contenedor para la bandera y el nombre del país */}
                                         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                                            <img
+                                            {/*<<img
                                                 src={`https://flagcdn.com/w320/${empresa.pais.toLowerCase()}.png`}
                                                 alt={empresa.pais}
                                                 style={{
@@ -156,7 +156,7 @@ const Empresa = () => {
                                                     height: '16px',
                                                     borderRadius: '2px',  // Borde redondeado solo en la imagen
                                                 }}
-                                            />
+                                            />*/}
                                             <span>{paisesNombreCompleto[empresa.pais] || empresa.pais}</span> {/* Aquí mostramos el nombre completo del país */}
                                         </div>
                                     </TableCell>

@@ -19,6 +19,7 @@ import { getOrdenesCompra, addOrdenCompra, deleteOrdenCompra, updateOrdenCompra 
 import { getMateriasPrimas } from '../services/MateriaPrimaService';
 import { getEmpresas } from '../services/EmpresaService';
 import { getProveedores } from '../services/ProveedorService';
+import { registrarEnGoogleSheet } from '../services/GoogleSheetService';
 
 const OrdenCompra = () => {
   const [ordenes, setOrdenes] = useState([]);
@@ -90,40 +91,81 @@ const OrdenCompra = () => {
     setProductosSeleccionados(nuevos);
   };
 
-  const handleRegistrarOrden = async () => {
-    const nuevaOrden = {
-      empresaId: formulario.empresaId,
-      proveedorId: formulario.proveedorId,
-      fechaEmision: formulario.fechaEmision,
-      estado: formulario.estado,
-      codigoOrden: codigoGenerado,
-      detalles: productosSeleccionados
-    };
+// En OrdenCompra.js
 
-    if (ordenEditando) {
-      // Crear un objeto que incluya el ID del ordenEditando
-      const ordenCompleta = {
-        ...nuevaOrden,
-        id: ordenEditando.id
-      };
+const handleRegistrarOrden = async () => {
+    try {
+        const nuevaOrdenParaBD = {
+            empresaId: formulario.empresaId,
+            proveedorId: formulario.proveedorId,
+            fechaEmision: formulario.fechaEmision,
+            estado: formulario.estado,
+            codigoOrden: codigoGenerado,
+            detalles: productosSeleccionados.map(p => ({
+                materiaPrimaId: p.materiaPrimaId,
+                cantidad: parseInt(p.cantidad, 10)
+            }))
+        };
 
-      // Llamar al servicio con un solo parámetro
-      await updateOrdenCompra(ordenCompleta);
+        if (ordenEditando) {
+            // Lógica para actualizar (no se toca)
+            const ordenCompleta = { ...nuevaOrdenParaBD, id: ordenEditando.id };
+            await updateOrdenCompra(ordenCompleta);
+        } else {
+            // Lógica para añadir una nueva orden
+            const ordenGuardada = await addOrdenCompra(nuevaOrdenParaBD);
 
-      setOrdenes(prev => prev.map(o => o.id === ordenEditando.id ? ordenCompleta : o));
+            // --- INICIO DE LA CORRECCIÓN ---
 
-    } else {
-      // Si es una nueva orden
-      await addOrdenCompra(nuevaOrden);
+            // La condición ahora solo valida que la operación en la BD fue exitosa
+            if (ordenGuardada) {
+                console.log("✅ Orden guardada en la BD. Procediendo con Google Sheets.");
+
+                // CAMBIO CLAVE: Usamos 'nuevaOrdenParaBD', que SÍ tiene los detalles,
+                // en lugar de 'ordenGuardada'.
+                const proveedorInfo = proveedores.find(p => p.id === nuevaOrdenParaBD.proveedorId);
+
+                const rowsForSheet = nuevaOrdenParaBD.detalles.map(detalle => {
+                    const materiaPrimaInfo = materiasPrimas.find(mp => mp.id === detalle.materiaPrimaId);
+                    
+                    return [
+                        nuevaOrdenParaBD.codigoOrden, // Usamos el código de la data local
+                        "Materia Prima",
+                        "Entrada",
+                        "Almacen Principal",
+                        materiaPrimaInfo?.nombre || '',
+                        detalle.cantidad,
+                        "Compra",
+                        proveedorInfo?.nombreEmpresaProveedor || '',
+                        proveedorInfo?.telefono || '',
+                        "",
+                        "",
+                        "",
+                        new Date().toISOString()
+                    ];
+                });
+                
+                await registrarEnGoogleSheet(rowsForSheet);
+            
+            } else {
+                // Este caso ahora es menos probable, pero lo mantenemos por seguridad
+                //console.warn("La respuesta del backend fue vacía, se omite el registro en Google Sheets.");
+            }
+            // --- FIN DE LA CORRECCIÓN ---
+        }
+
+        // Limpieza del formulario
+        setMostrarModal(false);
+        setFormulario({ empresaId: '', proveedorId: '', fechaEmision: '', estado: 'Aprobada' });
+        setProductosSeleccionados([]);
+        setOrdenEditando(null);
+        fetchOrdenes();
+        
+    } catch (error) {
+        console.error("❌ Error en handleRegistrarOrden:", error);
+        alert("Hubo un error al registrar la orden.");
     }
-
-    setMostrarModal(false);
-    setFormulario({ empresaId: '', proveedorId: '', fechaEmision: '', estado: '' });
-    setProductosSeleccionados([]);
-    setOrdenEditando(null);
-    fetchOrdenes();
-  };
-
+};
   const handleEditarOrden = (orden) => {
     setOrdenEditando(orden);
     setFormulario({
