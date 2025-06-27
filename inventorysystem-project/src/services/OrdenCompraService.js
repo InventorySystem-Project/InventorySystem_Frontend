@@ -85,3 +85,16 @@ export const deleteOrdenCompra = async (id) => {
         throw error;
     }
 };
+
+export const enviarPdfWhatsAppPorBackend = async (datos) => {
+    try {
+        // Llama al nuevo endpoint en tu backend
+        const response = await axios.post(`${API_URL}/enviar-pdf-whatsapp`, datos, {
+            headers: getAuthHeaders(),
+        });
+        return response.data;
+    } catch (error) {
+        console.error('Error al llamar al backend para enviar PDF:', error.response?.data || error.message);
+        throw error;
+    }
+};
