@@ -175,6 +175,7 @@ const MateriaPrima = () => {
                         <MenuItem value="unid.">Unidad (unid.)</MenuItem>
                         <MenuItem value="rollo">Rollo</MenuItem>
                         <MenuItem value="par">Par</MenuItem>
+                        <MenuItem value="pie">Pies</MenuItem>
                     </TextField>
                     <div style={{ display: 'flex', justifyContent: 'center', gap: '10px' }}>
                         <Button variant="outlined" color="primary" onClick={handleCancelar}>Cancelar</Button>
