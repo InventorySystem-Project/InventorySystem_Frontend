@@ -44,7 +44,7 @@ const MainLayout = ({ children }) => {
                         //padding: '20px', // Añadimos el padding aquí para consistencia
                         backgroundColor: 'rgb(117, 73, 48)', // Un color de fondo más suave
                         flex: 1, // Permite que este div ocupe todo el espacio vertical restante
-                        overflowY: 'auto', // Habilita el scroll vertical SOLO para esta área
+                        //overflowY: 'auto', // Habilita el scroll vertical SOLO para esta área
                         transition: 'margin-left 0.3s ease-in-out',
                     }}
                 >
