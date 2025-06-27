@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
-import { FileText, Trash2, Plus, Clock, CheckCircle2, Loader2, XCircle, Pencil, Edit } from "lucide-react";
+import { FileText, Trash2, Plus, Clock, CheckCircle2, Loader2, XCircle, Pencil, Edit, MessagesSquareIcon, MessageSquareMore } from "lucide-react";
 import {
   Button,
   Modal,
@@ -15,12 +15,12 @@ import {
   TableBody,
   Pagination
 } from '@mui/material';
-import { getOrdenesCompra, addOrdenCompra, deleteOrdenCompra, updateOrdenCompra } from '../services/OrdenCompraService';
+import { getOrdenesCompra, addOrdenCompra, deleteOrdenCompra, updateOrdenCompra, enviarPdfWhatsAppPorBackend } from '../services/OrdenCompraService';
 import { getMateriasPrimas } from '../services/MateriaPrimaService';
 import { getEmpresas } from '../services/EmpresaService';
 import { getProveedores } from '../services/ProveedorService';
 import { registrarEnGoogleSheet } from '../services/GoogleSheetService';
-
+import { messagesquaremore } from "lucide-react";
 const OrdenCompra = () => {
   const [ordenes, setOrdenes] = useState([]);
   const [materiasPrimas, setMateriasPrimas] = useState([]);
@@ -91,81 +91,81 @@ const OrdenCompra = () => {
     setProductosSeleccionados(nuevos);
   };
 
-// En OrdenCompra.js
+  // En OrdenCompra.js
 
-const handleRegistrarOrden = async () => {
+  const handleRegistrarOrden = async () => {
     try {
-        const nuevaOrdenParaBD = {
-            empresaId: formulario.empresaId,
-            proveedorId: formulario.proveedorId,
-            fechaEmision: formulario.fechaEmision,
-            estado: formulario.estado,
-            codigoOrden: codigoGenerado,
-            detalles: productosSeleccionados.map(p => ({
-                materiaPrimaId: p.materiaPrimaId,
-                cantidad: parseInt(p.cantidad, 10)
-            }))
-        };
+      const nuevaOrdenParaBD = {
+        empresaId: formulario.empresaId,
+        proveedorId: formulario.proveedorId,
+        fechaEmision: formulario.fechaEmision,
+        estado: formulario.estado,
+        codigoOrden: codigoGenerado,
+        detalles: productosSeleccionados.map(p => ({
+          materiaPrimaId: p.materiaPrimaId,
+          cantidad: parseInt(p.cantidad, 10)
+        }))
+      };
 
-        if (ordenEditando) {
-            // Lógica para actualizar (no se toca)
-            const ordenCompleta = { ...nuevaOrdenParaBD, id: ordenEditando.id };
-            await updateOrdenCompra(ordenCompleta);
+      if (ordenEditando) {
+        // Lógica para actualizar (no se toca)
+        const ordenCompleta = { ...nuevaOrdenParaBD, id: ordenEditando.id };
+        await updateOrdenCompra(ordenCompleta);
+      } else {
+        // Lógica para añadir una nueva orden
+        const ordenGuardada = await addOrdenCompra(nuevaOrdenParaBD);
+
+        // --- INICIO DE LA CORRECCIÓN ---
+
+        // La condición ahora solo valida que la operación en la BD fue exitosa
+        if (ordenGuardada) {
+          console.log("✅ Orden guardada en la BD. Procediendo con Google Sheets.");
+
+          // CAMBIO CLAVE: Usamos 'nuevaOrdenParaBD', que SÍ tiene los detalles,
+          // en lugar de 'ordenGuardada'.
+          const proveedorInfo = proveedores.find(p => p.id === nuevaOrdenParaBD.proveedorId);
+
+          const rowsForSheet = nuevaOrdenParaBD.detalles.map(detalle => {
+            const materiaPrimaInfo = materiasPrimas.find(mp => mp.id === detalle.materiaPrimaId);
+
+            return [
+              nuevaOrdenParaBD.codigoOrden, // Usamos el código de la data local
+              "Materia Prima",
+              "Entrada",
+              "Almacen Principal",
+              materiaPrimaInfo?.nombre || '',
+              detalle.cantidad,
+              "Compra",
+              proveedorInfo?.nombreEmpresaProveedor || '',
+              proveedorInfo?.telefono || '',
+              "N",
+              "",
+              "",
+              new Date().toISOString()
+            ];
+          });
+
+          await registrarEnGoogleSheet(rowsForSheet);
+
         } else {
-            // Lógica para añadir una nueva orden
-            const ordenGuardada = await addOrdenCompra(nuevaOrdenParaBD);
-
-            // --- INICIO DE LA CORRECCIÓN ---
-
-            // La condición ahora solo valida que la operación en la BD fue exitosa
-            if (ordenGuardada) {
-                console.log("✅ Orden guardada en la BD. Procediendo con Google Sheets.");
-
-                // CAMBIO CLAVE: Usamos 'nuevaOrdenParaBD', que SÍ tiene los detalles,
-                // en lugar de 'ordenGuardada'.
-                const proveedorInfo = proveedores.find(p => p.id === nuevaOrdenParaBD.proveedorId);
-
-                const rowsForSheet = nuevaOrdenParaBD.detalles.map(detalle => {
-                    const materiaPrimaInfo = materiasPrimas.find(mp => mp.id === detalle.materiaPrimaId);
-                    
-                    return [
-                        nuevaOrdenParaBD.codigoOrden, // Usamos el código de la data local
-                        "Materia Prima",
-                        "Entrada",
-                        "Almacen Principal",
-                        materiaPrimaInfo?.nombre || '',
-                        detalle.cantidad,
-                        "Compra",
-                        proveedorInfo?.nombreEmpresaProveedor || '',
-                        proveedorInfo?.telefono || '',
-                        "",
-                        "",
-                        "",
-                        new Date().toISOString()
-                    ];
-                });
-                
-                await registrarEnGoogleSheet(rowsForSheet);
-            
-            } else {
-                // Este caso ahora es menos probable, pero lo mantenemos por seguridad
-                //console.warn("La respuesta del backend fue vacía, se omite el registro en Google Sheets.");
-            }
-            // --- FIN DE LA CORRECCIÓN ---
+          // Este caso ahora es menos probable, pero lo mantenemos por seguridad
+          //console.warn("La respuesta del backend fue vacía, se omite el registro en Google Sheets.");
         }
+        // --- FIN DE LA CORRECCIÓN ---
+      }
 
-        // Limpieza del formulario
-        setMostrarModal(false);
-        setFormulario({ empresaId: '', proveedorId: '', fechaEmision: '', estado: 'Aprobada' });
-        setProductosSeleccionados([]);
-        setOrdenEditando(null);
-        fetchOrdenes();
-        
+      // Limpieza del formulario
+      setMostrarModal(false);
+      setFormulario({ empresaId: '', proveedorId: '', fechaEmision: '', estado: 'Aprobada' });
+      setProductosSeleccionados([]);
+      setOrdenEditando(null);
+      fetchOrdenes();
+
     } catch (error) {
-        console.error("❌ Error en handleRegistrarOrden:", error);
-        alert("Hubo un error al registrar la orden.");
+      console.error("❌ Error en handleRegistrarOrden:", error);
+      alert("Hubo un error al registrar la orden.");
     }
-};
+  };
   const handleEditarOrden = (orden) => {
     setOrdenEditando(orden);
     setFormulario({
@@ -178,7 +178,50 @@ const handleRegistrarOrden = async () => {
     setProductosSeleccionados(orden.detalles || []);
     setMostrarModal(true);
   };
+  const handleEnviarWhatsAppConPDF = async (orden) => {
+    const proveedor = proveedores.find(p => p.id === orden.proveedorId);
+    if (!proveedor || !proveedor.telefono) {
+      alert("El proveedor no tiene un número de teléfono configurado.");
+      return;
+    }
 
+    // 1. Generar el PDF en memoria (usando tu lógica existente)
+    const doc = new jsPDF();
+    doc.setFontSize(18);
+    doc.text("ORDEN DE COMPRA", 70, 20);
+    doc.setFontSize(12);
+    doc.text(`Número de O/C: ${orden.codigoOrden}`, 14, 40);
+    doc.text(`Proveedor: ${proveedor?.nombreEmpresaProveedor || '-'}`, 14, 48);
+    const columns = ["Cantidad", "Producto"];
+    const rows = (orden.detalles || []).map(d => [d.cantidad, materiasPrimas.find(mp => mp.id === d.materiaPrimaId)?.nombre || '-']);
+    autoTable(doc, { startY: 60, head: [columns], body: rows });
+
+    // 2. Obtener el PDF como un string Base64
+    const pdfBlob = doc.output('blob');
+    const reader = new FileReader();
+    reader.readAsDataURL(pdfBlob);
+
+    reader.onloadend = async function () {
+      // Quitamos el prefijo "data:application/pdf;base64," para enviar solo los datos
+      const pdfBase64 = reader.result.split(',')[1];
+
+      // --- INICIO DE LA MODIFICACIÓN ---
+      const datosParaBackend = {
+        to: proveedor.telefono,
+        filename: `Orden-${orden.codigoOrden}.pdf`,
+        pdfBase64: pdfBase64,
+        providerName: proveedor.nombreEmpresaProveedor // <-- AÑADE ESTA LÍNEA
+      };
+
+      try {
+        alert("Enviando orden por WhatsApp, por favor espere...");
+        await enviarPdfWhatsAppPorBackend(datosParaBackend);
+        alert("¡Orden de compra enviada por WhatsApp exitosamente!");
+      } catch (error) {
+        alert("No se pudo enviar la orden por WhatsApp. Revise la consola.");
+      }
+    };
+  };
   const handleEliminarOrden = async (id) => {
     if (window.confirm('¿Estás seguro que quieres eliminar esta orden de compra?')) {
       try {
@@ -312,6 +355,9 @@ const handleRegistrarOrden = async () => {
                   <TableCell>{orden.fechaEmision}</TableCell>
                   <TableCell>{renderEstado(orden.estado)}</TableCell>
                   <TableCell>
+                    <Button color="success" onClick={() => handleEnviarWhatsAppConPDF(orden)}>
+                      <MessageSquareMore size={18} />
+                    </Button>
                     <Button color="primary" onClick={() => generarPDF(orden)}>
                       <FileText size={18} />
                     </Button>
