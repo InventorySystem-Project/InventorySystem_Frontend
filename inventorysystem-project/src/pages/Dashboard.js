@@ -44,7 +44,11 @@ const styles = {
     backgroundColor: '#ffffff',
     color: '#333333',
     padding: '20px',
-    minHeight: '100vh',
+    // --- INICIO DE LA MODIFICACIÓN ---
+    // Se ajusta la altura para ocupar el espacio restante y se habilita el scroll
+    // El cálculo asume que la barra superior (TopBar) mide 70px
+    height: 'calc(100vh - 70px)',
+    overflowY: 'auto',
   },
   dashboardTitle: {
     fontSize: '24px',
