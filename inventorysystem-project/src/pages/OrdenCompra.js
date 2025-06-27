@@ -251,7 +251,8 @@ const OrdenCompra = () => {
             }
         }
     };
-
+   
+    
     const generarPDF = (orden) => {
         if (!orden.detalles || orden.detalles.length === 0) {
             alert("Esta orden no tiene productos registrados.");
