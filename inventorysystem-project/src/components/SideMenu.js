@@ -49,7 +49,7 @@ const SideMenu = ({ isCollapsed, toggleCollapse }) => {
           </div>
           {!isCollapsed && (
             <div className="app-title">
-              <h3>Empresa E.I.R.L</h3>
+              <h3>Frederick E.I.R.L</h3>
               <p>Sistema de inventarios</p>
             </div>
           )}

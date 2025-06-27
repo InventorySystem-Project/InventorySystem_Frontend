@@ -214,7 +214,7 @@ const OrdenCompra = () => {
       };
 
       try {
-        alert("Enviando orden por WhatsApp, por favor espere...");
+        //alert("Enviando orden por WhatsApp, por favor espere...");
         await enviarPdfWhatsAppPorBackend(datosParaBackend);
         alert("¡Orden de compra enviada por WhatsApp exitosamente!");
       } catch (error) {
