@@ -2,7 +2,7 @@ html, body, #root, .App {
   height: 100%;
   margin: 0;
   padding: 0;
-  background-color: #134ac1;
+  background-color: #754930;
   
 }
 * {
@@ -608,7 +608,7 @@ textarea {
 }
 /* Estilos para el SideMenu */
 .side-menu {
-  background-color: #0747A6;
+  background-color: #754930;
   color: white;
   width: 235px;
   height: 100vh;
