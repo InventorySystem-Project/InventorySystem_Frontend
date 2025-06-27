@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { TextField, Button, Modal, Box, Pagination, Table, TableBody, TableCell, TableHead, TableRow } from '@mui/material';
+import { TextField, Button, Modal, Box, Pagination, Table, TableBody, TableCell, TableHead, TableRow,MenuItem } from '@mui/material';
 import { Plus, Pencil, Trash2, Edit } from "lucide-react";
 import { getProveedores, addProveedor, updateProveedor, deleteProveedor } from '../services/ProveedorService';
 
@@ -37,25 +37,30 @@ const Proveedores = () => {
         }
     };
 
-    const fetchPaises = async () => {
+const fetchPaises = async () => {
         try {
-            const response = await fetch('https://restcountries.com/v3.1/all');
+            // URL corregida para pedir solo los campos necesarios y evitar el error 400
+            const response = await fetch('https://restcountries.com/v3.1/all?fields=name,cca2');
+            
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(`Error ${response.status}: ${errorData.message}`);
+            }
+            
             const data = await response.json();
-            const paisesOrdenados = data.sort((a, b) => a.name.common.localeCompare(b.name.common)); // Ordenar por nombre
-
-            // Crear un mapa que relacione los códigos ISO con los nombres completos
-            const paisesMap = {};
-            data.forEach(pais => {
-                paisesMap[pais.cca2] = pais.name.common;  // "cca2" es el código ISO y "name.common" es el nombre del país
-            });
-
-            setPaises(paisesOrdenados);
-            setPaisesNombreCompleto(paisesMap);  // Guardar el mapa de países
+            
+            if (Array.isArray(data)) {
+                const paisesOrdenados = data.sort((a, b) => 
+                    a.name.common.localeCompare(b.name.common)
+                );
+                setPaises(paisesOrdenados);
+            } else {
+                 console.error('La respuesta de la API de países no es un array:', data);
+            }
         } catch (error) {
-            console.error('Error al obtener los países', error);
+            console.error('Error al obtener los países:', error);
         }
     };
-
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
@@ -201,7 +206,7 @@ const Proveedores = () => {
                                     <TableCell>
                                         {/* Contenedor para la bandera y el nombre del país */}
                                         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                                              {/*<img
+                                            <img
                                                 src={`https://flagcdn.com/w320/${proveedor.pais.toLowerCase()}.png`}
                                                 alt={proveedor.pais}
                                                 style={{
@@ -209,7 +214,7 @@ const Proveedores = () => {
                                                     height: '16px',
                                                     borderRadius: '2px',  // Borde redondeado solo en la imagen
                                                 }}
-                                            />*/}
+                                            />
                                             <span>{paisesNombreCompleto[proveedor.pais] || proveedor.pais}</span> {/* Aquí mostramos el nombre completo del país */}
                                         </div>
                                     </TableCell>
@@ -248,19 +253,23 @@ const Proveedores = () => {
                     <TextField label="Teléfono" name="telefono" value={nuevoProveedor.telefono} onChange={handleInputChange} fullWidth />
                     <TextField label="Correo" name="correo" value={nuevoProveedor.correo} onChange={handleInputChange} fullWidth />
                     <TextField
+                        fullWidth
+                        select
                         label="País"
                         name="pais"
                         value={nuevoProveedor.pais}
                         onChange={handleInputChange}
-                        select
-                        fullWidth
-                        SelectProps={{ native: true }}
+                        disabled={paises.length === 0}
                     >
-                        {paises.map((pais) => (
-                            <option key={pais.cca2} value={pais.cca2}> {/* Usamos el código ISO del país aquí */}
-                                {pais.name.common}
-                            </option>
-                        ))}
+                        {paises.length === 0 ? (
+                            <MenuItem disabled value=""><em>Cargando países...</em></MenuItem>
+                        ) : (
+                            paises.map((pais) => (
+                                <MenuItem key={pais.cca2} value={pais.cca2}>
+                                    {pais.name.common}
+                                </MenuItem>
+                            ))
+                        )}
                     </TextField>
 
                     <TextField label="Dirección" name="direccion" value={nuevoProveedor.direccion} onChange={handleInputChange} fullWidth />

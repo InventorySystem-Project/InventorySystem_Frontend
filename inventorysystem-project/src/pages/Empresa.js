@@ -27,25 +27,30 @@ const Empresa = () => {
     };
 
     // Obtener la lista de países
-    const fetchPaises = async () => {
+const fetchPaises = async () => {
         try {
-            const response = await fetch('https://restcountries.com/v3.1/all');
+            // URL corregida para pedir solo los campos necesarios y evitar el error 400
+            const response = await fetch('https://restcountries.com/v3.1/all?fields=name,cca2');
+            
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(`Error ${response.status}: ${errorData.message}`);
+            }
+            
             const data = await response.json();
-            const paisesOrdenados = data.sort((a, b) => a.name.common.localeCompare(b.name.common)); // Ordenar por nombre
-
-            // Crear un mapa que relacione los códigos ISO con los nombres completos
-            const paisesMap = {};
-            data.forEach(pais => {
-                paisesMap[pais.cca2] = pais.name.common;  // "cca2" es el código ISO y "name.common" es el nombre del país
-            });
-
-            setPaises(paisesOrdenados);
-            setPaisesNombreCompleto(paisesMap);  // Guardar el mapa de países
+            
+            if (Array.isArray(data)) {
+                const paisesOrdenados = data.sort((a, b) => 
+                    a.name.common.localeCompare(b.name.common)
+                );
+                setPaises(paisesOrdenados);
+            } else {
+                 console.error('La respuesta de la API de países no es un array:', data);
+            }
         } catch (error) {
-            console.error('Error al obtener los países', error);
+            console.error('Error al obtener los países:', error);
         }
     };
-
     useEffect(() => {
         fetchEmpresas();
         fetchPaises();  // Llamar a la función para obtener los países
@@ -148,7 +153,7 @@ const Empresa = () => {
                                     <TableCell>
                                         {/* Contenedor para la bandera y el nombre del país */}
                                         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                                            {/*<<img
+                                            <img
                                                 src={`https://flagcdn.com/w320/${empresa.pais.toLowerCase()}.png`}
                                                 alt={empresa.pais}
                                                 style={{
@@ -156,7 +161,7 @@ const Empresa = () => {
                                                     height: '16px',
                                                     borderRadius: '2px',  // Borde redondeado solo en la imagen
                                                 }}
-                                            />*/}
+                                            />
                                             <span>{paisesNombreCompleto[empresa.pais] || empresa.pais}</span> {/* Aquí mostramos el nombre completo del país */}
                                         </div>
                                     </TableCell>
