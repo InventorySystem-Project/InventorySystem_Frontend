@@ -1,56 +1,41 @@
 import React, { useState, useEffect } from 'react';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
+// Se añaden Tabs y Tab para la nueva funcionalidad
 import {
     Button, Modal, Box, TextField, MenuItem, Table, TableHead, TableRow, TableCell, TableBody,
-    Pagination, List, ListItem, ListItemText, Paper, ListSubheader
+    Pagination, List, ListItem, ListItemText, Paper, ListSubheader, Tabs, Tab
 } from '@mui/material';
 import {
     FileText, Trash2, Plus, Clock, CheckCircle2, Loader2, XCircle, Edit, MessageSquareMore, AlertTriangle
 } from "lucide-react";
 
+// Se importan los servicios necesarios para Productos Terminados
 import { getMovimientosInventarioMP } from '../services/MovimientoInventarioMPService';
+import { getMovimientosInventarioPT } from '../services/MovimientoInventarioPTService';
 import { getOrdenesCompra, addOrdenCompra, deleteOrdenCompra, updateOrdenCompra, enviarPdfWhatsAppPorBackend } from '../services/OrdenCompraService';
 import { getMateriasPrimas } from '../services/MateriaPrimaService';
+import { getProductosTerminados } from '../services/ProductoTerminadoService';
 import { getEmpresas } from '../services/EmpresaService';
 import { getProveedores } from '../services/ProveedorService';
 import { registrarEnGoogleSheet } from '../services/GoogleSheetService';
 
-const AlertasStockBajo = ({ alertas, onAnadirProducto }) => {
-    if (alertas.length === 0) {
-        return null; 
+const AlertasStockBajo = ({ titulo, alertas, onAnadirProducto }) => {
+    if (!alertas || alertas.length === 0) {
+        return null;
     }
-
     return (
         <Paper elevation={2} sx={{ my: 2, p: 2, backgroundColor: '#FFFBEB' }}>
-            <List
-                dense
-                subheader={
-                    <ListSubheader sx={{ bgcolor: 'transparent', color: '#B7791F', display: 'flex', alignItems: 'center', gap: 1 }}>
-                        <AlertTriangle size={20} />
-                        ALERTAS DE STOCK BAJO (MENOS DE 5 UNIDADES)
-                    </ListSubheader>
-                }
-            >
+            <List dense subheader={
+                <ListSubheader sx={{ bgcolor: 'transparent', color: '#B7791F', display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <AlertTriangle size={20} /> {titulo}
+                </ListSubheader>
+            }>
                 {alertas.map(alerta => (
-                    <ListItem
-                        key={alerta.id}
-                        divider
-                        secondaryAction={
-                            <Button
-                                variant="outlined"
-                                size="small"
-                                startIcon={<Plus size={16} />}
-                                onClick={() => onAnadirProducto(alerta.id)}
-                            >
-                                Añadir
-                            </Button>
-                        }
-                    >
-                        <ListItemText
-                            primary={alerta.nombre}
-                            secondary={`Stock actual: ${alerta.stockActual} (Mínimo: 5)`}
-                        />
+                    <ListItem key={alerta.id} divider secondaryAction={
+                        <Button variant="outlined" size="small" startIcon={<Plus size={16} />} onClick={() => onAnadirProducto(alerta.id)}>Añadir</Button>
+                    }>
+                        <ListItemText primary={alerta.nombre} secondary={`Stock actual: ${alerta.stockActual} (Mínimo: 5)`} />
                     </ListItem>
                 ))}
             </List>
@@ -60,73 +45,81 @@ const AlertasStockBajo = ({ alertas, onAnadirProducto }) => {
 
 
 const OrdenCompra = () => {
+    // --- NUEVO ESTADO PARA CONTROLAR LAS PESTAÑAS ---
+    const [tipoOrden, setTipoOrden] = useState('materiasPrimas');
+
     const [ordenes, setOrdenes] = useState([]);
     const [materiasPrimas, setMateriasPrimas] = useState([]);
+    const [productosTerminados, setProductosTerminados] = useState([]); // <-- NUEVO ESTADO
     const [empresas, setEmpresas] = useState([]);
     const [proveedores, setProveedores] = useState([]);
     const [productosSeleccionados, setProductosSeleccionados] = useState([]);
-    const [formulario, setFormulario] = useState({
-        empresaId: '', proveedorId: '', fechaEmision: '', estado: ''
-    });
+    const [formulario, setFormulario] = useState({ empresaId: '', proveedorId: '', fechaEmision: '', estado: '' });
     const [codigoGenerado, setCodigoGenerado] = useState('');
     const [mostrarModal, setMostrarModal] = useState(false);
     const [paginaActual, setPaginaActual] = useState(1);
-    const [productoActual, setProductoActual] = useState({ materiaPrimaId: '', cantidad: '' }); // Cantidad inicial vacía
+    const [productoActual, setProductoActual] = useState({ productoId: '', cantidad: '' });
     const [ordenEditando, setOrdenEditando] = useState(null);
     const [pdfPreview, setPdfPreview] = useState(null);
     const [openPdfModal, setOpenPdfModal] = useState(false);
     
-    const [movimientos, setMovimientos] = useState([]);
-    const [alertasStock, setAlertasStock] = useState([]);
+    // Estados separados para movimientos y alertas
+    const [movimientosMP, setMovimientosMP] = useState([]);
+    const [alertasStockMP, setAlertasStockMP] = useState([]);
+    const [movimientosPT, setMovimientosPT] = useState([]);
+    const [alertasStockPT, setAlertasStockPT] = useState([]);
 
     const ordenesPorPagina = 5;
 
     useEffect(() => {
         const fetchData = async () => {
-            const [ordenesData, empresasData, proveedoresData, materiasPrimasData, movimientosData] = await Promise.all([
-                getOrdenesCompra(),
-                getEmpresas(),
-                getProveedores(),
-                getMateriasPrimas(),
-                getMovimientosInventarioMP()
+            const [
+                ordenesData, empresasData, proveedoresData, materiasPrimasData,
+                productosTerminadosData, movimientosMPData, movimientosPTData
+            ] = await Promise.all([
+                getOrdenesCompra(), getEmpresas(), getProveedores(), getMateriasPrimas(),
+                getProductosTerminados(), getMovimientosInventarioMP(), getMovimientosInventarioPT()
             ]);
             setOrdenes(ordenesData);
             setEmpresas(empresasData);
             setProveedores(proveedoresData);
             setMateriasPrimas(materiasPrimasData);
-            setMovimientos(movimientosData);
+            setProductosTerminados(productosTerminadosData);
+            setMovimientosMP(movimientosMPData);
+            setMovimientosPT(movimientosPTData);
         };
         fetchData();
     }, []);
     
     useEffect(() => {
-        if (materiasPrimas.length > 0 && Array.isArray(movimientos)) {
+        if (materiasPrimas.length > 0 && Array.isArray(movimientosMP)) {
             const stockCalculado = {};
-            movimientos.forEach(mov => {
-                const id = mov.materiaPrimaId;
-                const cantidad = mov.tipoMovimiento === 'Entrada' ? mov.cantidad : -mov.cantidad;
-                stockCalculado[id] = (stockCalculado[id] || 0) + cantidad;
+            movimientosMP.forEach(mov => {
+                stockCalculado[mov.materiaPrimaId] = (stockCalculado[mov.materiaPrimaId] || 0) + (mov.tipoMovimiento === 'Entrada' ? mov.cantidad : -mov.cantidad);
             });
-            
-            const nuevasAlertas = materiasPrimas
-                .map(mp => ({
-                    ...mp,
-                    stockActual: stockCalculado[mp.id] || 0
-                }))
-                .filter(mp => mp.stockActual <= 5);
-            
-            setAlertasStock(nuevasAlertas);
+            const nuevasAlertas = materiasPrimas.map(mp => ({ ...mp, stockActual: stockCalculado[mp.id] || 0 })).filter(mp => mp.stockActual <= 5);
+            setAlertasStockMP(nuevasAlertas);
         }
-    }, [materiasPrimas, movimientos]);
+    }, [materiasPrimas, movimientosMP]);
 
+    useEffect(() => {
+        if (productosTerminados.length > 0 && Array.isArray(movimientosPT)) {
+            const stockCalculado = {};
+            movimientosPT.forEach(mov => {
+                stockCalculado[mov.productoTerminadoId] = (stockCalculado[mov.productoTerminadoId] || 0) + (mov.tipoMovimiento === 'Entrada' ? mov.cantidad : -mov.cantidad);
+            });
+            const nuevasAlertas = productosTerminados.map(pt => ({ ...pt, stockActual: stockCalculado[pt.id] || 0 })).filter(pt => pt.stockActual <= 5);
+            setAlertasStockPT(nuevasAlertas);
+        }
+    }, [productosTerminados, movimientosPT]);
 
-    const handleAnadirDesdeAlerta = (materiaPrimaId) => {
-        const yaExiste = productosSeleccionados.some(p => p.materiaPrimaId === materiaPrimaId);
+    const handleAnadirDesdeAlerta = (productoId) => {
+        const yaExiste = productosSeleccionados.some(p => p.productoId === productoId);
         if (yaExiste) {
             alert("Este producto ya está en la orden de compra.");
             return;
         }
-        setProductosSeleccionados(prev => [...prev, { materiaPrimaId, cantidad: 1 }]);
+        setProductosSeleccionados(prev => [...prev, { productoId, cantidad: 1 }]);
     };
 
     const handleEliminarProducto = (index) => {
@@ -143,53 +136,32 @@ const OrdenCompra = () => {
                 fechaEmision: formulario.fechaEmision,
                 estado: formulario.estado,
                 codigoOrden: codigoGenerado,
+                tipo: tipoOrden, // Guardar el tipo de orden
                 detalles: productosSeleccionados.map(p => ({
-                    materiaPrimaId: p.materiaPrimaId,
-                    cantidad: parseInt(p.cantidad, 10) || 0 // Asegurarse que un valor vacío se guarde como 0
+                    [tipoOrden === 'materiasPrimas' ? 'materiaPrimaId' : 'productoTerminadoId']: p.productoId,
+                    cantidad: parseInt(p.cantidad, 10) || 0
                 }))
             };
 
             if (ordenEditando) {
-                const ordenCompleta = { ...nuevaOrdenParaBD, id: ordenEditando.id };
-                await updateOrdenCompra(ordenCompleta);
+                await updateOrdenCompra({ ...nuevaOrdenParaBD, id: ordenEditando.id });
             } else {
-                const ordenGuardada = await addOrdenCompra(nuevaOrdenParaBD);
-
-                if (ordenGuardada) {
-                    const proveedorInfo = proveedores.find(p => p.id === nuevaOrdenParaBD.proveedorId);
-                    const rowsForSheet = nuevaOrdenParaBD.detalles.map(detalle => {
-                        const materiaPrimaInfo = materiasPrimas.find(mp => mp.id === detalle.materiaPrimaId);
-                        return [
-                            nuevaOrdenParaBD.codigoOrden, "Materia Prima", "Entrada",
-                            "Almacen Principal", materiaPrimaInfo?.nombre || '', detalle.cantidad,
-                            "Compra", proveedorInfo?.nombreEmpresaProveedor || '',
-                            proveedorInfo?.telefono || '', "N", "", "", new Date().toISOString()
-                        ];
-                    });
-                    await registrarEnGoogleSheet(rowsForSheet);
-                }
+                await addOrdenCompra(nuevaOrdenParaBD);
             }
 
             setMostrarModal(false);
-            setFormulario({ empresaId: '', proveedorId: '', fechaEmision: '', estado: 'Aprobada' });
-            setProductosSeleccionados([]);
-            setOrdenEditando(null);
-            const [ordenesData, materiasPrimasData, movimientosData] = await Promise.all([
-                getOrdenesCompra(),
-                getMateriasPrimas(),
-                getMovimientosInventarioMP()
-            ]);
-            setOrdenes(ordenesData);
-            setMateriasPrimas(materiasPrimasData);
-            setMovimientos(movimientosData);
-
+            fetchOrdenes();
         } catch (error) {
             console.error("❌ Error en handleRegistrarOrden:", error);
             alert("Hubo un error al registrar la orden.");
         }
     };
+
     const handleEditarOrden = (orden) => {
         setOrdenEditando(orden);
+        const tipo = orden.tipo || (orden.detalles && orden.detalles[0]?.materiaPrimaId ? 'materiasPrimas' : 'productosTerminados');
+        setTipoOrden(tipo);
+
         setFormulario({
             empresaId: orden.empresaId,
             proveedorId: orden.proveedorId,
@@ -197,92 +169,23 @@ const OrdenCompra = () => {
             estado: orden.estado
         });
         setCodigoGenerado(orden.codigoOrden);
-        setProductosSeleccionados(orden.detalles || []);
+        setProductosSeleccionados(orden.detalles?.map(d => ({
+            productoId: d.materiaPrimaId || d.productoTerminadoId,
+            cantidad: d.cantidad
+        })) || []);
         setMostrarModal(true);
     };
-    const handleEnviarWhatsAppConPDF = async (orden) => {
-        const proveedor = proveedores.find(p => p.id === orden.proveedorId);
-        if (!proveedor || !proveedor.telefono) {
-            alert("El proveedor no tiene un número de teléfono configurado.");
-            return;
-        }
 
-        const doc = new jsPDF();
-        doc.setFontSize(18);
-        doc.text("ORDEN DE COMPRA", 70, 20);
-        doc.setFontSize(12);
-        doc.text(`Número de O/C: ${orden.codigoOrden}`, 14, 40);
-        doc.text(`Proveedor: ${proveedor?.nombreEmpresaProveedor || '-'}`, 14, 48);
-        const columns = ["Cantidad", "Producto"];
-        const rows = (orden.detalles || []).map(d => [d.cantidad, materiasPrimas.find(mp => mp.id === d.materiaPrimaId)?.nombre || '-']);
-        autoTable(doc, { startY: 60, head: [columns], body: rows });
-
-        const pdfBlob = doc.output('blob');
-        const reader = new FileReader();
-        reader.readAsDataURL(pdfBlob);
-
-        reader.onloadend = async function () {
-            const pdfBase64 = reader.result.split(',')[1];
-            const datosParaBackend = {
-                to: proveedor.telefono,
-                filename: `Orden-${orden.codigoOrden}.pdf`,
-                pdfBase64: pdfBase64,
-                providerName: proveedor.nombreEmpresaProveedor
-            };
-
-            try {
-                alert("Enviando orden por WhatsApp, por favor espere...");
-                await enviarPdfWhatsAppPorBackend(datosParaBackend);
-                alert("¡Orden de compra enviada por WhatsApp exitosamente!");
-            } catch (error) {
-                alert("No se pudo enviar la orden por WhatsApp. Revise la consola.");
-            }
-        };
+    const handleOpenModal = () => {
+        const siguienteId = ordenes.length > 0 ? Math.max(...ordenes.map(o => o.id)) + 1 : 1;
+        const today = new Date().toISOString().split('T')[0];
+        setCodigoGenerado(`OC-${siguienteId.toString().padStart(4, '0')}`);
+        setFormulario({ empresaId: '', proveedorId: '', fechaEmision: today, estado: 'Aprobada' });
+        setOrdenEditando(null);
+        setProductosSeleccionados([]);
+        setProductoActual({ productoId: '', cantidad: '' });
+        setMostrarModal(true);
     };
-    const handleEliminarOrden = async (id) => {
-        if (window.confirm('¿Estás seguro que quieres eliminar esta orden de compra?')) {
-            try {
-                await deleteOrdenCompra(id);
-                const [ordenesData, movimientosData] = await Promise.all([getOrdenesCompra(), getMovimientosInventarioMP()]);
-                setOrdenes(ordenesData);
-                setMovimientos(movimientosData);
-            } catch (error) {
-                console.error('❌ Error al eliminar orden:', error);
-            }
-        }
-    };
-   
-    
-    const generarPDF = (orden) => {
-        if (!orden.detalles || orden.detalles.length === 0) {
-            alert("Esta orden no tiene productos registrados.");
-            return;
-        }
-        const doc = new jsPDF();
-        doc.setFontSize(18);
-        doc.text("ORDEN DE COMPRA", 70, 20);
-        doc.setFontSize(12);
-        doc.text(`Número de O/C: ${orden.codigoOrden}`, 14, 40);
-        doc.text(`Fecha de Emisión: ${orden.fechaEmision}`, 14, 48);
-        const proveedor = proveedores.find(p => p.id === orden.proveedorId);
-        doc.text(`Proveedor: ${proveedor?.nombreEmpresaProveedor || '-'}`, 14, 56);
-        const empresa = empresas.find(p => p.id === orden.empresaId);
-        doc.text(`Empresa Solicitante: ${empresa?.nombre || '-'}`, 14, 64);
-        const columns = ["Cantidad", "Producto"];
-        const rows = (orden.detalles || []).map((detalle) => {
-            const producto = materiasPrimas.find(mp => mp.id === detalle.materiaPrimaId);
-            return [detalle.cantidad, producto?.nombre || '-'];
-        });
-        autoTable(doc, { startY: 70, head: [columns], body: rows });
-        const pdfDataUri = doc.output('datauristring');
-        setPdfPreview(pdfDataUri);
-        setOpenPdfModal(true);
-    };
-
-    const indexOfLast = paginaActual * ordenesPorPagina;
-    const indexOfFirst = indexOfLast - ordenesPorPagina;
-    const ordenesPaginadas = ordenes.slice(indexOfFirst, indexOfLast);
-    const totalPages = Math.ceil(ordenes.length / ordenesPorPagina);
 
     const renderEstado = (estado) => {
         const estilos = { padding: '4px 10px', borderRadius: '20px', display: 'flex', alignItems: 'center', width: 'fit-content', gap: '5px' };
@@ -299,69 +202,61 @@ const OrdenCompra = () => {
         <div className="container-general">
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
                 <h2>Gestión de Órdenes de Compra</h2>
-                <Button variant="contained" color="primary" onClick={() => {
-                    const siguienteId = ordenes.length > 0 ? Math.max(...ordenes.map(o => o.id)) + 1 : 1;
-                    const today = new Date().toISOString().split('T')[0];
-                    setCodigoGenerado(`OC-${siguienteId.toString().padStart(4, '0')}`);
-                    setFormulario(prev => ({ ...prev, fechaEmision: today, estado: 'Aprobada' }));
-                    setOrdenEditando(null);
-                    setProductosSeleccionados([]);
-                    setMostrarModal(true);
-                }}>
+                <Button variant="contained" color="primary" onClick={handleOpenModal}>
                     <Plus /> Nueva Orden
                 </Button>
             </div>
 
             <div className="table-container">
-                <div className="table-header" style={{ paddingTop: '0px', width: '100%' }}>
-                    <h3 style={{ marginTop: '10px', textAlign: 'left' }}>Lista de Órdenes</h3>
-                    <p style={{ margin: 0, textAlign: 'left' }}>Administre las órdenes de compra realizadas</p>
-                </div>
-                <div style={{ padding: '0px', borderRadius: '8px' }}>
-                    <Table>
-                        <TableHead>
-                            <TableRow >
-                                <TableCell style={{ fontWeight: 'bold', color: '#748091' }}>Código</TableCell>
-                                <TableCell style={{ fontWeight: 'bold', color: '#748091' }}>Proveedor</TableCell>
-                                <TableCell style={{ fontWeight: 'bold', color: '#748091' }}>Fecha</TableCell>
-                                <TableCell style={{ fontWeight: 'bold', color: '#748091' }}>Estado</TableCell>
-                                <TableCell style={{ fontWeight: 'bold', color: '#748091' }}>Acciones</TableCell>
+                <Table>
+                    <TableHead>
+                        <TableRow>
+                            <TableCell><strong>Código</strong></TableCell>
+                            <TableCell><strong>Tipo de Orden</strong></TableCell>
+                            <TableCell><strong>Proveedor</strong></TableCell>
+                            <TableCell><strong>Fecha</strong></TableCell>
+                            <TableCell><strong>Estado</strong></TableCell>
+                            <TableCell><strong>Acciones</strong></TableCell>
+                        </TableRow>
+                    </TableHead>
+                    <TableBody>
+                        {ordenes.map((orden) => (
+                            <TableRow key={orden.id}>
+                                <TableCell><strong>{orden.codigoOrden}</strong></TableCell>
+                                <TableCell sx={{ textTransform: 'capitalize' }}>{orden.tipo?.replace('Primas', ' primas').replace('Terminados', ' terminados') || 'N/A'}</TableCell>
+                                <TableCell>{proveedores.find(p => p.id === orden.proveedorId)?.nombreEmpresaProveedor || "-"}</TableCell>
+                                <TableCell>{orden.fechaEmision}</TableCell>
+                                <TableCell>{renderEstado(orden.estado)}</TableCell>
+                                <TableCell>
+                                    <Button color="success"><MessageSquareMore size={18} /></Button>
+                                    <Button color="primary"><FileText size={18} /></Button>
+                                    <Button color="info" onClick={() => handleEditarOrden(orden)}><Edit size={18} /></Button>
+                                    <Button color="error"><Trash2 size={18} /></Button>
+                                </TableCell>
                             </TableRow>
-                        </TableHead>
-                        <TableBody>
-                            {ordenesPaginadas.map((orden) => (
-                                <TableRow key={orden.id}>
-                                    <TableCell style={{ fontWeight: 'bold' }}>{orden.codigoOrden}</TableCell>
-                                    <TableCell>{proveedores.find(p => p.id === orden.proveedorId)?.nombreEmpresaProveedor || "-"}</TableCell>
-                                    <TableCell>{orden.fechaEmision}</TableCell>
-                                    <TableCell>{renderEstado(orden.estado)}</TableCell>
-                                    <TableCell>
-                                        <Button color="success" onClick={() => handleEnviarWhatsAppConPDF(orden)}><MessageSquareMore size={18} /></Button>
-                                        <Button color="primary" onClick={() => generarPDF(orden)}><FileText size={18} /></Button>
-                                        <Button color="info" onClick={() => handleEditarOrden(orden)}><Edit size={18} /></Button>
-                                        <Button color="error" onClick={() => handleEliminarOrden(orden.id)}><Trash2 size={18} /></Button>
-                                    </TableCell>
-                                </TableRow>
-                            ))}
-                        </TableBody>
-                    </Table>
-                    <Pagination
-                        count={totalPages}
-                        page={paginaActual}
-                        onChange={(event, value) => setPaginaActual(value)}
-                        color="primary"
-                        showFirstButton
-                        showLastButton
-                    />
-                </div>
+                        ))}
+                    </TableBody>
+                </Table>
             </div>
 
             <Modal open={mostrarModal} onClose={() => setMostrarModal(false)} style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
                 <Box style={{ background: '#fff', padding: '20px', borderRadius: '10px', minWidth: '700px', maxHeight: '90vh', overflowY: 'auto' }}>
                     <h3>{ordenEditando ? 'Editar Orden de Compra' : 'Nueva Orden de Compra'}</h3>
 
-                    <AlertasStockBajo alertas={alertasStock} onAnadirProducto={handleAnadirDesdeAlerta} />
-                    
+                    <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 2 }}>
+                        <Tabs value={tipoOrden} onChange={(e, newValue) => setTipoOrden(newValue)} centered>
+                            <Tab label="Materias Primas" value="materiasPrimas" />
+                            <Tab label="Productos Terminados" value="productosTerminados" />
+                        </Tabs>
+                    </Box>
+
+                    {tipoOrden === 'materiasPrimas' && (
+                        <AlertasStockBajo titulo="ALERTAS DE STOCK BAJO (MATERIAS PRIMAS)" alertas={alertasStockMP} onAnadirProducto={handleAnadirDesdeAlerta} />
+                    )}
+                    {tipoOrden === 'productosTerminados' && (
+                        <AlertasStockBajo titulo="ALERTAS DE STOCK BAJO (PRODUCTOS TERMINADOS)" alertas={alertasStockPT} onAnadirProducto={handleAnadirDesdeAlerta} />
+                    )}
+
                     <div className="formulario-fila">
                         <TextField fullWidth select label="Empresa" value={formulario.empresaId} onChange={e => setFormulario({ ...formulario, empresaId: e.target.value })} margin="normal">
                             {empresas.map(e => <MenuItem key={e.id} value={e.id}>{e.nombre}</MenuItem>)}
@@ -390,41 +285,22 @@ const OrdenCompra = () => {
                             <div className="label-item">Cantidad</div>
                         </div>
                         <div className="producto-formulario-inputs">
-                            <TextField select value={productoActual.materiaPrimaId} onChange={e => setProductoActual({ ...productoActual, materiaPrimaId: e.target.value })} size="small" className="input-producto">
-                                {materiasPrimas.map(mp => (
-                                    <MenuItem key={mp.id} value={mp.id}>{mp.nombre}</MenuItem>
-                                ))}
+                            <TextField select label="Producto" value={productoActual.productoId} onChange={e => setProductoActual({ ...productoActual, productoId: e.target.value })} size="small" className="input-producto">
+                                {tipoOrden === 'materiasPrimas' ?
+                                    materiasPrimas.map(mp => <MenuItem key={mp.id} value={mp.id}>{mp.nombre}</MenuItem>) :
+                                    productosTerminados.map(pt => <MenuItem key={pt.id} value={pt.id}>{pt.nombre}</MenuItem>)
+                                }
                             </TextField>
-
-                            {/* --- INICIO DEL CAMBIO --- */}
-                            <TextField
-                                type="number"
-                                value={productoActual.cantidad}
-                                onChange={e => {
-                                    // Permite que el campo esté vacío, de lo contrario lo convierte a número
-                                    const value = e.target.value;
-                                    setProductoActual({ ...productoActual, cantidad: value === '' ? '' : Number(value) });
-                                }}
-                                onFocus={event => event.target.select()} // Selecciona todo el texto al hacer foco
-                                size="small"
-                                className="input-cantidad"
-                                InputProps={{
-                                    inputProps: { 
-                                        min: 1 // No permite valores negativos
-                                    }
-                                }}
-                            />
-                            {/* --- FIN DEL CAMBIO --- */}
-
+                            <TextField type="number" value={productoActual.cantidad} onChange={e => setProductoActual({ ...productoActual, cantidad: e.target.value === '' ? '' : Number(e.target.value) })} onFocus={e => e.target.select()} size="small" className="input-cantidad" InputProps={{ inputProps: { min: 1 } }} />
                         </div>
                         <div className="producto-formulario-boton">
                             <Button variant="outlined" onClick={() => {
-                                if (!productoActual.materiaPrimaId || !productoActual.cantidad || productoActual.cantidad < 1) {
+                                if (!productoActual.productoId || !productoActual.cantidad || productoActual.cantidad < 1) {
                                     alert('Seleccione un producto y una cantidad válida (mayor a 0).');
                                     return;
                                 }
                                 setProductosSeleccionados([...productosSeleccionados, productoActual]);
-                                setProductoActual({ materiaPrimaId: '', cantidad: '' });
+                                setProductoActual({ productoId: '', cantidad: '' });
                             }} className="boton-agregar">
                                 + Agregar Producto
                             </Button>
@@ -441,7 +317,8 @@ const OrdenCompra = () => {
                         </TableHead>
                         <TableBody>
                             {productosSeleccionados.map((item, index) => {
-                                const producto = materiasPrimas.find(mp => mp.id === item.materiaPrimaId);
+                                const lista = tipoOrden === 'materiasPrimas' ? materiasPrimas : productosTerminados;
+                                const producto = lista.find(p => p.id === item.productoId);
                                 return (
                                     <TableRow key={index}>
                                         <TableCell>{producto?.nombre || '-'}</TableCell>
@@ -458,24 +335,6 @@ const OrdenCompra = () => {
                         <Button variant="contained" color="primary" onClick={handleRegistrarOrden}>
                             {ordenEditando ? 'Actualizar Orden' : 'Registrar Orden'}
                         </Button>
-                    </div>
-                </Box>
-            </Modal>
-{/*aa */}
-            <Modal open={openPdfModal} onClose={() => setOpenPdfModal(false)} style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-                <Box style={{ background: '#fff', padding: '10px', borderRadius: '10px', width: '80%', height: '90%', overflow: 'auto' }}>
-                    <h3>Vista previa de Orden de Compra</h3>
-                    {pdfPreview && (
-                        <iframe src={pdfPreview} title="Vista previa de PDF" width="100%" height="600px" style={{ border: '1px solid #ccc', borderRadius: '8px' }} />
-                    )}
-                    <div style={{ marginTop: '20px', display: 'flex', justifyContent: 'center', gap: '10px' }}>
-                        <Button variant="outlined" color="secondary" onClick={() => setOpenPdfModal(false)}>Cerrar</Button>
-                        <Button variant="contained" color="primary" onClick={() => {
-                            const link = document.createElement('a');
-                            link.href = pdfPreview;
-                            link.download = 'OrdenCompra.pdf';
-                            link.click();
-                        }}>Descargar PDF</Button>
                     </div>
                 </Box>
             </Modal>

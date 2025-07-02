@@ -122,7 +122,7 @@ const SideMenu = ({ isCollapsed, toggleCollapse }) => {
           <span className="menu-icon"><FileText /></span>
           {!isCollapsed && <span>Órdenes de Compra</span>}
         </Link>
-
+{/* 
         <Link
           to="/reclamos"
           className={`menu-item ${activeItem === 'reclamos' ? 'active' : ''}`}
@@ -142,7 +142,7 @@ const SideMenu = ({ isCollapsed, toggleCollapse }) => {
           <span className="menu-icon"><Building /></span>
           {!isCollapsed && <span>Empresas</span>}
         </Link>
-
+*/}
         <Link
           to="/movimientos"
           className={`menu-item ${activeItem === 'movimientos' ? 'active' : ''}`}
