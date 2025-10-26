@@ -165,13 +165,25 @@ const handleRegisterSubmit = async (e) => {
       }, 2000);
     }
   } catch (error) {
-    if (error.response && error.response.data) {
-      setErrorMsg(error.response.data.message || 'Error al registrar usuario');
-    } else {
-      setErrorMsg('Error al conectar con el servidor. Intente nuevamente más tarde.');
-    }
-    console.error(error);
-  } finally {
+        // Aquí capturamos los errores del backend
+        
+        // Verificamos si el error tiene una respuesta y un status
+        if (error.response && error.response.status === 409) {
+            
+            // ¡Este es el error de duplicado!
+            // Opción 1: Usar alert (simple)
+            alert("El nombre de usuario ya está en uso. Por favor, elija uno diferente.");
+
+            // Opción 2: Usar el estado (mejor UI)
+            // setErrorRegistro("Este usuario ya existe, por favor valide nuevamente");
+
+        } else {
+            // Otro tipo de error (ej. 500 Internal Server Error o error de red)
+            console.error('Error en el registro:', error);
+            alert('Ocurrió un error inesperado al registrar.');
+            // setErrorRegistro('Ocurrió un error inesperado al registrar.');
+        }
+    } finally {
     setLoading(false);
   }
 };
