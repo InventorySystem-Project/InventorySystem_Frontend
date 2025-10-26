@@ -146,7 +146,7 @@ const Login = () => {
       }
   
       // Replace with your actual registration endpoint
-      const response = await axios.post(`${environment.url}/authenticate/usuarios/registrar`, apiData);
+      const response = await axios.post(`${environment.url}/usuarios/registrar`, apiData);
 
       if (response.status === 201 || response.status === 200) {
         setSuccessMsg('Registro exitoso. Ahora puede iniciar sesión.');
