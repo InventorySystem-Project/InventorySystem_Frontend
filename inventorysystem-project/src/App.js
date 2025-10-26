@@ -1,26 +1,25 @@
 import React from 'react';
 import { Route, BrowserRouter as Router, Routes } from 'react-router-dom';
-import { CssBaseline, ThemeProvider, createTheme } from '@mui/material'; // Importa CssBaseline y ThemeProvider
+import { CssBaseline, ThemeProvider, createTheme } from '@mui/material';
 
-import MainLayout from './components/MainLayout'; // Asegúrate de importar correctamente
+import MainLayout from './components/MainLayout';
 
 import Dashboard from './pages/Dashboard';
 import Proveedor from './pages/Proveedor';
 import OrdenCompra from './pages/OrdenCompra';
-
 import DetalleOrdenCompra from './pages/DetalleOrdenCompra';
-
 import Producto from './pages/Producto';
 import Rol from './pages/Rol';
 import Usuario from './pages/Usuario';
 import Empresa from './pages/Empresa';
 import Almacen from './pages/Almacen';
 import MateriasPrimas from './pages/MateriasPrima';
-
-import Login from './pages/Login';
-import './App.css';
 import MovimientoInventario from './pages/MovimientoInventario';
-import Reclamo from './pages/Reclamo'
+import Reclamo from './pages/Reclamo';
+import Login from './pages/Login';
+import SoporteCliente from './pages/SoporteCliente';
+
+import './App.css';
 
 const App = () => {
   return (
@@ -45,6 +44,7 @@ const App = () => {
           <Route path="/materias-primas" element={<MateriasPrimas />} />
 
           <Route path="/reclamos" element={<Reclamo />} />
+          <Route path="/soporte-cliente" element={<SoporteCliente />} />
         </Routes>
       </MainLayout>
     </Router>

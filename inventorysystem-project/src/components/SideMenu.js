@@ -16,7 +16,8 @@ import {
   ChevronLeft,
   ChevronRight,
   Boxes,
-  Megaphone
+  Megaphone,
+  LifeBuoy // Icono para Soporte al Cliente
 } from "lucide-react";
 
 const SideMenu = ({ isCollapsed, toggleCollapse }) => {
@@ -122,27 +123,7 @@ const SideMenu = ({ isCollapsed, toggleCollapse }) => {
           <span className="menu-icon"><FileText /></span>
           {!isCollapsed && <span>Órdenes de Compra</span>}
         </Link>
-{/* 
-        <Link
-          to="/reclamos"
-          className={`menu-item ${activeItem === 'reclamos' ? 'active' : ''}`}
-          data-tooltip="Reclamos"
-          onClick={() => handleItemClick('reclamos')}
-        >
-          <span className="menu-icon"><Megaphone /></span>
-          {!isCollapsed && <span>Reclamos</span>}
-        </Link>
 
-        <Link
-          to="/empresas"
-          className={`menu-item ${activeItem === 'empresas' ? 'active' : ''}`}
-          data-tooltip="Empresas"
-          onClick={() => handleItemClick('empresas')}
-        >
-          <span className="menu-icon"><Building /></span>
-          {!isCollapsed && <span>Empresas</span>}
-        </Link>
-*/}
         <Link
           to="/movimientos"
           className={`menu-item ${activeItem === 'movimientos' ? 'active' : ''}`}
@@ -157,6 +138,18 @@ const SideMenu = ({ isCollapsed, toggleCollapse }) => {
       {/* Sección de Sistema */}
       <div className="menu-section">
         {!isCollapsed && <p className="section-title">Sistema</p>}
+
+         {/* ---- NUEVO MÓDULO: SOPORTE AL CLIENTE ---- */}
+         <Link
+          to="/soporte-cliente" // Define la ruta para este módulo
+          className={`menu-item ${activeItem === 'soporte-cliente' ? 'active' : ''}`}
+          data-tooltip="Soporte al Cliente"
+          onClick={() => handleItemClick('soporte-cliente')}
+        >
+          <span className="menu-icon"><LifeBuoy /></span> {/* Icono sugerido */}
+          {!isCollapsed && <span>Soporte al Cliente</span>}
+        </Link>
+        {/* ---- FIN NUEVO MÓDULO ---- */}
 
         <Link
           to="/roles"
@@ -191,4 +184,4 @@ const SideMenu = ({ isCollapsed, toggleCollapse }) => {
   );
 };
 
-export default SideMenu;
+export default SideMenu; 
