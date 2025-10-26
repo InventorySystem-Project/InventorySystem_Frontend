@@ -150,7 +150,7 @@ const OrdenCompra = () => {
             }
 
             setMostrarModal(false);
-            fetchOrdenes();
+            //fetchOrdenes();
         } catch (error) {
             console.error("❌ Error en handleRegistrarOrden:", error);
             alert("Hubo un error al registrar la orden.");
