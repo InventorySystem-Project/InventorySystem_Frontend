@@ -133,8 +133,7 @@ const handleRegisterSubmit = async (e) => {
     delete apiData.confirmPassword;
 
     // Ajuste de nombres según backend
-    apiData.correo = registerData.correo; // el backend espera 'correo'
-    delete apiData.correo;
+    apiData.correo = registerData.email; // el backend espera 'correo'
 
     // empresa fija (ID 1)
     apiData.empresa = { id: 1 };
