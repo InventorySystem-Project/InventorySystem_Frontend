@@ -165,29 +165,26 @@ const handleRegisterSubmit = async (e) => {
       }, 2000);
     }
   } catch (error) {
-          if (error.response) {
-                      // El servidor respondió con un código de error
-                      
-                      // CASO 1: Usuario duplicado (409 Conflict)
-                      if (error.response.status === 409) {
-                          // Usamos la frase más clara que discutimos
-                          setErrorMsg("El nombre de usuario ya está en uso. Por favor, elija uno diferente.");
-                      } 
-                      
-                      else if (error.response.status === 412) {
-                setErrorMsg("El correo electrónico ya está registrado. Por favor, utilice otro.");}
+        if (error.response) {
+            
+            // CASO 1: Usuario duplicado (409)
+            if (error.response.status === 409) {
+                setErrorMsg("El nombre de usuario ya está en uso. Por favor, elija uno diferente.");
+            
+            // CASO 2: Correo duplicado (412)
+            } else if (error.response.status === 412) {
+                setErrorMsg("El correo electrónico ya está registrado. Por favor, utilice otro.");
+            
+            // CASO 3: Otro error del backend (ej. 400, 500)
+            } else {
+                setErrorMsg(error.response.data?.message || 'Error al registrar usuario. Verifique los campos.');
+            }
+            // --- FIN DE CORRECCIÓN ---
 
-                      else {
-                      // CASO 2: Otro error del backend (ej. 400 Bad Request, 500)
-                          // Usamos la lógica que propusiste, pero de forma segura con '?'
-                          // por si 'data' no existe.
-                          setErrorMsg(error.response.data?.message || 'Error al registrar usuario. Verifique los campos.');
-                      }
-                  } else {
-                      // CASO 3: No hubo respuesta del servidor (error de red)
-                      // Esta es la línea que tú propusiste.
-                      setErrorMsg('Error al conectar con el servidor. Intente nuevamente más tarde.');
-                  }
+        } else {
+            // CASO 4: No hubo respuesta del servidor (error de red)
+            setErrorMsg('Error al conectar con el servidor. Intente nuevamente más tarde.');
+        }
     } finally {
     setLoading(false);
   }
