@@ -172,7 +172,12 @@ const handleRegisterSubmit = async (e) => {
                       if (error.response.status === 409) {
                           // Usamos la frase más clara que discutimos
                           setErrorMsg("El nombre de usuario ya está en uso. Por favor, elija uno diferente.");
-                      } else {
+                      } 
+                      
+                      else if (error.response.status === 412) {
+                setErrorMsg("El correo electrónico ya está registrado. Por favor, utilice otro.");}
+
+                      else {
                       // CASO 2: Otro error del backend (ej. 400 Bad Request, 500)
                           // Usamos la lógica que propusiste, pero de forma segura con '?'
                           // por si 'data' no existe.
