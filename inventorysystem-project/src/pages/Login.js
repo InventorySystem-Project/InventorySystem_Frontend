@@ -23,7 +23,7 @@ const Login = () => {
   // Registration states
   const [registerData, setRegisterData] = useState({
     username: '',
-    email: '',
+    correo: '',
     password: '',
     confirmPassword: '',
     nombre: '',
@@ -105,79 +105,77 @@ const Login = () => {
     }
   };
 
-  const handleRegisterSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    setErrorMsg('');
-  
-    // Validaciones existentes...
-  
-    try {
-      // Buscar el rol USER o crearlo si no existe
-      
-      let userRol;
-      try {
-        // Obtener todos los roles
-        const roles = await getRoles();
-        // Buscar el rol con nombre "USER"
-        userRol = roles.find(rol => rol.rol === "USER");
-        
-        // Si no existe, crearlo
-        if (!userRol) {
-          userRol = await addRol({ rol: "USER" });
-        }
-      } catch (error) {
-        console.error("Error al obtener/crear rol USER:", error);
-        // Intenta crear el rol incluso si falla la búsqueda
-        try {
-          userRol = await addRol({ rol: "USER" });
-        } catch (rolError) {
-          console.error("Error al crear rol USER:", rolError);
-        }
-      }
-  
-      // Prepare data for API - remove confirmPassword field
-      const apiData = { ...registerData };
-      delete apiData.confirmPassword;
-      
-      // Asignar el rol al usuario si se encontró o creó exitosamente
-      if (userRol && userRol.id) {
-        apiData.rol = { id: userRol.id };
-      }
-  
-      // Replace with your actual registration endpoint
-      const response = await axios.post(`${environment.url}/usuarios/registrar`, apiData);
+const handleRegisterSubmit = async (e) => {
+  e.preventDefault();
+  setLoading(true);
+  setErrorMsg('');
 
-      if (response.status === 201 || response.status === 200) {
-        setSuccessMsg('Registro exitoso. Ahora puede iniciar sesión.');
-        setTimeout(() => {
-          setActiveView('login');
-          setRegisterData({
-            username: '',
-            email: '',
-            password: '',
-            confirmPassword: '',
-            nombre: '',
-            apellido: '',
-            dni: '',
-            telefono: '',
-            genero: 'M',
-            fechaNacimiento: '',
-            enabled: true
-          });
-        }, 2000);
+  try {
+    // Buscar o crear el rol USER
+    let userRol;
+    try {
+      const roles = await getRoles();
+      userRol = roles.find(rol => rol.rol === "USER");
+      if (!userRol) {
+        userRol = await addRol({ rol: "USER" });
       }
     } catch (error) {
-      if (error.response && error.response.data) {
-        setErrorMsg(error.response.data.message || 'Error al registrar usuario');
-      } else {
-        setErrorMsg('Error al conectar con el servidor. Intente nuevamente más tarde.');
+      console.error("Error al obtener/crear rol USER:", error);
+      try {
+        userRol = await addRol({ rol: "USER" });
+      } catch (rolError) {
+        console.error("Error al crear rol USER:", rolError);
       }
-      console.error(error);
-    } finally {
-      setLoading(false);
     }
-  };
+
+    // Prepara los datos para la API
+    const apiData = { ...registerData };
+    delete apiData.confirmPassword;
+
+    // Ajuste de nombres según backend
+    apiData.correo = registerData.correo; // el backend espera 'correo'
+    delete apiData.correo;
+
+    // empresa fija (ID 1)
+    apiData.empresa = { id: 1 };
+
+    // rol asignado
+    if (userRol && userRol.id) {
+      apiData.rol = { id: userRol.id };
+    }
+
+    const response = await axios.post(`${environment.url}/usuarios/registrar`, apiData);
+
+    if (response.status === 201 || response.status === 200) {
+      setSuccessMsg('Registro exitoso. Ahora puede iniciar sesión.');
+      setTimeout(() => {
+        setActiveView('login');
+        setRegisterData({
+          username: '',
+          correo: '',
+          password: '',
+          confirmPassword: '',
+          nombre: '',
+          apellido: '',
+          dni: '',
+          telefono: '',
+          genero: 'M',
+          fechaNacimiento: '',
+          enabled: true
+        });
+      }, 2000);
+    }
+  } catch (error) {
+    if (error.response && error.response.data) {
+      setErrorMsg(error.response.data.message || 'Error al registrar usuario');
+    } else {
+      setErrorMsg('Error al conectar con el servidor. Intente nuevamente más tarde.');
+    }
+    console.error(error);
+  } finally {
+    setLoading(false);
+  }
+};
 
   // Handle password recovery initial step
   const handleRecoverSubmit = async (e) => {
