@@ -17,24 +17,18 @@ import {
   ChevronRight,
   Boxes,
   Megaphone,
-  LifeBuoy // Icono para Soporte al Cliente
+  LifeBuoy
 } from "lucide-react";
+import useAuth from '../hooks/useAuth';
+import { ROLES } from '../constants/roles';
 
 const SideMenu = ({ isCollapsed, toggleCollapse }) => {
   const [activeItem, setActiveItem] = useState('');
-  const [showRoles, setShowRoles] = useState(false);
-  const [showUsers, setShowUsers] = useState(false);
-
-  const username = localStorage.getItem('username');
   const navigate = useNavigate();
-
-  const toggleRoles = () => setShowRoles(!showRoles);
-  const toggleUsers = () => setShowUsers(!showUsers);
+  const { role, username, logout } = useAuth();
 
   const handleLogout = () => {
-    localStorage.removeItem('username');
-    localStorage.removeItem('token');
-    navigate('/'); // Redirigir al login
+    logout();
   };
 
   const handleItemClick = (item) => {
@@ -60,122 +54,85 @@ const SideMenu = ({ isCollapsed, toggleCollapse }) => {
         </button>
       </div>
 
-      {/* Sección de Gestión */}
+     {/* Sección de Gestión */}
       <div className="menu-section">
         {!isCollapsed && <p className="section-title">Gestión</p>}
 
-        <Link
-          to="/dashboard"
-          className={`menu-item ${activeItem === 'dashboard' ? 'active' : ''}`}
-          data-tooltip="Dashboard"
-          onClick={() => handleItemClick('dashboard')}
-        >
+        {/* Dashboard (Visible para todos) */}
+        <Link to="/dashboard" className={`menu-item ${activeItem === 'dashboard' ? 'active' : ''}`} data-tooltip="Dashboard" onClick={() => handleItemClick('dashboard')} >
           <span className="menu-icon"><Home /></span>
           {!isCollapsed && <span>Dashboard</span>}
         </Link>
 
-        <Link
-          to="/productos"
-          className={`menu-item ${activeItem === 'productos' ? 'active' : ''}`}
-          data-tooltip="Productos"
-          onClick={() => handleItemClick('productos')}
-        >
-          <span className="menu-icon"><Package /></span>
-          {!isCollapsed && <span>Productos</span>}
-        </Link>
+        {/* --- CONDICIÓN ELIMINADA --- */}
+        {/* Ahora estos enlaces se renderizan siempre */}
+        <>
+          {/* Productos */}
+          <Link to="/productos" className={`menu-item ${activeItem === 'productos' ? 'active' : ''}`} data-tooltip="Productos" onClick={() => handleItemClick('productos')} >
+            <span className="menu-icon"><Package /></span>
+            {!isCollapsed && <span>Productos</span>}
+          </Link>
 
-        <Link
-          to="/materias-primas"
-          className={`menu-item ${activeItem === 'materias-primas' ? 'active' : ''}`}
-          data-tooltip="Materias Primas"
-          onClick={() => handleItemClick('materias-primas')}
-        >
-          <span className="menu-icon"><Boxes /></span>
-          {!isCollapsed && <span>Materias Primas</span>}
-        </Link>
+          {/* Materias Primas */}
+          <Link to="/materias-primas" className={`menu-item ${activeItem === 'materias-primas' ? 'active' : ''}`} data-tooltip="Materias Primas" onClick={() => handleItemClick('materias-primas')} >
+            <span className="menu-icon"><Boxes /></span>
+            {!isCollapsed && <span>Materias Primas</span>}
+          </Link>
 
-        <Link
-          to="/almacenes"
-          className={`menu-item ${activeItem === 'almacenes' ? 'active' : ''}`}
-          data-tooltip="Almacenes"
-          onClick={() => handleItemClick('almacenes')}
-        >
-          <span className="menu-icon"><Warehouse /></span>
-          {!isCollapsed && <span>Almacenes</span>}
-        </Link>
+          {/* Almacenes */}
+          <Link to="/almacenes" className={`menu-item ${activeItem === 'almacenes' ? 'active' : ''}`} data-tooltip="Almacenes" onClick={() => handleItemClick('almacenes')} >
+            <span className="menu-icon"><Warehouse /></span>
+            {!isCollapsed && <span>Almacenes</span>}
+          </Link>
 
-        <Link
-          to="/proveedores"
-          className={`menu-item ${activeItem === 'proveedores' ? 'active' : ''}`}
-          data-tooltip="Proveedores"
-          onClick={() => handleItemClick('proveedores')}
-        >
-          <span className="menu-icon"><Truck /></span>
-          {!isCollapsed && <span>Proveedores</span>}
-        </Link>
+          {/* Proveedores */}
+          <Link to="/proveedores" className={`menu-item ${activeItem === 'proveedores' ? 'active' : ''}`} data-tooltip="Proveedores" onClick={() => handleItemClick('proveedores')} >
+            <span className="menu-icon"><Truck /></span>
+            {!isCollapsed && <span>Proveedores</span>}
+          </Link>
 
-        <Link
-          to="/ordenes-compra"
-          className={`menu-item ${activeItem === 'ordenes-compra' ? 'active' : ''}`}
-          data-tooltip="Órdenes de Compra"
-          onClick={() => handleItemClick('ordenes-compra')}
-        >
-          <span className="menu-icon"><FileText /></span>
-          {!isCollapsed && <span>Órdenes de Compra</span>}
-        </Link>
+          {/* Órdenes de Compra */}
+          <Link to="/ordenes-compra" className={`menu-item ${activeItem === 'ordenes-compra' ? 'active' : ''}`} data-tooltip="Órdenes de Compra" onClick={() => handleItemClick('ordenes-compra')} >
+            <span className="menu-icon"><FileText /></span>
+            {!isCollapsed && <span>Órdenes de Compra</span>}
+          </Link>
 
-        <Link
-          to="/movimientos"
-          className={`menu-item ${activeItem === 'movimientos' ? 'active' : ''}`}
-          data-tooltip="Movimientos"
-          onClick={() => handleItemClick('movimientos')}
-        >
-          <span className="menu-icon"><History /></span>
-          {!isCollapsed && <span>Movimientos</span>}
-        </Link>
+          {/* Movimientos */}
+          <Link to="/movimientos" className={`menu-item ${activeItem === 'movimientos' ? 'active' : ''}`} data-tooltip="Movimientos" onClick={() => handleItemClick('movimientos')} >
+            <span className="menu-icon"><History /></span>
+            {!isCollapsed && <span>Movimientos</span>}
+          </Link>
+        </>
+        {/* --- FIN DE LOS ENLACES QUE ESTABAN CONDICIONADOS --- */}
       </div>
 
       {/* Sección de Sistema */}
       <div className="menu-section">
         {!isCollapsed && <p className="section-title">Sistema</p>}
 
-         {/* ---- NUEVO MÓDULO: SOPORTE AL CLIENTE ---- */}
-         <Link
-          to="/soporte-cliente" // Define la ruta para este módulo
-          className={`menu-item ${activeItem === 'soporte-cliente' ? 'active' : ''}`}
-          data-tooltip="Soporte al Cliente"
-          onClick={() => handleItemClick('soporte-cliente')}
-        >
-          <span className="menu-icon"><LifeBuoy /></span> {/* Icono sugerido */}
+        {/* Soporte al Cliente (Visible para todos) */}
+        <Link to="/soporte-cliente" className={`menu-item ${activeItem === 'soporte-cliente' ? 'active' : ''}`} data-tooltip="Soporte al Cliente" onClick={() => handleItemClick('soporte-cliente')} >
+          <span className="menu-icon"><LifeBuoy /></span>
           {!isCollapsed && <span>Soporte al Cliente</span>}
         </Link>
-        {/* ---- FIN NUEVO MÓDULO ---- */}
 
-        <Link
-          to="/roles"
-          className={`menu-item ${activeItem === 'roles' ? 'active' : ''}`}
-          data-tooltip="Roles"
-          onClick={() => handleItemClick('roles')}
-        >
-          <span className="menu-icon"><UserCog /></span>
-          {!isCollapsed && <span>Roles</span>}
-        </Link>
+        {/* Enlaces de administración (Solo para ADMIN - Esta condición está CORRECTA) */}
+        {role === ROLES.ADMIN && (
+          <>
+            <Link to="/roles" className={`menu-item ${activeItem === 'roles' ? 'active' : ''}`} data-tooltip="Roles" onClick={() => handleItemClick('roles')} >
+              <span className="menu-icon"><UserCog /></span>
+              {!isCollapsed && <span>Roles</span>}
+            </Link>
 
-        <Link
-          to="/usuarios"
-          className={`menu-item ${activeItem === 'usuarios' ? 'active' : ''}`}
-          data-tooltip="Usuarios"
-          onClick={() => handleItemClick('usuarios')}
-        >
-          <span className="menu-icon"><User /></span>
-          {!isCollapsed && <span>Usuarios</span>}
-        </Link>
+            <Link to="/usuarios" className={`menu-item ${activeItem === 'usuarios' ? 'active' : ''}`} data-tooltip="Usuarios" onClick={() => handleItemClick('usuarios')} >
+              <span className="menu-icon"><User /></span>
+              {!isCollapsed && <span>Usuarios</span>}
+            </Link>
+          </>
+        )}
 
-        <div
-          className="menu-item"
-          onClick={handleLogout}
-          data-tooltip="Salir"
-        >
+        {/* Botón de Salir (Visible para todos) */}
+        <div className="menu-item" onClick={handleLogout} data-tooltip="Salir" >
           <span className="menu-icon"><LogOut /></span>
           {!isCollapsed && <span>Salir</span>}
         </div>
@@ -184,4 +141,4 @@ const SideMenu = ({ isCollapsed, toggleCollapse }) => {
   );
 };
 
-export default SideMenu; 
+export default SideMenu;

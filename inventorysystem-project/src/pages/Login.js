@@ -5,6 +5,7 @@ import { motion } from 'framer-motion';
 import { Eye, EyeOff, ArrowLeft, ArrowRight, User, Lock, Mail } from 'lucide-react';
 import { getRoles, addRol } from '../services/RolService';
 import { environment } from '../environment/environment';
+import { jwtDecode } from 'jwt-decode';
 
 const Login = () => {
   // States for different views
@@ -84,10 +85,21 @@ const Login = () => {
       const token = response.data.jwttoken;
 
       if (token) {
+        // Decodificar el token para obtener el rol
+        const decodedToken = jwtDecode(token);
+        const userRole = decodedToken.role || decodedToken.authorities?.[0] || 'USER';
+        const userId = decodedToken.userId || decodedToken.sub;
+
+        // Guardar información en localStorage
         localStorage.setItem('token', token);
         localStorage.setItem('username', loginData.username);
+        localStorage.setItem('userRole', userRole);
+        if (userId) localStorage.setItem('userId', userId);
+
+        // Configurar axios para futuras peticiones
         axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
 
+        // Mostrar mensaje y redireccionar
         setSuccessMsg('Inicio de sesión exitoso. Redirigiendo...');
         setTimeout(() => navigate('/dashboard'), 1000);
       } else {

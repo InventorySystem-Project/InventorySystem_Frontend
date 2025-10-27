@@ -72,7 +72,7 @@ iframe#webpack-dev-server-client-overlay{display:none!important}
 .container-general {
   display: flex;
   flex-direction: column;
-  align-items: center;
+  /*align-items: center;*/
   background-color: white;
   padding: 50px;
   border-bottom-left-radius: 16px;
@@ -380,7 +380,7 @@ button:hover {
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   border: 1px solid #dfdfdf;
   width: 100%;
-  overflow-x: auto; /* Permite desplazamiento horizontal si la tabla es más ancha que el contenedor */
+  /*overflow-x: auto; /* Permite desplazamiento horizontal si la tabla es más ancha que el contenedor */
 }
 
 .MuiTableCell-root {

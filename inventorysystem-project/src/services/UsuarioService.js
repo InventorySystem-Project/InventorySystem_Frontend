@@ -35,12 +35,11 @@ export const getUsuarios = async () => {
     }
 };
 
-// Agregar un nuevo usuario
+// Agregar un nuevo usuario (Endpoint PÚBLICO)
 export const addUsuario = async (usuario) => {
     try {
-        const response = await axios.post(`${API_URL}/registrar`, usuario, {
-            headers: getAuthHeaders(),
-        });
+        // NO LLEVA HEADERS - /registrar es público
+        const response = await axios.post(`${API_URL}/registrar`, usuario);
         return response.data;
     } catch (error) {
         console.error('Error al agregar usuario:', error.response || error.message);
@@ -48,10 +47,24 @@ export const addUsuario = async (usuario) => {
     }
 };
 
-// Actualizar un usuario existente
+// Actualizar un usuario existente (Endpoint PROTEGIDO)
 export const updateUsuario = async (id, usuario) => {
     try {
-        const response = await axios.put(`${API_URL}`, usuario, {
+        // El DTO en el backend espera el ID dentro del cuerpo
+        const payload = {
+            ...usuario,
+            id: id,
+            rolId: usuario.rolId || usuario.rol?.id // Asegura que se envía el rolId
+        };
+        
+        // Asegurarse de que no enviamos objetos completos de rol o empresa
+        delete payload.rol;
+        if (payload.empresa) {
+            payload.empresaId = payload.empresa.id;
+            delete payload.empresa;
+        }
+
+        const response = await axios.put(`${API_URL}`, payload, {
             headers: getAuthHeaders(),
         });
         return response.data;

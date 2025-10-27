@@ -22,7 +22,7 @@ const Usuario = () => {
         telefono: '',
         enabled: true,
         empresaId: '',
-        rol: { id: '', rol: '' }
+        rolId: ''
     });
 
     const [mostrarFormulario, setMostrarFormulario] = useState(false);
@@ -66,7 +66,7 @@ const Usuario = () => {
             telefono: '',
             enabled: true,
             empresaId: '',
-            rol: { id: '', rol: '' }
+            rolId: ''
         });
         setErrors({});
     };
@@ -114,26 +114,11 @@ const Usuario = () => {
             setErrors(prev => ({ ...prev, [name]: null }));
         }
 
-        // Manejo especial para el campo rol
-        if (name === "rol") {
-            // Encontrar el objeto rol completo basado en el id seleccionado
-            const rolSeleccionado = roles.find(r => r.id.toString() === value.toString());
-
-            if (rolSeleccionado) {
-                setNuevoUsuario((prev) => ({
-                    ...prev,
-                    rol: {
-                        id: rolSeleccionado.id,
-                        rol: rolSeleccionado.rol
-                    }
-                }));
-            }
-        } else {
-            setNuevoUsuario((prev) => ({
-                ...prev,
-                [name]: value,
-            }));
-        }
+        // Actualizar el estado directamente
+        setNuevoUsuario((prev) => ({
+            ...prev,
+            [name]: value,
+        }));
     };
 
     const validarFormulario = () => {
@@ -145,7 +130,7 @@ const Usuario = () => {
         if (!nuevoUsuario.correo) nuevoErrors.correo = 'El correo es obligatorio';
         if (!nuevoUsuario.password && !usuarioEditando) nuevoErrors.password = 'La contraseña es obligatoria';
         if (!nuevoUsuario.username) nuevoErrors.username = 'El nombre de usuario es obligatorio';
-        if (!nuevoUsuario.rol.id) nuevoErrors.rol = 'El rol es obligatorio';
+        if (!nuevoUsuario.rolId) nuevoErrors.rolId = 'El rol es obligatorio';
 
         // Validar formato correo
         if (nuevoUsuario.correo && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(nuevoUsuario.correo)) {
@@ -205,21 +190,25 @@ const Usuario = () => {
         setMostrarFormulario(false);
     };
 
-    const handleEditarUsuario = (usuario) => {
-        // Asegurarse de que el rol tenga el formato correcto cuando editamos
-        const usuarioParaEditar = {
-            ...usuario,
-            // Asegurarse de que el rol tenga tanto el id como el nombre
-            rol: usuario.rol && typeof usuario.rol === 'object'
-                ? usuario.rol
-                : {
-                    id: usuario.rol?.id || '',
-                    rol: usuario.rol?.rol || ''
-                }
-        };
+    const handleEditarUsuario = (usuarioAEditar) => {
+        if (!usuarioAEditar) return;
 
-        setUsuarioEditando(usuario);
-        setNuevoUsuario(usuarioParaEditar);
+        setUsuarioEditando(usuarioAEditar);
+        setNuevoUsuario({
+            id: usuarioAEditar.id,
+            nombre: usuarioAEditar.nombre || '',
+            apellido: usuarioAEditar.apellido || '',
+            correo: usuarioAEditar.correo || '',
+            dni: usuarioAEditar.dni || '',
+            fechaNacimiento: usuarioAEditar.fechaNacimiento ? new Date(usuarioAEditar.fechaNacimiento).toISOString().split('T')[0] : '',
+            telefono: usuarioAEditar.telefono || '',
+            genero: usuarioAEditar.genero || '',
+            empresaId: usuarioAEditar.empresa?.id || '',
+            rolId: usuarioAEditar.rol?.id || '',
+            enabled: usuarioAEditar.enabled ?? true,
+            username: usuarioAEditar.username || ''
+            // No incluimos password al editar
+        });
         setMostrarFormulario(true);
     };
 
@@ -508,14 +497,15 @@ const Usuario = () => {
                             fullWidth
                             select
                             label="Rol"
-                            value={nuevoUsuario.rol.id}
+                            value={nuevoUsuario.rolId || ''}
                             onChange={handleInputChange}
-                            name="rol"
+                            name="rolId"
                             required
-                            error={!!errors.rol}
-                            helperText={errors.rol}
+                            error={!!errors.rolId}
+                            helperText={errors.rolId}
                             style={{ flex: 1 }}
                         >
+                            <MenuItem value=""><em>-- Seleccione un rol --</em></MenuItem>
                             {roles.map((rol) => (
                                 <MenuItem key={rol.id} value={rol.id}>
                                     {rol.rol}

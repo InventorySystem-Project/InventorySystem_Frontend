@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { FaBell, FaUserCircle, FaPowerOff } from 'react-icons/fa';
 import { IoSearchOutline } from "react-icons/io5";
 import { useNavigate, useLocation } from 'react-router-dom';
+import useAuth from '../hooks/useAuth';
 
 const TopBar = ({ isCollapsed, toggleCollapse }) => {
   const [openUserMenu, setOpenUserMenu] = useState(false);
@@ -9,9 +10,7 @@ const TopBar = ({ isCollapsed, toggleCollapse }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const userMenuRef = useRef(null);
-
-  const username = localStorage.getItem('username') || 'Usuario';
-  const role = localStorage.getItem('role') || 'Invitado';
+  const { username, role, logout } = useAuth();
 
   // Cerrar menú al hacer clic fuera
   useEffect(() => {
@@ -80,10 +79,7 @@ const TopBar = ({ isCollapsed, toggleCollapse }) => {
   }
 
   const handleLogout = () => {
-    localStorage.removeItem('username');
-    localStorage.removeItem('token');
-    localStorage.removeItem('role');
-    navigate('/'); // Redirige al login
+    logout(); // Usa la función de logout del hook useAuth
     setOpenUserMenu(false);
   };
 
@@ -92,7 +88,7 @@ const TopBar = ({ isCollapsed, toggleCollapse }) => {
       <div className="breadcrumbs" style={styles.breadcrumbs}>
         {generateBreadcrumbs()}
       </div>
-      
+      {/*
       <div className="search-container" style={styles.searchContainer}>
         <IoSearchOutline style={styles.searchIcon} />
         <input 
@@ -101,16 +97,19 @@ const TopBar = ({ isCollapsed, toggleCollapse }) => {
           style={styles.searchInput} 
         />
       </div>
-      
+      */}
       <div className="user-profile" style={styles.userProfile}>
-        <div className="notification-wrapper" style={styles.notificationWrapper}>
+        
+        {/* <div className="notification-wrapper" style={styles.notificationWrapper}>
           <FaBell style={styles.notificationIcon} />
           {notifications > 0 && (
             <span className="notification-badge" style={styles.notificationBadge}>
               {notifications}
             </span>
           )}
-        </div>
+        </div> 
+          )}
+        </div>*/}
         
         <div 
           className="profile-container" 

@@ -1,6 +1,18 @@
 import React, { useState, useEffect } from 'react';
-import { Typography, CircularProgress, Alert, Container, Tabs, Tab } from '@mui/material';
-import { LifeBuoy, TriangleAlert, Bolt, Wrench } from 'lucide-react';
+import {
+    Typography,
+    CircularProgress,
+    Alert,
+    Container,
+    Tabs,
+    Tab,
+    Box,
+    Button,
+    Modal
+} from '@mui/material';
+import { LifeBuoy, TriangleAlert, Wrench, Bolt, Plus } from 'lucide-react';
+import useAuth from '../hooks/useAuth';
+import { ROLES } from '../constants/roles';
 
 // Importa los componentes específicos para cada pestaña
 import GestionIncidentes from './soporte/GestionIncidentes';
@@ -10,8 +22,7 @@ import GestionCambios from './soporte/GestionCambios';
 // Importa los servicios necesarios
 import { getUsuarios } from '../services/UsuarioService';
 
-// --- TabPanel y a11yProps ---
-const TabPanel = (props) => {
+function TabPanel(props) {
     const { children, value, index, ...other } = props;
     return (
         <div
@@ -39,45 +50,53 @@ function a11yProps(index) {
 // --- Fin TabPanel y a11yProps ---
 
 const SoporteCliente = () => {
-    // Leer el estado inicial desde localStorage
+    // Estado y autenticación
+    const { userId, role, isAuthenticated, loading: loadingAuth, hasRole } = useAuth();
     const [activeTab, setActiveTab] = useState(() => {
         const savedTab = localStorage.getItem('soporteCliente_activeTab');
         return savedTab ? parseInt(savedTab) : 0;
     });
-
     const [usuarios, setUsuarios] = useState([]);
-    const [loading, setLoading] = useState(true);
+    const [loadingData, setLoadingData] = useState(true);
     const [error, setError] = useState('');
 
-    // Guardar la pestaña seleccionada en localStorage cada vez que cambie
+    // Cargar datos iniciales
+    useEffect(() => {
+        if (isAuthenticated && !loadingAuth) {
+            const fetchInitialData = async () => {
+                try {
+                    setLoadingData(true);
+                    setError('');
+                    // Solo cargar todos los usuarios si no es USER
+                    if (role !== ROLES.USER) {
+                        const usuariosData = await getUsuarios();
+                        setUsuarios(usuariosData || []);
+                    }
+                } catch (err) {
+                    console.error("Error cargando datos para Soporte:", err);
+                    setError('No se pudieron cargar los datos necesarios.');
+                    setUsuarios([]);
+                } finally {
+                    setLoadingData(false);
+                }
+            };
+            fetchInitialData();
+        } else if (!loadingAuth && !isAuthenticated) {
+            setError("Acceso no autorizado. Por favor, inicie sesión.");
+            setLoadingData(false);
+        }
+    }, [isAuthenticated, loadingAuth, role]);
+
+    // Guardar tab activa
     useEffect(() => {
         localStorage.setItem('soporteCliente_activeTab', activeTab.toString());
     }, [activeTab]);
-
-    useEffect(() => {
-        const fetchInitialData = async () => {
-            try {
-                setLoading(true);
-                setError('');
-                const usuariosData = await getUsuarios();
-                setUsuarios(usuariosData || []);
-            } catch (err) {
-                console.error("Error cargando datos iniciales para Soporte:", err);
-                setError('No se pudieron cargar los datos necesarios. Intente recargar la página.');
-                setUsuarios([]);
-            } finally {
-                setLoading(false);
-            }
-        };
-        fetchInitialData();
-    }, []);
 
     const handleChangeTab = (event, newValue) => {
         setActiveTab(newValue);
     };
 
-    // --- Estados de Carga y Error ---
-    if (loading) {
+    if (loadingAuth || loadingData) {
         return (
             <Container sx={{ 
                 display: 'flex', 
@@ -97,81 +116,67 @@ const SoporteCliente = () => {
 
     if (error) {
         return (
-            <Container sx={{ mt: 4 }}>
-                <Alert 
-                    severity="error" 
-                    sx={{ 
-                        borderRadius: 2,
-                        boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
-                    }}
-                >
+            <Container>
+                <Alert severity="error" sx={{ mt: 2 }}>
                     {error}
                 </Alert>
             </Container>
         );
     }
-    // --- Fin Estados de Carga y Error ---
 
     return (
         <div className="container-general">
-            {/* Título del Módulo */}
-            <h2 style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                <LifeBuoy size={32} style={{ color: '#3b82f6' }} /> 
-                Módulo de Soporte al Cliente
-            </h2>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
+                <div>
+                    <h2 style={{ marginBottom: '8px' }}>Módulo de Soporte al Cliente</h2>
+                    <Typography variant="body2" color="text.secondary">
+                        {role === ROLES.USER ? 
+                            "Gestione sus tickets de soporte y solicitudes de cambio" :
+                            "Administre incidentes, problemas y cambios del sistema"
+                        }
+                    </Typography>
+                </div>
+            </div>
 
-            {/* Contenedor de Tabs */}
-            <Container sx={{ 
-                width: 'auto', 
-                display: 'flex', 
-                justifyContent: 'flex-start', 
-                maxWidth: 'none', 
-                marginLeft: '0', 
-                paddingLeft: 'none' 
-            }}>
-                <div style={{
-                    borderBottom: 0,
-                    backgroundColor: '#f5f7fa',
-                    borderRadius: '8px',
-                    padding: '4px',
-                    marginTop: '16px',
-                    display: 'flex',
-                    justifyContent: 'flex-start',
-                    alignItems: 'center',
-                    width: '100%'
-                }}>
-                    <Tabs
-                        value={activeTab}
-                        onChange={handleChangeTab}
-                        aria-label="Pestañas de soporte"
-                        indicatorColor="primary"
-                        textColor="primary"
+            <Container sx={{ width: 'auto', display: 'flex', justifyContent: 'flex-start', maxWidth: 'none', marginLeft: '0', paddingLeft: 'none' }}>
+                <Box sx={{ borderBottom: 0, backgroundColor: '#f5f7fa', borderRadius: '8px', padding: '4px', marginTop: 2, display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }}>
+                    <Tabs 
+                        value={activeTab} 
+                        onChange={handleChangeTab} 
+                        aria-label="pestañas de soporte"
+                        indicatorColor="primary" 
+                        textColor="primary" 
                         variant="standard"
                         sx={{
                             minHeight: '36px',
                             '& .MuiTab-root': {
                                 minHeight: '36px',
-                                minWidth: '160px',
                                 textTransform: 'none',
                                 fontSize: '14px',
                                 fontWeight: 500,
                                 color: '#64748B',
                                 transition: 'color 0.3s ease, background-color 0.3s ease',
-                                '& svg': { 
-                                    transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)' 
+                                display: 'flex',
+                                flexDirection: 'row',
+                                '& svg': {
+                                    marginRight: '8px',
+                                    marginBottom: '0',
+                                    color: '#64748B',
                                 },
                                 '&:hover': {
                                     color: '#0F172A',
                                     backgroundColor: 'rgba(15, 23, 42, 0.04)',
+                                    '& svg': {
+                                        color: '#3b82f6',
+                                    }
                                 },
                                 '&.Mui-selected': {
                                     color: '#0F172A',
                                     fontWeight: 600,
-                                    '& svg': { 
-                                        color: '#3b82f6' 
+                                    '& svg': {
+                                        color: '#3b82f6'
                                     },
                                     '&:hover': {
-                                        color: '#0F172A',
                                         backgroundColor: 'rgba(15, 23, 42, 0.04)',
                                     }
                                 }
@@ -179,37 +184,57 @@ const SoporteCliente = () => {
                         }}
                     >
                         <Tab 
-                            label="Gestión de Incidentes" 
-                            icon={<TriangleAlert size={18} />} 
-                            iconPosition="start" 
-                            {...a11yProps(0)} 
+                            icon={<TriangleAlert size={18} />}
+                            label="Gestión de Incidentes"
+                            {...a11yProps(0)}
                         />
-                        <Tab 
-                            label="Gestión de Problemas" 
-                            icon={<Wrench size={18} />} 
-                            iconPosition="start" 
-                            {...a11yProps(1)} 
-                        />
-                        <Tab 
-                            label="Gestión de Cambios" 
-                            icon={<Bolt size={18} />} 
-                            iconPosition="start" 
-                            {...a11yProps(2)} 
-                        />
+                        {hasRole([ROLES.ADMIN, ROLES.SOPORTE_N2]) && (
+                            <Tab 
+                                icon={<Wrench size={18} />}
+                                label="Gestión de Problemas"
+                                {...a11yProps(1)}
+                            />
+                        )}
+                        {hasRole([ROLES.ADMIN, ROLES.GESTOR_CAMBIOS, ROLES.CAB_MEMBER, ROLES.PROJECT_MANAGER]) && (
+                            <Tab 
+                                icon={<Bolt size={18} />}
+                                label="Gestión de Cambios"
+                                {...a11yProps(2)}
+                            />
+                        )}
                     </Tabs>
-                </div>
+                </Box>
             </Container>
 
-            {/* Paneles de Contenido */}
-            <TabPanel value={activeTab} index={0}>
-                <GestionIncidentes usuarios={usuarios} />
-            </TabPanel>
-            <TabPanel value={activeTab} index={1}>
-                <GestionProblemas usuarios={usuarios} />
-            </TabPanel>
-            <TabPanel value={activeTab} index={2}>
-                <GestionCambios usuarios={usuarios} />
-            </TabPanel>
+            <div className="container" style={{ marginTop: '24px' }}>
+                <TabPanel value={activeTab} index={0}>
+                    <GestionIncidentes 
+                        usuarios={usuarios}
+                        currentUserRole={role}
+                        currentUserId={userId}
+                    />
+                </TabPanel>
+
+                {hasRole([ROLES.ADMIN, ROLES.SOPORTE_N2]) && (
+                    <TabPanel value={activeTab} index={1}>
+                        <GestionProblemas 
+                            usuarios={usuarios}
+                            currentUserRole={role}
+                            currentUserId={userId}
+                        />
+                    </TabPanel>
+                )}
+
+                {hasRole([ROLES.ADMIN, ROLES.GESTOR_CAMBIOS, ROLES.CAB_MEMBER, ROLES.PROJECT_MANAGER]) && (
+                    <TabPanel value={activeTab} index={2}>
+                        <GestionCambios 
+                            usuarios={usuarios}
+                            currentUserRole={role}
+                            currentUserId={userId}
+                        />
+                    </TabPanel>
+                )}
+            </div>
         </div>
     );
 };
