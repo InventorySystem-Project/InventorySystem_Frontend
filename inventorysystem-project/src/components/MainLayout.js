@@ -42,7 +42,7 @@ const MainLayout = ({ children }) => {
                         marginLeft: isLogin ? '0' : (isMenuCollapsed ? '95px' : '255px'),
                         // --- INICIO DE LA CORRECCIÓN ---
                         //padding: '20px', // Añadimos el padding aquí para consistencia
-                        backgroundColor: 'rgb(117, 73, 48)', // Un color de fondo más suave
+                        //backgroundColor: 'rgb(117, 73, 48)', // Un color de fondo más suave
                         flex: 1, // Permite que este div ocupe todo el espacio vertical restante
                         overflowY: 'none', // Habilita el scroll vertical SOLO para esta área
                         transition: 'margin-left 0.3s ease-in-out',

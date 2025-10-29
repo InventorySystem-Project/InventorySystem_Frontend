@@ -10,11 +10,18 @@ import {
     TableRow,
     TableCell,
     TableBody,
-    Pagination
+    Pagination,
+    Typography
 } from '@mui/material'; import { Plus, Pencil, Trash2, Edit } from "lucide-react";
 import { getMateriasPrimas, addMateriaPrima, updateMateriaPrima, deleteMateriaPrima } from '../services/MateriaPrimaService';
+import useAuth from '../hooks/useAuth';
+import { ROLES } from '../constants/roles';
 
 const MateriaPrima = () => {
+    const { role } = useAuth();
+    const isGuest = role === ROLES.GUEST;
+    const [showGuestAlert, setShowGuestAlert] = useState(false);
+
     const [materiasPrimas, setMateriasPrimas] = useState([]);
     const [nuevaMateriaPrima, setNuevaMateriaPrima] = useState({ nombre: "", unidad: "" });
     const [mostrarFormulario, setMostrarFormulario] = useState(false);
@@ -43,6 +50,10 @@ const MateriaPrima = () => {
     };
 
     const handleAgregarMateriaPrima = async () => {
+        if (isGuest) {
+            setShowGuestAlert(true);
+            return;
+        }
         if (!nuevaMateriaPrima.nombre || !nuevaMateriaPrima.unidad) {
             alert('Por favor complete los campos obligatorios');
             return;
@@ -80,6 +91,10 @@ const MateriaPrima = () => {
     };
 
     const handleEliminarMateriaPrima = async (id) => {
+        if (isGuest) {
+            setShowGuestAlert(true);
+            return;
+        }
         try {
             await deleteMateriaPrima(id);
             setMateriasPrimas(prev => prev.filter(m => m.id !== id));
@@ -107,7 +122,7 @@ const MateriaPrima = () => {
         <div className="container-general">
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
                 <h2 >Gestión de Materias Primas</h2>
-                <Button variant="contained" color="primary" alignItems="center" onClick={() => setMostrarFormulario(true)}>
+                <Button variant="contained" color="primary" alignItems="center" onClick={() => isGuest ? setShowGuestAlert(true) : setMostrarFormulario(true)}>
                     <Plus /> Nueva Materia Prima
                 </Button>
             </div>
@@ -133,8 +148,8 @@ const MateriaPrima = () => {
                                     <TableCell>{materiaPrima.nombre}</TableCell>
                                     <TableCell>{materiaPrima.unidad}</TableCell>
                                     <TableCell>
-                                        <Button color="primary" onClick={() => handleEditarMateriaPrima(materiaPrima)}><Edit size={18} /></Button>
-                                        <Button color="error" onClick={() => handleEliminarMateriaPrima(materiaPrima.id)}><Trash2 size={18} /></Button>
+                                        <Button color="primary" onClick={() => isGuest ? setShowGuestAlert(true) : handleEditarMateriaPrima(materiaPrima)}><Edit size={18} /></Button>
+                                        <Button color="error" onClick={() => isGuest ? setShowGuestAlert(true) : handleEliminarMateriaPrima(materiaPrima.id)}><Trash2 size={18} /></Button>
                                     </TableCell>
                                 </TableRow>
                             ))}
@@ -181,6 +196,16 @@ const MateriaPrima = () => {
                         <Button variant="outlined" color="primary" onClick={handleCancelar}>Cancelar</Button>
                         <Button variant="contained" color="primary" onClick={handleAgregarMateriaPrima}>Guardar</Button>
                     </div>
+                </Box>
+            </Modal>
+            {/* Guest alert modal */}
+            <Modal open={showGuestAlert} onClose={() => setShowGuestAlert(false)} style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                <Box style={{ background: '#fff', padding: '25px', borderRadius: '10px', minWidth: '400px', textAlign: 'center', borderTop: '5px solid #f44336' }}>
+                    <Typography variant="h6" style={{ color: '#f44336', fontWeight: '600' }}>Acción Restringida</Typography>
+                    <Typography style={{ margin: '15px 0' }}>
+                        No tienes permisos para realizar esta acción. Solicita autorización a un administrador mediante un ticket de incidente.
+                    </Typography>
+                    <Button variant="contained" color="primary" onClick={() => setShowGuestAlert(false)}>Entendido</Button>
                 </Box>
             </Modal>
         </div>

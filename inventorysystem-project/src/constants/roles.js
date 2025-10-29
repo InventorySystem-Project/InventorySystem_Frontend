@@ -1,6 +1,7 @@
 export const ROLES = {
     ADMIN: 'ADMIN',
     USER: 'USER',
+    GUEST: 'GUEST',
     SOPORTE_N1: 'SOPORTE_N1',
     SOPORTE_N2: 'SOPORTE_N2',
     GESTOR_CAMBIOS: 'GESTOR_CAMBIOS',
@@ -11,6 +12,7 @@ export const ROLES = {
 export const ROLE_DESCRIPTIONS = {
     [ROLES.ADMIN]: 'Administrador del Sistema',
     [ROLES.USER]: 'Usuario Regular',
+    [ROLES.GUEST]: 'Usuario Invitado (Solo Lectura)',
     [ROLES.SOPORTE_N1]: 'Gestor de Incidentes (Nivel 1)',
     [ROLES.SOPORTE_N2]: 'Gestor de Incidentes (Nivel 2)',
     [ROLES.GESTOR_CAMBIOS]: 'Gestor de Cambios',
@@ -20,6 +22,10 @@ export const ROLE_DESCRIPTIONS = {
 
 export const ROLE_PERMISSIONS = {
     [ROLES.ADMIN]: ['ALL'],
+    [ROLES.GUEST]: [
+        'VIEW_OWN_TICKETS',
+        'CREATE_TICKET'
+    ],
     [ROLES.USER]: [
         'VIEW_OWN_TICKETS',
         'CREATE_TICKET',

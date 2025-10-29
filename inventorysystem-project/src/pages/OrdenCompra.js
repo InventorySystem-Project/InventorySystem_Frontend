@@ -10,6 +10,8 @@ import {
 import {
     FileText, Trash2, Plus, Clock, CheckCircle2, Loader2, XCircle, Edit, MessageSquareMore, AlertTriangle
 } from "lucide-react";
+import useAuth from '../hooks/useAuth';
+import { ROLES } from '../constants/roles';
 
 // --- Importaciones de servicios (sin cambios) ---
 import { getMovimientosInventarioMP } from '../services/MovimientoInventarioMPService';
@@ -24,16 +26,16 @@ import { getProveedores } from '../services/ProveedorService';
 // --- Componente AlertasStockBajo (sin cambios) ---
 const AlertasStockBajo = ({ titulo, alertas, onAnadirProducto }) => {
     // ... (código sin cambios) ...
-     if (!alertas || alertas.length === 0) {
-        return null;
-    }
-    return (
-        <Paper elevation={2} sx={{ my: 2, p: 2, backgroundColor: '#FFFBEB' }}>
-            <List dense subheader={
-                <ListSubheader sx={{ bgcolor: 'transparent', color: '#B7791F', display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <AlertTriangle size={20} /> {titulo}
-                </ListSubheader>
-            }>
+    if (!alertas || alertas.length === 0) {
+        return null;
+    }
+    return (
+        <Paper elevation={2} sx={{ my: 2, p: 2, backgroundColor: '#000' }}>
+            <List dense subheader={
+                <ListSubheader sx={{ bgcolor: 'transparent', color: '#FFD166', display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <AlertTriangle size={20} /> {titulo}
+                </ListSubheader>
+            }>
                 {alertas.map(alerta => (
                     <ListItem key={alerta.id} divider secondaryAction={
                         <Button variant="outlined" size="small" startIcon={<Plus size={16} />} onClick={() => onAnadirProducto(alerta.id)}>Añadir</Button>
@@ -71,6 +73,9 @@ const OrdenCompra = () => {
     const [alertasStockPT, setAlertasStockPT] = useState([]);
 
     const ordenesPorPagina = 5;
+    const { role } = useAuth();
+    const isGuest = role === ROLES.GUEST;
+    const [showGuestAlert, setShowGuestAlert] = useState(false);
 
     // --- useEffects (sin cambios) ---
     useEffect(() => {
@@ -158,7 +163,8 @@ const OrdenCompra = () => {
     };
 
     const handleRegistrarOrden = async () => {
-        try {
+        try {
+            if (isGuest) { setShowGuestAlert(true); return; }
             if (!formulario.empresaId || !formulario.proveedorId || !formulario.fechaEmision || !formulario.estado || productosSeleccionados.length === 0) {
                 alert("Por favor, complete todos los campos de la orden y añada al menos un producto.");
                 return;
@@ -224,6 +230,18 @@ const OrdenCompra = () => {
         setTipoOrden('materiasPrimas'); // Resetear a MP al abrir nueva orden
         setMostrarModal(true);
     };
+
+    const handleEliminarOrden = async (id) => {
+        if (isGuest) { setShowGuestAlert(true); return; }
+        try {
+            await deleteOrdenCompra(id);
+            alert('Orden eliminada con éxito.');
+            fetchOrdenesYRecalcular();
+        } catch (error) {
+            console.error('Error eliminando orden:', error);
+            alert('No se pudo eliminar la orden.');
+        }
+    };
     // --- Fin Handlers ---
 
     // --- Función para generar PDF (devuelve Data URL - sin cambios) ---
@@ -311,7 +329,7 @@ const OrdenCompra = () => {
         <div className="container-general">
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', marginBottom: '20px' }}>
                 <h2>Gestión de Órdenes de Compra</h2>
-                <Button variant="contained" color="primary" onClick={handleOpenModal} startIcon={<Plus />}>
+                <Button variant="contained" color="primary" onClick={isGuest ? () => setShowGuestAlert(true) : handleOpenModal} startIcon={<Plus />}>
                     Nueva Orden
                 </Button>
             </div>
@@ -341,10 +359,10 @@ const OrdenCompra = () => {
                                     <IconButton color="primary" onClick={() => handleAbrirPdfPreview(orden)} title="Vista Previa PDF">
                                         <FileText size={18} />
                                     </IconButton>
-                                    <IconButton color="info" onClick={() => handleEditarOrden(orden)} title="Editar Orden">
+                                    <IconButton color="info" onClick={() => isGuest ? setShowGuestAlert(true) : handleEditarOrden(orden)} title="Editar Orden">
                                         <Edit size={18} />
                                     </IconButton>
-                                    <IconButton color="error" title="Eliminar Orden" /* onClick={() => handleEliminarOrden(orden.id)} */ >
+                                    <IconButton color="error" title="Eliminar Orden" onClick={() => isGuest ? setShowGuestAlert(true) : handleEliminarOrden(orden.id)} >
                                         <Trash2 size={18} />
                                     </IconButton>
                                 </TableCell>
@@ -488,6 +506,17 @@ const OrdenCompra = () => {
                  </Box>
             </Modal>
             {/* --- FIN MODAL CREAR/EDITAR --- */}
+
+            {/* --- MODAL ACCIÓN RESTRINGIDA PARA GUESTS --- */}
+            <Modal open={showGuestAlert} onClose={() => setShowGuestAlert(false)} style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                <Box style={{ background: '#fff', padding: '20px', borderRadius: '10px', minWidth: '320px' }}>
+                    <Typography variant="h6" sx={{ mb: 1 }}>Acción Restringida</Typography>
+                    <Typography sx={{ mb: 2 }}>No tienes permisos para realizar esta acción. Contacta con un administrador si necesitas permisos adicionales.</Typography>
+                    <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                        <Button variant="contained" color="primary" onClick={() => setShowGuestAlert(false)}>Entendido</Button>
+                    </div>
+                </Box>
+            </Modal>
 
             {/* --- MODAL PARA VISTA PREVIA PDF (Sin cambios) --- */}
             <Modal

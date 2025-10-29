@@ -1,9 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { TextField, Button, Modal, Box, Pagination, Table, TableBody, TableCell, TableHead, TableRow,MenuItem } from '@mui/material';
+import { TextField, Button, Modal, Box, Pagination, Table, TableBody, TableCell, TableHead, TableRow,MenuItem, Typography } from '@mui/material';
 import { Plus, Pencil, Trash2, Edit } from "lucide-react";
 import { getProveedores, addProveedor, updateProveedor, deleteProveedor } from '../services/ProveedorService';
+import useAuth from '../hooks/useAuth';
+import { ROLES } from '../constants/roles';
 
 const Proveedores = () => {
+    const { role } = useAuth();
+    const isGuest = role === ROLES.GUEST;
+    const [showGuestAlert, setShowGuestAlert] = useState(false);
+
     const [proveedores, setProveedores] = useState([]);
     const [nuevoProveedor, setNuevoProveedor] = useState({
         nombreEmpresaProveedor: "",
@@ -71,6 +77,10 @@ const fetchPaises = async () => {
     };
 
     const handleAgregarProveedor = async () => {
+        if (isGuest) {
+            setShowGuestAlert(true);
+            return;
+        }
         // Verificar si todos los campos están completos
         if (
             !nuevoProveedor.nombreEmpresaProveedor ||
@@ -139,6 +149,10 @@ const fetchPaises = async () => {
     };
 
     const handleEliminarProveedor = async (id) => {
+        if (isGuest) {
+            setShowGuestAlert(true);
+            return;
+        }
         try {
             await deleteProveedor(id);
             setProveedores(prev => prev.filter(p => p.id !== id));
@@ -172,7 +186,7 @@ const fetchPaises = async () => {
         <div className="container-general">
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
                 <h2 >Gestión de Proveedores</h2>
-                <Button variant="contained" color="primary" onClick={() => setMostrarFormulario(true)}>
+                <Button variant="contained" color="primary" onClick={() => isGuest ? setShowGuestAlert(true) : setMostrarFormulario(true)}>
                     <Plus /> Nuevo Proveedor
                 </Button>
 
@@ -221,8 +235,8 @@ const fetchPaises = async () => {
                                     <TableCell>{proveedor.telefono}</TableCell>
                                     <TableCell>{proveedor.correo}</TableCell>
                                     <TableCell>
-                                        <Button color="primary" onClick={() => handleEditarProveedor(proveedor)}><Edit size={18} /></Button>
-                                        <Button color="error" onClick={() => handleEliminarProveedor(proveedor.id)}><Trash2 size={18} /></Button>
+                                        <Button color="primary" onClick={() => isGuest ? setShowGuestAlert(true) : handleEditarProveedor(proveedor)}><Edit size={18} /></Button>
+                                        <Button color="error" onClick={() => isGuest ? setShowGuestAlert(true) : handleEliminarProveedor(proveedor.id)}><Trash2 size={18} /></Button>
                                     </TableCell>
                                 </TableRow>
                             ))}
@@ -278,6 +292,16 @@ const fetchPaises = async () => {
                         <Button variant="contained" color="primary" onClick={handleAgregarProveedor}>Guardar</Button>
                     </div>
 
+                </Box>
+            </Modal>
+            {/* Guest alert modal */}
+            <Modal open={showGuestAlert} onClose={() => setShowGuestAlert(false)} style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                <Box style={{ background: '#fff', padding: '25px', borderRadius: '10px', minWidth: '400px', textAlign: 'center', borderTop: '5px solid #f44336' }}>
+                    <Typography variant="h6" style={{ color: '#f44336', fontWeight: '600' }}>Acción Restringida</Typography>
+                    <Typography style={{ margin: '15px 0' }}>
+                        No tienes permisos para realizar esta acción. Solicita autorización a un administrador mediante un ticket de incidente.
+                    </Typography>
+                    <Button variant="contained" color="primary" onClick={() => setShowGuestAlert(false)}>Entendido</Button>
                 </Box>
             </Modal>
         </div>

@@ -4,6 +4,8 @@ import {
   Grid, Typography, Divider, Alert, CircularProgress
 } from '@mui/material';
 import { Trash2, Plus, Edit, Eye } from "lucide-react";
+import useAuth from '../hooks/useAuth';
+import { ROLES } from '../constants/roles';
 
 // SERVICIOS
 import { getAlmacenes, addAlmacen, updateAlmacen, deleteAlmacen } from '../services/AlmacenService';
@@ -133,6 +135,10 @@ const AlmacenStockDetalle = ({ almacen }) => {
 
 const Almacen = () => {
   // ... (Tu código de estados y funciones permanece igual)
+  const { role } = useAuth();
+  const isGuest = role === ROLES.GUEST;
+  const [showGuestAlert, setShowGuestAlert] = useState(false);
+
   const [almacenes, setAlmacenes] = useState([]);
   const [empresas, setEmpresas] = useState([]);
   const [formulario, setFormulario] = useState({ id: '', empresaId: '', nombre: '', ubicacion: '' });
@@ -158,6 +164,10 @@ const Almacen = () => {
   };
 
   const handleRegistrarAlmacen = async () => {
+    if (isGuest) {
+      setShowGuestAlert(true);
+      return;
+    }
     if (formulario.id) {
       await updateAlmacen(formulario);
     } else {
@@ -169,6 +179,10 @@ const Almacen = () => {
   };
 
   const handleEliminarAlmacen = async (id) => {
+    if (isGuest) {
+      setShowGuestAlert(true);
+      return;
+    }
     if (window.confirm('¿Estás seguro que quieres eliminar este almacén?')) {
       try {
         await deleteAlmacen(id);
@@ -210,7 +224,7 @@ const Almacen = () => {
       {/* ... (Tu código de la tabla principal y el modal de creación/edición permanece igual) */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
         <h2>Gestión de Almacenes</h2>
-        <Button variant="contained" color="primary" onClick={handleOpenCreateModal}>
+        <Button variant="contained" color="primary" onClick={() => isGuest ? setShowGuestAlert(true) : handleOpenCreateModal()}>
           <Plus /> Nuevo Almacén
         </Button>
       </div>
@@ -240,10 +254,10 @@ const Almacen = () => {
                   <Button color="info" onClick={() => handleOpenStockModal(almacen)} style={{ minWidth: 'auto', padding: '6px' }}>
                     <Eye size={18} />
                   </Button>
-                  <Button color="primary" onClick={() => handleEditAlmacen(almacen)} style={{ minWidth: 'auto', padding: '6px' }}>
+                  <Button color="primary" onClick={() => isGuest ? setShowGuestAlert(true) : handleEditAlmacen(almacen)} style={{ minWidth: 'auto', padding: '6px' }}>
                     <Edit size={18} />
                   </Button>
-                  <Button color="error" onClick={() => handleEliminarAlmacen(almacen.id)} style={{ minWidth: 'auto', padding: '6px' }}>
+                  <Button color="error" onClick={() => isGuest ? setShowGuestAlert(true) : handleEliminarAlmacen(almacen.id)} style={{ minWidth: 'auto', padding: '6px' }}>
                     <Trash2 size={18} />
                   </Button>
                 </TableCell>
@@ -275,6 +289,16 @@ const Almacen = () => {
             <Button variant="outlined" color="primary" onClick={() => setMostrarModal(false)}>Cancelar</Button>
             <Button variant="contained" color="primary" onClick={handleRegistrarAlmacen}>{formulario.id ? 'Actualizar' : 'Registrar'}</Button>
           </div>
+        </Box>
+      </Modal>
+      {/* Guest alert modal */}
+      <Modal open={showGuestAlert} onClose={() => setShowGuestAlert(false)} style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+        <Box style={{ background: '#fff', padding: '25px', borderRadius: '10px', minWidth: '400px', textAlign: 'center', borderTop: '5px solid #f44336' }}>
+          <Typography variant="h6" style={{ color: '#f44336', fontWeight: '600' }}>Acción Restringida</Typography>
+          <Typography style={{ margin: '15px 0' }}>
+            No tienes permisos para realizar esta acción. Solicita autorización a un administrador mediante un ticket de incidente.
+          </Typography>
+          <Button variant="contained" color="primary" onClick={() => setShowGuestAlert(false)}>Entendido</Button>
         </Box>
       </Modal>
 

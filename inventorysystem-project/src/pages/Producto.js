@@ -1,9 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { TextField, Button, Modal, Box, Table, TableBody, TableCell, TableHead, TableRow, Pagination } from '@mui/material';
+import { TextField, Button, Modal, Box, Table, TableBody, TableCell, TableHead, TableRow, Pagination, Typography } from '@mui/material';
 import { Plus, Pencil, Trash2, Edit } from 'lucide-react';
 import { getProductosTerminados, addProductoTerminado, updateProductoTerminado, deleteProductoTerminado } from '../services/ProductoTerminadoService';
+import useAuth from '../hooks/useAuth';
+import { ROLES } from '../constants/roles';
 
 const Producto = () => {
+    const { role } = useAuth();
+    const isGuest = role === ROLES.GUEST;
+    const [showGuestAlert, setShowGuestAlert] = useState(false);
     const [productos, setProductos] = useState([]);
     const [nuevoProducto, setNuevoProducto] = useState({
         nombre: '',
@@ -41,6 +46,12 @@ const Producto = () => {
     };
 
     const handleAgregarProducto = async () => {
+        // Guest users cannot perform this action
+        if (isGuest) {
+            setShowGuestAlert(true);
+            return;
+        }
+
         if (
             !nuevoProducto.nombre ||
             !nuevoProducto.tipo ||
@@ -104,6 +115,10 @@ const Producto = () => {
     };
 
     const handleEliminarProducto = async (id) => {
+        if (isGuest) {
+            setShowGuestAlert(true);
+            return;
+        }
         try {
             await deleteProductoTerminado(id);
             setProductos((prev) => prev.filter((p) => p.id !== id));
@@ -126,7 +141,7 @@ const Producto = () => {
         <div className="container-general">
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
                 <h2>Gestión de Productos Terminados</h2>
-                <Button variant="contained" color="primary" onClick={() => setMostrarFormulario(true)}>
+                <Button variant="contained" color="primary" onClick={() => isGuest ? setShowGuestAlert(true) : setMostrarFormulario(true)}>
                     <Plus /> Nuevo Producto
                 </Button>
             </div>
@@ -158,8 +173,8 @@ const Producto = () => {
                                     <TableCell>{producto.color}</TableCell>
                                     <TableCell>{"S/. "+producto.precioUnitario}</TableCell>
                                     <TableCell>
-                                        <Button color="primary" onClick={() => handleEditarProducto(producto)}><Edit size={18} /></Button>
-                                        <Button color="error" onClick={() => handleEliminarProducto(producto.id)}><Trash2 size={18} /></Button>
+                                        <Button color="primary" onClick={() => isGuest ? setShowGuestAlert(true) : handleEditarProducto(producto)}><Edit size={18} /></Button>
+                                        <Button color="error" onClick={() => isGuest ? setShowGuestAlert(true) : handleEliminarProducto(producto.id)}><Trash2 size={18} /></Button>
                                     </TableCell>
                                 </TableRow>
                             ))}
@@ -182,6 +197,16 @@ const Producto = () => {
                         <Button variant="outlined" color="primary" onClick={handleCancelar}>Cancelar</Button>
                         <Button variant="contained" color="primary" onClick={handleAgregarProducto}>Guardar</Button>
                     </div>
+                </Box>
+            </Modal>
+            {/* Guest alert modal */}
+            <Modal open={showGuestAlert} onClose={() => setShowGuestAlert(false)} style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                <Box style={{ background: '#fff', padding: '25px', borderRadius: '10px', minWidth: '400px', textAlign: 'center', borderTop: '5px solid #f44336' }}>
+                    <Typography variant="h6" style={{ color: '#f44336', fontWeight: '600' }}>Acción Restringida</Typography>
+                    <Typography style={{ margin: '15px 0' }}>
+                        No tienes permisos para realizar esta acción. Solicita autorización a un administrador mediante un ticket de incidente.
+                    </Typography>
+                    <Button variant="contained" color="primary" onClick={() => setShowGuestAlert(false)}>Entendido</Button>
                 </Box>
             </Modal>
         </div>
