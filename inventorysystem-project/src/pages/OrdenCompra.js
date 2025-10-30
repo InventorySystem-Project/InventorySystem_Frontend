@@ -26,16 +26,16 @@ import { getProveedores } from '../services/ProveedorService';
 // --- Componente AlertasStockBajo (sin cambios) ---
 const AlertasStockBajo = ({ titulo, alertas, onAnadirProducto }) => {
     // ... (código sin cambios) ...
-    if (!alertas || alertas.length === 0) {
-        return null;
-    }
-    return (
-        <Paper elevation={2} sx={{ my: 2, p: 2, backgroundColor: '#000' }}>
-            <List dense subheader={
-                <ListSubheader sx={{ bgcolor: 'transparent', color: '#FFD166', display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <AlertTriangle size={20} /> {titulo}
-                </ListSubheader>
-            }>
+     if (!alertas || alertas.length === 0) {
+        return null;
+    }
+    return (
+        <Paper elevation={2} sx={{ my: 2, p: 2, backgroundColor: '#FFFBEB' }}>
+            <List dense subheader={
+                <ListSubheader sx={{ bgcolor: 'transparent', color: '#B7791F', display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <AlertTriangle size={20} /> {titulo}
+                </ListSubheader>
+            }>
                 {alertas.map(alerta => (
                     <ListItem key={alerta.id} divider secondaryAction={
                         <Button variant="outlined" size="small" startIcon={<Plus size={16} />} onClick={() => onAnadirProducto(alerta.id)}>Añadir</Button>
