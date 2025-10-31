@@ -12,6 +12,8 @@ import {
 } from "lucide-react";
 import useAuth from '../hooks/useAuth';
 import { ROLES } from '../constants/roles';
+import { useModal } from '../hooks/useModal';
+import CustomModal from '../components/CustomModal';
 
 // --- Importaciones de servicios (sin cambios) ---
 import { getMovimientosInventarioMP } from '../services/MovimientoInventarioMPService';
@@ -76,6 +78,9 @@ const OrdenCompra = () => {
     const { role } = useAuth();
     const isGuest = role === ROLES.GUEST;
     const [showGuestAlert, setShowGuestAlert] = useState(false);
+    
+    // Hook para modals
+    const { modalConfig, showAlert, showSuccess, showError, hideModal } = useModal();
 
     // --- useEffects (sin cambios) ---
     useEffect(() => {

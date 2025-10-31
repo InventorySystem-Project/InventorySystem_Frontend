@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Route, BrowserRouter as Router, Routes } from 'react-router-dom';
 import { CssBaseline, ThemeProvider, createTheme } from '@mui/material';
+import setupAxiosInterceptors from './services/axiosInterceptors';
 
 import MainLayout from './components/MainLayout';
 
@@ -22,6 +23,11 @@ import SoporteCliente from './pages/SoporteCliente';
 import './App.css';
 
 const App = () => {
+  // Configurar interceptores de Axios al montar la aplicación
+  useEffect(() => {
+    setupAxiosInterceptors();
+  }, []);
+
   return (
     <Router>
       <MainLayout>

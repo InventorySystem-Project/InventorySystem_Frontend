@@ -1,53 +1,160 @@
 import React, { useState, useEffect } from 'react';
-import { Button, Modal, Box, TextField, Select, MenuItem, InputLabel, FormControl, Typography, CircularProgress, Chip, IconButton, Divider, Card, CardContent, Tabs, Tab } from '@mui/material';
-import { X, Send, User, Clock, MessageSquare } from 'lucide-react';
-import { addComentario, getComentariosPorTicket } from '../../services/SoporteService';
+import { Button, Modal, Box, TextField, Select, MenuItem, InputLabel, FormControl, Typography, CircularProgress, Chip, IconButton, Divider, Card, CardContent, Tabs, Tab, ListSubheader, Rating } from '@mui/material';
+import { X, Send, User, Clock, MessageSquare, Star } from 'lucide-react';
+import { addComentario, getComentariosPorTicket, calificarTicket, getTicketById } from '../../services/SoporteService';
 import { getRoles } from '../../services/RolService';
 import { format } from 'date-fns';
 import es from 'date-fns/locale/es';
 import ActividadLog from '../../components/ActividadLog';
+import { useModal } from '../../hooks/useModal';
+import CustomModal from '../../components/CustomModal';
 
 // Componente de estrellas para calificación
 const StarRating = ({ value, onChange, selectedTicket, currentUser }) => {
-    const [hover, setHover] = useState(0);
+    console.log('🌟 StarRating props completos:', {
+        value,
+        selectedTicket,
+        currentUser,
+        currentUserId: currentUser?.id
+    });
+
+    console.log('🎫 Ticket completo expandido:', selectedTicket);
+    console.log('👤 Usuario del ticket expandido:', selectedTicket?.usuario);
 
     const isTicketResolved = selectedTicket && 
         (selectedTicket.estado === 'RESUELTO' || selectedTicket.estado === 'CERRADO');
 
-    const isCreator = currentUser && 
-                      selectedTicket && 
-                      selectedTicket.usuario && 
-                      (currentUser.id == selectedTicket.usuario.id);
+    // Obtener datos del usuario creador del ticket
+    const ticketCreatorId = selectedTicket?.usuarioReportaId || 
+                           selectedTicket?.usuario?.id || 
+                           selectedTicket?.usuarioId || 
+                           selectedTicket?.creadorId ||
+                           selectedTicket?.solicitanteId ||
+                           selectedTicket?.user?.id;
+    
+    const ticketCreatorUsername = selectedTicket?.usuarioReportaUsername || 
+                                 selectedTicket?.usuario?.username ||
+                                 selectedTicket?.username;
+    
+    const currentUserId = currentUser?.id;
 
-    const canRate = isCreator;
+    // Verificar que el usuario actual es el creador/solicitante del ticket
+    let isCreator = false;
+    
+    if (currentUserId && (ticketCreatorId || ticketCreatorUsername)) {
+        // Comparar por username (el currentUserId es el username del usuario logueado)
+        if (typeof currentUserId === 'string' && ticketCreatorUsername) {
+            isCreator = currentUserId.toLowerCase() === ticketCreatorUsername.toLowerCase();
+            console.log('🔍 Comparando por username:', {
+                currentUserId: currentUserId.toLowerCase(),
+                ticketCreatorUsername: ticketCreatorUsername.toLowerCase(),
+                isEqual: isCreator
+            });
+        }
+        // Fallback: comparar por ID si ambos son números
+        else if (!isNaN(currentUserId) && !isNaN(ticketCreatorId)) {
+            isCreator = Number(currentUserId) === Number(ticketCreatorId);
+            console.log('🔍 Comparando por ID:', {
+                currentUserId: Number(currentUserId),
+                ticketCreatorId: Number(ticketCreatorId),
+                isEqual: isCreator
+            });
+        }
+    }
+    
+    console.log('🔐 Verificación de permisos:', {
+        currentUserId,
+        ticketCreatorId,
+        ticketCreatorUsername,
+        isCreator,
+        canRate: isCreator && isTicketResolved
+    });
+
+    console.log('🔍 Análisis detallado:', {
+        isTicketResolved,
+        ticketState: selectedTicket?.estado,
+        currentUserId: currentUserId,
+        currentUserIdType: typeof currentUserId,
+        ticketCreatorId: ticketCreatorId,
+        ticketCreatorIdType: typeof ticketCreatorId,
+        usuarioCompleto: selectedTicket?.usuario,
+        isCreator: isCreator,
+        comparisonResult: Number(currentUserId) === Number(ticketCreatorId),
+        // Campos adicionales que pueden tener el ID del usuario
+        allUserFields: {
+            usuarioReportaId: selectedTicket?.usuarioReportaId,
+            usuarioReportaUsername: selectedTicket?.usuarioReportaUsername,
+            usuarioId: selectedTicket?.usuarioId,
+            creadorId: selectedTicket?.creadorId,
+            solicitanteId: selectedTicket?.solicitanteId,
+            userId: selectedTicket?.userId
+        }
+    });
 
     if (!isTicketResolved) {
+        console.log('❌ Ticket no está resuelto o cerrado, estado:', selectedTicket?.estado);
         return null;
     }
 
-    const isDisabled = !canRate;
+    if (!currentUserId) {
+        console.log('❌ CurrentUserId faltante:', currentUserId);
+        return (
+            <Box sx={{ mt: 3, mb: 2 }}>
+                <Typography variant="body2" color="error">
+                    Error: No se pudo identificar al usuario actual
+                </Typography>
+            </Box>
+        );
+    }
+
+    if (!ticketCreatorId) {
+        console.log('❌ No se encontró el ID del creador del ticket');
+        return (
+            <Box sx={{ mt: 3, mb: 2 }}>
+                <Typography variant="body2" color="error">
+                    Error: No se pudo identificar al creador del ticket
+                </Typography>
+            </Box>
+        );
+    }
+
+    // Solo el creador del ticket puede calificar cuando esté resuelto
+    const canRate = isCreator && isTicketResolved;
 
     return (
-        <div className="star-rating" style={{ marginTop: '20px', marginBottom: '15px' }}>
-            <label>Tu Calificación:</label>
-            {[...Array(5)].map((star, index) => {
-                index += 1;
-                return (
-                    <button
-                        type="button"
-                        key={index}
-                        className={index <= (hover || value) ? "on" : "off"}
-                        onClick={() => !isDisabled && onChange(index)}
-                        onMouseEnter={() => !isDisabled && setHover(index)}
-                        onMouseLeave={() => !isDisabled && setHover(value)}
-                        disabled={isDisabled}
-                        title={isDisabled ? "Solo el creador del ticket puede calificar" : `${index} estrellas`}
-                    >
-                        <span className="star">&#9733;</span>
-                    </button>
-                );
-            })}
-        </div>
+        <Box sx={{ mt: 3, mb: 2 }}>
+            <Typography variant="subtitle2" sx={{ mb: 2, fontWeight: 600 }}>
+                {canRate ? 'Tu Calificación:' : 'Calificación del Solicitante:'}
+            </Typography>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <Rating
+                    name="ticket-rating"
+                    value={value || 0}
+                    onChange={(event, newValue) => {
+                        console.log('⭐ Calificación cambiada:', newValue);
+                        if (canRate && onChange) {
+                            onChange(newValue);
+                        }
+                    }}
+                    size="large"
+                    readOnly={!canRate}
+                    precision={1}
+                />
+                <Typography variant="body2" color="textSecondary" sx={{ ml: 1 }}>
+                    {value ? `${value}/5` : 'Sin calificar'}
+                </Typography>
+            </Box>
+            {!canRate && isTicketResolved && (
+                <Typography variant="caption" color="textSecondary" sx={{ mt: 1, display: 'block' }}>
+                    Solo el solicitante puede calificar este ticket
+                </Typography>
+            )}
+            {!isTicketResolved && (
+                <Typography variant="caption" color="textSecondary" sx={{ mt: 1, display: 'block' }}>
+                    El ticket debe estar resuelto para poder calificarlo
+                </Typography>
+            )}
+        </Box>
     );
 };
 
@@ -65,37 +172,143 @@ const TicketPanelUnificado = ({
     onSave, 
     onAssignResponsible 
 }) => {
+    // Debug inmediato del localStorage
+    console.log('🚀 INICIO TicketPanelUnificado - localStorage check:');
+    console.log('- localStorage.userId:', localStorage.getItem('userId'));
+    console.log('- currentUserId prop:', currentUserId);
+    console.log('- ticketData recibido:', ticketData);
     const [comentarios, setComentarios] = useState([]);
     const [nuevoComentario, setNuevoComentario] = useState('');
     const [loadingComentarios, setLoadingComentarios] = useState(false);
     const [rolesMap, setRolesMap] = useState({});
     const [loadingRoles, setLoadingRoles] = useState(false);
     const [currentTab, setCurrentTab] = useState(0);
+    const [selectedRolId, setSelectedRolId] = useState('');
+    const [realCurrentUserId, setRealCurrentUserId] = useState(null);
+    
+    // Hook para modals
+    const { modalConfig, showError, hideModal } = useModal();
+
+    // Obtener el usuario actual del localStorage
+    useEffect(() => {
+        console.log('🔍 Revisando localStorage completo:');
+        console.log('- userId:', localStorage.getItem('userId'));
+        console.log('- token:', localStorage.getItem('token') ? 'Existe' : 'No existe');
+        console.log('- Todas las keys:', Object.keys(localStorage));
+        
+        const userId = localStorage.getItem('userId');
+        const userIdNumber = userId ? parseInt(userId, 10) : null;
+        console.log('👤 Usuario desde localStorage (raw):', userId);
+        console.log('👤 Usuario parseado a número:', userIdNumber);
+        console.log('👤 Es válido?:', !isNaN(userIdNumber) && userIdNumber > 0);
+        
+        if (!isNaN(userIdNumber) && userIdNumber > 0) {
+            setRealCurrentUserId(userIdNumber);
+        } else {
+            console.error('❌ UserId inválido en localStorage:', userId);
+            // Intentar con otras posibles keys
+            const alternativeKeys = ['user_id', 'id', 'currentUserId'];
+            let foundUserId = null;
+            
+            for (const key of alternativeKeys) {
+                const altUserId = localStorage.getItem(key);
+                console.log(`🔍 Probando key alternativa "${key}":`, altUserId);
+                if (altUserId && !isNaN(parseInt(altUserId, 10))) {
+                    foundUserId = parseInt(altUserId, 10);
+                    console.log(`✅ Usando userId desde "${key}":`, altUserId);
+                    break;
+                }
+            }
+            
+            if (!foundUserId && currentUserId && !isNaN(currentUserId)) {
+                console.log(`🔄 Usando currentUserId de props:`, currentUserId);
+                foundUserId = currentUserId;
+            }
+            
+            setRealCurrentUserId(foundUserId);
+        }
+    }, []);
 
     // Resetear tab cuando se abre el modal
     useEffect(() => {
         if (open) {
             setCurrentTab(0);
+            setSelectedRolId('');
         }
     }, [open]);
 
-    // Cargar comentarios cuando se abre el modal en modo edición
+    // Pre-seleccionar el rol cuando hay un responsable asignado
     useEffect(() => {
-        const fetchComentarios = async () => {
+        if (ticketData?.responsable?.id && usuarios.length > 0 && Object.keys(rolesMap).length > 0) {
+            const responsable = usuarios.find(u => u.id === ticketData.responsable.id);
+            if (responsable && responsable.rolId) {
+                setSelectedRolId(responsable.rolId);
+            }
+        }
+    }, [ticketData?.responsable?.id, usuarios, rolesMap]);
+
+    // Sincronizar calificación cuando cambia ticketData
+    useEffect(() => {
+        if (ticketData?.calificacion && ticketData.calificacion !== calificacion) {
+            console.log('🔄 Sincronizando calificación desde ticketData:', ticketData.calificacion);
+            setCalificacion(ticketData.calificacion);
+        }
+    }, [ticketData?.calificacion, calificacion, setCalificacion]);
+
+    // Obtener roles únicos de los usuarios
+    const getUniqueRoles = () => {
+        const rolesSet = new Set();
+        usuarios.forEach(usuario => {
+            if (usuario.rolId) {
+                rolesSet.add(usuario.rolId);
+            }
+        });
+        return Array.from(rolesSet).map(rolId => ({
+            id: rolId,
+            nombre: rolesMap[rolId] || 'Sin rol'
+        })).sort((a, b) => a.nombre.localeCompare(b.nombre));
+    };
+
+    // Obtener usuarios filtrados por rol seleccionado
+    const getUsuariosPorRol = (rolId) => {
+        if (!rolId) return [];
+        return usuarios
+            .filter(usuario => usuario.rolId === rolId)
+            .sort((a, b) => `${a.nombre} ${a.apellido}`.localeCompare(`${b.nombre} ${b.apellido}`));
+    };
+
+    // Cargar datos completos del ticket y comentarios cuando se abre el modal en modo edición
+    useEffect(() => {
+        const fetchTicketData = async () => {
             if (open && isEditing && ticketData?.id) {
                 setLoadingComentarios(true);
                 try {
-                    const data = await getComentariosPorTicket(ticketData.id);
-                    setComentarios(data || []);
+                    console.log('🔄 Cargando datos completos del ticket:', ticketData.id);
+                    
+                    // Cargar datos completos del ticket
+                    const ticketCompleto = await getTicketById(ticketData.id);
+                    console.log('📥 Ticket completo recibido:', ticketCompleto);
+                    
+                    // Actualizar los datos del ticket con la información completa
+                    if (setTicketData && ticketCompleto) {
+                        setTicketData(prev => ({
+                            ...prev,
+                            ...ticketCompleto
+                        }));
+                    }
+                    
+                    // Cargar comentarios
+                    const comentariosData = await getComentariosPorTicket(ticketData.id);
+                    setComentarios(comentariosData || []);
                 } catch (error) {
-                    console.error('Error al cargar comentarios:', error);
+                    console.error('Error al cargar datos del ticket:', error);
                 } finally {
                     setLoadingComentarios(false);
                 }
             }
         };
         
-        fetchComentarios();
+        fetchTicketData();
     }, [open, isEditing, ticketData?.id]);
 
     // Cargar roles
@@ -151,7 +364,41 @@ const TicketPanelUnificado = ({
             setComentarios(data || []);
         } catch (error) {
             console.error('❌ Error al agregar comentario:', error);
-            alert(`Error al agregar comentario: ${error.response?.data?.message || error.message}`);
+            showError(`Error al agregar comentario: ${error.response?.data?.message || error.message}`);
+        }
+    };
+
+    const handleRatingChange = async (newRating) => {
+        console.log('⭐ Cambiando calificación a:', newRating);
+        console.log('🎫 Ticket ID:', ticketData?.id);
+        
+        if (!ticketData?.id) {
+            console.error('❌ No hay ID de ticket para calificar');
+            showError('No se puede calificar - ID del ticket no disponible');
+            return;
+        }
+
+        if (newRating === null || newRating === 0) {
+            console.log('⚠️ Calificación inválida o cero, no se guarda');
+            return;
+        }
+
+        try {
+            console.log('📤 Enviando calificación al servidor...');
+            await calificarTicket(ticketData.id, newRating);
+            console.log('✅ Calificación guardada exitosamente');
+            
+            // Actualizar el estado local
+            setCalificacion(newRating);
+            if (setTicketData) {
+                setTicketData(prev => ({
+                    ...prev,
+                    calificacion: newRating
+                }));
+            }
+        } catch (error) {
+            console.error('❌ Error al calificar ticket:', error);
+            showError(`Error al guardar calificación: ${error.response?.data?.message || error.message}`);
         }
     };
 
@@ -187,17 +434,18 @@ const TicketPanelUnificado = ({
     if (!open) return null;
 
     return (
-        <Modal 
-            open={open} 
-            onClose={onClose} 
-            style={{ 
-                display: 'flex', 
-                alignItems: 'center', 
-                justifyContent: 'center',
-                zIndex: 1300,
-                padding: '20px'
-            }}
-        >
+        <>
+            <Modal 
+                open={open} 
+                onClose={onClose} 
+                style={{ 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    justifyContent: 'center',
+                    zIndex: 1300,
+                    padding: '20px'
+                }}
+            >
             <Box style={{ 
                 background: '#fff', 
                 borderRadius: '10px', 
@@ -371,10 +619,12 @@ const TicketPanelUnificado = ({
                                 <>
                                     <Divider style={{ margin: '30px 0' }} />
                                     <StarRating
-                                        value={calificacion || 0}
-                                        onChange={(newRating) => setCalificacion(newRating)}
+                                        value={ticketData?.calificacion || calificacion || 0}
+                                        onChange={handleRatingChange}
                                         selectedTicket={ticketData}
-                                        currentUser={{ id: currentUserId }}
+                                        currentUser={{ 
+                                            id: realCurrentUserId || currentUserId || localStorage.getItem('userId')
+                                        }}
                                     />
                                 </>
                             )}
@@ -448,15 +698,45 @@ const TicketPanelUnificado = ({
                                     value={ticketData?.tipo || 'INCIDENTE'}
                                     onChange={handleInputChange}
                                     label="Tipo"
-                                    disabled={true}
                                 >
                                     <MenuItem value="INCIDENTE">Incidente</MenuItem>
+                                    <MenuItem value="REQUERIMIENTO">Requerimiento</MenuItem>
+                                    <MenuItem value="SOLICITUD">Solicitud</MenuItem>
+                                    <MenuItem value="CONSULTA">Consulta</MenuItem>
                                 </Select>
                             </FormControl>
 
-                            {/* Responsable */}
+                            {/* Rol */}
                             <FormControl fullWidth margin="normal" variant="outlined" size="small">
-                                <InputLabel>Responsable</InputLabel>
+                                <InputLabel>Rol</InputLabel>
+                                <Select
+                                    value={selectedRolId}
+                                    onChange={(e) => {
+                                        const newRolId = e.target.value;
+                                        setSelectedRolId(newRolId);
+                                        // Limpiar la selección de agente cuando se cambia el rol
+                                        if (ticketData?.responsable?.id) {
+                                            setTicketData(prev => ({
+                                                ...prev,
+                                                responsable: { id: '', nombre: '', apellido: '' }
+                                            }));
+                                        }
+                                    }}
+                                    label="Rol"
+                                    disabled={loadingRoles}
+                                >
+                                    <MenuItem value=""><em>Seleccionar rol</em></MenuItem>
+                                    {getUniqueRoles().map(rol => (
+                                        <MenuItem key={rol.id} value={rol.id}>
+                                            {rol.nombre}
+                                        </MenuItem>
+                                    ))}
+                                </Select>
+                            </FormControl>
+
+                            {/* Agente */}
+                            <FormControl fullWidth margin="normal" variant="outlined" size="small">
+                                <InputLabel>Agente</InputLabel>
                                 <Select
                                     value={ticketData?.responsable?.id || ''}
                                     onChange={(e) => {
@@ -465,18 +745,15 @@ const TicketPanelUnificado = ({
                                             onAssignResponsible(ticketData.id, newResponsableId);
                                         }
                                     }}
-                                    label="Responsable"
-                                    disabled={loadingRoles}
+                                    label="Agente"
+                                    disabled={loadingRoles || !selectedRolId}
                                 >
                                     <MenuItem value=""><em>Sin asignar</em></MenuItem>
-                                    {usuarios.map(u => {
-                                        const rolNombre = rolesMap[u.rolId] || 'Sin rol';
-                                        return (
-                                            <MenuItem key={u.id} value={u.id}>
-                                                {`${u.nombre} ${u.apellido} - ${rolNombre}`}
-                                            </MenuItem>
-                                        );
-                                    })}
+                                    {getUsuariosPorRol(selectedRolId).map(usuario => (
+                                        <MenuItem key={usuario.id} value={usuario.id}>
+                                            {`${usuario.nombre} ${usuario.apellido}`}
+                                        </MenuItem>
+                                    ))}
                                 </Select>
                             </FormControl>
 
@@ -581,6 +858,9 @@ const TicketPanelUnificado = ({
                                 label="Tipo"
                             >
                                 <MenuItem value="INCIDENTE">Incidente</MenuItem>
+                                <MenuItem value="REQUERIMIENTO">Requerimiento</MenuItem>
+                                <MenuItem value="SOLICITUD">Solicitud</MenuItem>
+                                <MenuItem value="CONSULTA">Consulta</MenuItem>
                             </Select>
                         </FormControl>
                     </Box>
@@ -603,7 +883,10 @@ const TicketPanelUnificado = ({
                     </Button>
                 </Box>
             </Box>
-        </Modal>
+            </Modal>
+            
+            <CustomModal config={modalConfig} onClose={hideModal} />
+        </>
     );
 };
 

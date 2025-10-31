@@ -12,7 +12,10 @@ import {
     TableBody,
     Pagination,
     Typography
-} from '@mui/material'; import { Plus, Pencil, Trash2, Edit } from "lucide-react";
+} from '@mui/material'; 
+import { Plus, Pencil, Trash2, Edit } from "lucide-react";
+import { useModal } from '../hooks/useModal';
+import CustomModal from '../components/CustomModal';
 import { getMateriasPrimas, addMateriaPrima, updateMateriaPrima, deleteMateriaPrima } from '../services/MateriaPrimaService';
 import useAuth from '../hooks/useAuth';
 import { ROLES } from '../constants/roles';
@@ -28,6 +31,9 @@ const MateriaPrima = () => {
     const [materiaPrimaEditando, setMateriaPrimaEditando] = useState(null);
     const [paginaActual, setPaginaActual] = useState(1);
     const [materiasPrimasPorPagina, setMateriasPrimasPorPagina] = useState(5);
+    
+    // Hook para modals
+    const { modalConfig, showAlert, showConfirm, hideModal } = useModal();
 
     // Función para obtener materias primas desde el backend
     const fetchMateriasPrimas = async () => {
@@ -55,7 +61,7 @@ const MateriaPrima = () => {
             return;
         }
         if (!nuevaMateriaPrima.nombre || !nuevaMateriaPrima.unidad) {
-            alert('Por favor complete los campos obligatorios');
+            showAlert('Por favor complete los campos obligatorios', 'Validación', 'warning');
             return;
         }
 
@@ -95,12 +101,15 @@ const MateriaPrima = () => {
             setShowGuestAlert(true);
             return;
         }
-        try {
-            await deleteMateriaPrima(id);
-            setMateriasPrimas(prev => prev.filter(m => m.id !== id));
-        } catch (error) {
-            console.error('Error al eliminar materia prima', error);
-        }
+        
+        showConfirm('¿Está seguro que desea eliminar esta materia prima?', async () => {
+            try {
+                await deleteMateriaPrima(id);
+                setMateriasPrimas(prev => prev.filter(m => m.id !== id));
+            } catch (error) {
+                console.error('Error al eliminar materia prima', error);
+            }
+        });
     };
 
     const handleChangePage = (event, value) => {
@@ -209,6 +218,8 @@ const MateriaPrima = () => {
                     <Button variant="contained" color="primary" onClick={() => setShowGuestAlert(false)}>Entendido</Button>
                 </Box>
             </Modal>
+            
+            <CustomModal config={modalConfig} onClose={hideModal} />
         </div>
     );
 };

@@ -4,6 +4,8 @@ import { Plus, Trash2, Edit, Key } from 'lucide-react';
 import { getUsuarios, addUsuario, updateUsuario, deleteUsuario, updatePassword } from '../services/UsuarioService';
 import { getEmpresas } from '../services/EmpresaService';
 import { getRoles } from '../services/RolService';
+import { useModal } from '../hooks/useModal';
+import CustomModal from '../components/CustomModal';
 
 const Usuario = () => {
     const [usuarios, setUsuarios] = useState([]);
@@ -36,6 +38,9 @@ const Usuario = () => {
     const [mostrarModalPassword, setMostrarModalPassword] = useState(false);
     const [nuevaPassword, setNuevaPassword] = useState('');
     const [confirmarPassword, setConfirmarPassword] = useState('');
+    
+    // Hook para modals
+    const { modalConfig, showAlert, showConfirm, showError, showSuccess, hideModal } = useModal();
     const [usuarioParaPassword, setUsuarioParaPassword] = useState(null);
     const [errorPassword, setErrorPassword] = useState('');
 
@@ -197,7 +202,7 @@ const Usuario = () => {
             fetchUsuarios();
         } catch (error) {
             console.error('Error al agregar o actualizar usuario', error);
-            alert('Error al guardar el usuario. Por favor, intente nuevamente.');
+            showError('Error al guardar el usuario. Por favor, intente nuevamente.');
         }
     };
 
@@ -235,15 +240,19 @@ const Usuario = () => {
     };
 
     const handleEliminarUsuario = async (id) => {
-        if (window.confirm('¿Está seguro que desea eliminar este usuario?')) {
-            try {
-                await deleteUsuario(id);
-                setUsuarios((prev) => prev.filter((u) => u.id !== id));
-            } catch (error) {
-                console.error('Error al eliminar usuario', error);
-                alert('Error al eliminar el usuario. Por favor, intente nuevamente.');
-            }
-        }
+        showConfirm(
+            '¿Está seguro que desea eliminar este usuario?',
+            async () => {
+                try {
+                    await deleteUsuario(id);
+                    setUsuarios((prev) => prev.filter((u) => u.id !== id));
+                } catch (error) {
+                    console.error('Error al eliminar usuario', error);
+                    showError('Error al eliminar el usuario. Por favor, intente nuevamente.');
+                }
+            },
+            'Eliminar Usuario'
+        );
     };
 
     // Función para abrir el modal de restablecer contraseña
@@ -286,7 +295,7 @@ const Usuario = () => {
 
         try {
             await updatePassword(usuarioParaPassword.id, nuevaPassword);
-            alert('Contraseña actualizada exitosamente');
+            showSuccess('Contraseña actualizada exitosamente');
             handleCerrarModalPassword();
         } catch (error) {
             console.error('Error al actualizar contraseña:', error);
@@ -783,6 +792,8 @@ const Usuario = () => {
                     </div>
                 </Box>
             </Modal>
+            
+            <CustomModal config={modalConfig} onClose={hideModal} />
         </div>
     );
 };

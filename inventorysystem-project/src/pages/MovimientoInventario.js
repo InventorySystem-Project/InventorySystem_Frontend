@@ -24,6 +24,8 @@ import { getMovimientosInventarioPT, addMovimientoInventarioPT, updateMovimiento
 import { getAlmacenes } from '../services/AlmacenService';
 import { getMateriasPrimas } from '../services/MateriaPrimaService';
 import { getProductosTerminados } from '../services/ProductoTerminadoService';
+import { useModal } from '../hooks/useModal';
+import CustomModal from '../components/CustomModal';
 
 const MovimientoInventario = () => {
     // CAMBIO 1: Leer el estado inicial desde localStorage.
@@ -74,6 +76,9 @@ const MovimientoInventario = () => {
         title: '',
         onConfirm: () => { }
     });
+    
+    // Hook para modals
+    const { modalConfig, showAlert, showConfirm, showError, hideModal } = useModal();
     // CAMBIO 2: Guardar la pestaña seleccionada en localStorage cada vez que cambie.
     useEffect(() => {
         localStorage.setItem('movimientoInventario_activeTab', tipoInventario);
@@ -179,7 +184,7 @@ const MovimientoInventario = () => {
                 }
             } catch (error) {
                 console.error('Error al actualizar el estado del movimiento', error);
-                alert('Error al actualizar el estado: ' + (error.response?.data?.message || error.message));
+                showError('Error al actualizar el estado: ' + (error.response?.data?.message || error.message));
             } finally {
                 // Cierra el modal después de la operación
                 setConfirmationState({ isOpen: false, title: '', onConfirm: () => { } });
@@ -198,7 +203,7 @@ const MovimientoInventario = () => {
         try {
             if (tipoInventarioForm === 'materiasPrimas') {
                 if (!nuevoMovimientoMP.almacenId || !nuevoMovimientoMP.materiaPrimaId || !nuevoMovimientoMP.cantidad || !nuevoMovimientoMP.motivo) {
-                    alert('Por favor complete los campos obligatorios');
+                    showAlert('Por favor complete los campos obligatorios');
                     return;
                 }
                 const movimientoConFecha = {
@@ -231,7 +236,7 @@ const MovimientoInventario = () => {
 
             } else { // Para Productos Terminados
                 if (!nuevoMovimientoPT.almacenId || !nuevoMovimientoPT.productoTerminadoId || !nuevoMovimientoPT.cantidad || !nuevoMovimientoPT.motivo) {
-                    alert('Por favor complete los campos obligatorios');
+                    showAlert('Por favor complete los campos obligatorios');
                     return;
                 }
                 const movimientoConFecha = {
@@ -268,7 +273,7 @@ const MovimientoInventario = () => {
 
         } catch (error) {
             console.error('Error al registrar movimiento de inventario', error);
-            alert('Error al registrar el movimiento: ' + (error.response?.data?.message || error.message));
+            showError('Error al registrar el movimiento: ' + (error.response?.data?.message || error.message));
         }
     };
     const handleCancelar = () => {
@@ -316,7 +321,7 @@ const MovimientoInventario = () => {
     };
     const handleEliminarMovimiento = async (id, tipo) => {
         if (!id) return;
-        if (window.confirm('¿Está seguro que desea eliminar este movimiento?')) {
+        showConfirm('¿Está seguro que desea eliminar este movimiento?', async () => {
             try {
                 if (tipo === 'materiasPrimas') {
                     await deleteMovimientoInventarioMP(id);
@@ -334,9 +339,9 @@ const MovimientoInventario = () => {
                 }
             } catch (error) {
                 console.error('Error al eliminar movimiento de inventario', error);
-                alert('Error al eliminar el movimiento: ' + error.message);
+                showError('Error al eliminar el movimiento: ' + error.message);
             }
-        }
+        });
     };
     const handleChangePage = (event, value) => {
         setPaginaActual(value);
@@ -689,6 +694,11 @@ const MovimientoInventario = () => {
                 onClose={() => setConfirmationState({ ...confirmationState, isOpen: false })}
                 title={confirmationState.title}
                 onConfirm={confirmationState.onConfirm}
+            />
+
+            <CustomModal
+                config={modalConfig}
+                onClose={hideModal}
             />
         </div>
     );

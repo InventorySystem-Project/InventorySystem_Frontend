@@ -3,6 +3,8 @@ import { TextField, Button, Modal, Box, Table, TableBody, TableCell, TableHead, 
 import { Plus, Pencil, Trash2, Edit } from 'lucide-react';
 import { getRoles, addRol, updateRol, deleteRol } from '../services/RolService';
 import { getUsuarios } from '../services/UsuarioService';  // Asumí que tienes un servicio para obtener usuarios
+import { useModal } from '../hooks/useModal';
+import CustomModal from '../components/CustomModal';
 
 const Rol = () => {
     const [roles, setRoles] = useState([]);
@@ -16,6 +18,9 @@ const Rol = () => {
     const [rolEditando, setRolEditando] = useState(null);
     const [paginaActual, setPaginaActual] = useState(1);
     const [rolesPorPagina, setRolesPorPagina] = useState(5);
+    
+    // Hook para modals
+    const { modalConfig, showAlert, hideModal } = useModal();
 
     // Obtener roles y usuarios cuando se monta el componente
     useEffect(() => {
@@ -51,7 +56,7 @@ const Rol = () => {
 
     const handleAgregarRol = async () => {
         if (!nuevoRol.rol) {
-            alert('Por favor complete los campos obligatorios');
+            showAlert('Por favor complete los campos obligatorios', 'Validación', 'warning');
             return;
         }
 
@@ -186,6 +191,8 @@ const Rol = () => {
                     </div>
                 </Box>
             </Modal>
+            
+            <CustomModal config={modalConfig} onClose={hideModal} />
         </div>
     );
 };

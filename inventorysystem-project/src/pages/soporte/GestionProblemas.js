@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Button, Modal, Box, TextField, Table, TableBody, TableCell, TableHead, TableRow, Pagination, Select, MenuItem, InputLabel, FormControl, Typography, CircularProgress, Alert, Chip, IconButton, Tooltip as MuiTooltip } from '@mui/material';
 import { Plus, Edit } from 'lucide-react';
 import { getErroresConocidos, addErrorConocido, updateErrorConocido } from '../../services/SoporteService';
+import { useModal } from '../../hooks/useModal';
+import CustomModal from '../../components/CustomModal';
 
 // Modal de Formulario para Errores Conocidos
 const ErrorConocidoFormModal = ({ open, onClose, onSave, errorData, setErrorData, isEditing }) => {
@@ -59,6 +61,9 @@ const GestionProblemas = ({ usuarios }) => {
 
     const [paginaActual, setPaginaActual] = useState(1);
     const itemsPorPagina = 7;
+    
+    // Hook para modals
+    const { modalConfig, showAlert, hideModal } = useModal();
 
     const fetchErrores = async () => {
         setLoading(true);
@@ -106,7 +111,7 @@ const GestionProblemas = ({ usuarios }) => {
 
     const handleSaveError = async () => {
         if (!nuevoErrorData.descripcionError || !nuevoErrorData.estado) {
-            alert('La descripción y el estado son obligatorios.');
+            showAlert('La descripción y el estado son obligatorios.', 'Validación', 'warning');
             return;
         }
         try {
@@ -118,7 +123,7 @@ const GestionProblemas = ({ usuarios }) => {
             handleCloseModal();
             fetchErrores();
         } catch (error) {
-            alert('Error al guardar el error conocido: ' + (error.message || 'Error desconocido'));
+            showAlert('Error al guardar el error conocido: ' + (error.message || 'Error desconocido'), 'Error');
         }
     };
 
@@ -215,6 +220,8 @@ const GestionProblemas = ({ usuarios }) => {
             )}
 
             <ErrorConocidoFormModal open={modalOpen} onClose={handleCloseModal} onSave={handleSaveError} errorData={nuevoErrorData} setErrorData={setNuevoErrorData} isEditing={!!errorEditando} />
+            
+            <CustomModal config={modalConfig} onClose={hideModal} />
         </div>
     );
 };

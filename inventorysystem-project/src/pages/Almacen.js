@@ -13,6 +13,8 @@ import { getEmpresas } from '../services/EmpresaService';
 import { getMovimientosInventarioMP } from '../services/MovimientoInventarioMPService';
 import { getMovimientosInventarioPT } from '../services/MovimientoInventarioPTService';
 import { getMateriasPrimas } from '../services/MateriaPrimaService';
+import { useModal } from '../hooks/useModal';
+import CustomModal from '../components/CustomModal';
 import { getProductosTerminados } from '../services/ProductoTerminadoService';
 
 // --- Componente para el Detalle del Stock (con nuevo diseño estilo formulario) ---
@@ -147,6 +149,9 @@ const Almacen = () => {
   const [almacenSeleccionado, setAlmacenSeleccionado] = useState(null);
   const [paginaActual, setPaginaActual] = useState(1);
   const almacenesPorPagina = 5;
+  
+  // Hook para modals
+  const { modalConfig, showConfirm, hideModal } = useModal();
 
   useEffect(() => {
     fetchAlmacenes();
@@ -183,14 +188,18 @@ const Almacen = () => {
       setShowGuestAlert(true);
       return;
     }
-    if (window.confirm('¿Estás seguro que quieres eliminar este almacén?')) {
-      try {
-        await deleteAlmacen(id);
-        fetchAlmacenes();
-      } catch (error) {
-        console.error('❌ Error al eliminar almacén:', error);
-      }
-    }
+    showConfirm(
+      '¿Estás seguro que quieres eliminar este almacén?',
+      async () => {
+        try {
+          await deleteAlmacen(id);
+          fetchAlmacenes();
+        } catch (error) {
+          console.error('❌ Error al eliminar almacén:', error);
+        }
+      },
+      'Eliminar Almacén'
+    );
   };
 
   const handleEditAlmacen = (almacen) => {
@@ -319,6 +328,8 @@ const Almacen = () => {
           </div>
         </Box>
       </Modal>
+      
+      <CustomModal config={modalConfig} onClose={hideModal} />
     </div>
   );
 };

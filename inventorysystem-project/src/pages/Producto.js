@@ -4,6 +4,8 @@ import { Plus, Pencil, Trash2, Edit } from 'lucide-react';
 import { getProductosTerminados, addProductoTerminado, updateProductoTerminado, deleteProductoTerminado } from '../services/ProductoTerminadoService';
 import useAuth from '../hooks/useAuth';
 import { ROLES } from '../constants/roles';
+import { useModal } from '../hooks/useModal';
+import CustomModal from '../components/CustomModal';
 
 const Producto = () => {
     const { role } = useAuth();
@@ -22,6 +24,9 @@ const Producto = () => {
     const [productoEditando, setProductoEditando] = useState(null);
     const [paginaActual, setPaginaActual] = useState(1);
     const [productosPorPagina, setProductosPorPagina] = useState(5);
+    
+    // Hook para modals
+    const { modalConfig, showAlert, showConfirm, hideModal } = useModal();
 
     // Obtener productos
     useEffect(() => {
@@ -57,7 +62,7 @@ const Producto = () => {
             !nuevoProducto.tipo ||
             !nuevoProducto.precioUnitario
         ) {
-            alert('Por favor complete los campos obligatorios');
+            showAlert('Por favor complete los campos obligatorios', 'Validación', 'warning');
             return;
         }
 
@@ -119,12 +124,15 @@ const Producto = () => {
             setShowGuestAlert(true);
             return;
         }
-        try {
-            await deleteProductoTerminado(id);
-            setProductos((prev) => prev.filter((p) => p.id !== id));
-        } catch (error) {
-            console.error('Error al eliminar producto', error);
-        }
+        
+        showConfirm('¿Está seguro que desea eliminar este producto?', async () => {
+            try {
+                await deleteProductoTerminado(id);
+                setProductos((prev) => prev.filter((p) => p.id !== id));
+            } catch (error) {
+                console.error('Error al eliminar producto', error);
+            }
+        });
     };
 
     const handleChangePage = (event, value) => {
@@ -209,6 +217,8 @@ const Producto = () => {
                     <Button variant="contained" color="primary" onClick={() => setShowGuestAlert(false)}>Entendido</Button>
                 </Box>
             </Modal>
+            
+            <CustomModal config={modalConfig} onClose={hideModal} />
         </div>
     );
 };

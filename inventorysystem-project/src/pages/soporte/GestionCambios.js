@@ -4,6 +4,8 @@ import { Plus, Edit, Clock, CheckCircle, XCircle, PlayCircle } from 'lucide-reac
 import { getRFCs, addRFC, updateRFC, cambiarEstadoRFC, aprobarRFC } from '../../services/SoporteService';
 import { format } from 'date-fns';
 import es from 'date-fns/locale/es';
+import { useModal } from '../../hooks/useModal';
+import CustomModal from '../../components/CustomModal';
 
 // Modal de Formulario para RFCs
 const RFCFormModal = ({ open, onClose, onSave, rfcData, setRfcData, isEditing }) => {
@@ -71,6 +73,9 @@ const GestionCambios = ({ usuarios }) => {
     const [filtroTipo, setFiltroTipo] = useState('');
     const [paginaActual, setPaginaActual] = useState(1);
     const itemsPorPagina = 7;
+    
+    // Hook para modals
+    const { modalConfig, showAlert, showConfirm, showError, hideModal } = useModal();
 
     const fetchRfcs = async () => {
         setLoading(true);
@@ -121,7 +126,7 @@ const GestionCambios = ({ usuarios }) => {
 
     const handleSaveRfc = async () => {
         if (!nuevoRfcData.titulo || !nuevoRfcData.descripcion || !nuevoRfcData.justificacion || !nuevoRfcData.tipoCambio) {
-            alert('Título, Descripción, Justificación y Tipo de Cambio son obligatorios.');
+            showAlert('Título, Descripción, Justificación y Tipo de Cambio son obligatorios.', 'Validación', 'warning');
             return;
         }
         try {
@@ -134,59 +139,75 @@ const GestionCambios = ({ usuarios }) => {
             handleCloseModal();
             fetchRfcs();
         } catch (error) {
-            alert('Error al guardar RFC: ' + (error.message || 'Error desconocido'));
+            showError('Error al guardar RFC: ' + (error.message || 'Error desconocido'));
         }
     };
 
     const handleApprove = async (rfcId, tipoCambio) => {
         const userId = localStorage.getItem('userId');
         if (!userId) {
-            alert("No se pudo identificar al usuario aprobador.");
+            showError("No se pudo identificar al usuario aprobador.");
             return;
         }
         const tipoAprobacion = tipoCambio === 'NORMAL' ? 'CAB' : 'PM';
 
-        if (window.confirm(`¿Desea aprobar este cambio como ${tipoAprobacion}?`)) {
-            try {
-                await aprobarRFC(rfcId, parseInt(userId, 10), tipoAprobacion);
-                fetchRfcs();
-            } catch (error) {
-                alert('Error al aprobar RFC: ' + (error.message || 'Error desconocido'));
-            }
-        }
+        showConfirm(
+            `¿Desea aprobar este cambio como ${tipoAprobacion}?`,
+            async () => {
+                try {
+                    await aprobarRFC(rfcId, parseInt(userId, 10), tipoAprobacion);
+                    fetchRfcs();
+                } catch (error) {
+                    showError('Error al aprobar RFC: ' + (error.message || 'Error desconocido'));
+                }
+            },
+            'Aprobar Cambio'
+        );
     };
 
     const handleSetImplemented = async (rfcId) => {
-        if (window.confirm('¿Marcar este cambio como Implementado?')) {
-            try {
-                await cambiarEstadoRFC(rfcId, 'IMPLEMENTADO');
-                fetchRfcs();
-            } catch (error) {
-                alert('Error al marcar como implementado: ' + (error.message || 'Error desconocido'));
-            }
-        }
+        showConfirm(
+            '¿Marcar este cambio como Implementado?',
+            async () => {
+                try {
+                    await cambiarEstadoRFC(rfcId, 'IMPLEMENTADO');
+                    fetchRfcs();
+                } catch (error) {
+                    showError('Error al marcar como implementado: ' + (error.message || 'Error desconocido'));
+                }
+            },
+            'Marcar como Implementado'
+        );
     };
 
     const handleReject = async (rfcId) => {
-        if (window.confirm('¿Está seguro de rechazar esta solicitud de cambio?')) {
-            try {
-                await cambiarEstadoRFC(rfcId, 'RECHAZADO');
-                fetchRfcs();
-            } catch (error) {
-                alert('Error al rechazar RFC: ' + (error.message || 'Error desconocido'));
-            }
-        }
+        showConfirm(
+            '¿Está seguro de rechazar esta solicitud de cambio?',
+            async () => {
+                try {
+                    await cambiarEstadoRFC(rfcId, 'RECHAZADO');
+                    fetchRfcs();
+                } catch (error) {
+                    showError('Error al rechazar RFC: ' + (error.message || 'Error desconocido'));
+                }
+            },
+            'Rechazar Solicitud'
+        );
     };
 
     const handleCloseRFC = async (rfcId) => {
-        if (window.confirm('¿Está seguro de cerrar esta solicitud de cambio?')) {
-            try {
-                await cambiarEstadoRFC(rfcId, 'CERRADO');
-                fetchRfcs();
-            } catch (error) {
-                alert('Error al cerrar RFC: ' + (error.message || 'Error desconocido'));
-            }
-        }
+        showConfirm(
+            '¿Está seguro de cerrar esta solicitud de cambio?',
+            async () => {
+                try {
+                    await cambiarEstadoRFC(rfcId, 'CERRADO');
+                    fetchRfcs();
+                } catch (error) {
+                    showError('Error al cerrar RFC: ' + (error.message || 'Error desconocido'));
+                }
+            },
+            'Cerrar Solicitud'
+        );
     };
 
     const renderChipEstadoCambio = (estado) => {
@@ -333,6 +354,8 @@ const GestionCambios = ({ usuarios }) => {
             )}
 
             <RFCFormModal open={modalOpen} onClose={handleCloseModal} onSave={handleSaveRfc} rfcData={nuevoRfcData} setRfcData={setNuevoRfcData} isEditing={!!rfcEditando} />
+            
+            <CustomModal config={modalConfig} onClose={hideModal} />
         </div>
     );
 };

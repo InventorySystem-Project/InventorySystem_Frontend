@@ -4,6 +4,8 @@ import { Plus, Pencil, Trash2, Edit } from "lucide-react";
 import { getProveedores, addProveedor, updateProveedor, deleteProveedor } from '../services/ProveedorService';
 import useAuth from '../hooks/useAuth';
 import { ROLES } from '../constants/roles';
+import { useModal } from '../hooks/useModal';
+import CustomModal from '../components/CustomModal';
 
 const Proveedores = () => {
     const { role } = useAuth();
@@ -28,6 +30,9 @@ const Proveedores = () => {
     const [proveedoresPorPagina, setProveedoresPorPagina] = useState(5);
     const [paises, setPaises] = useState([]);  // Nuevo estado para los países
     const [paisesNombreCompleto, setPaisesNombreCompleto] = useState({});  // Mapa de códigos ISO a nombres completos de países
+    
+    // Hook para modals
+    const { modalConfig, showAlert, showConfirm, hideModal } = useModal();
 
     useEffect(() => {
         fetchProveedores();
@@ -88,7 +93,7 @@ const fetchPaises = async () => {
             !nuevoProveedor.telefono ||
             !nuevoProveedor.ruc
         ) {
-            alert('Por favor complete los campos obligatorios');
+            showAlert('Por favor complete los campos obligatorios', 'Validación', 'warning');
             return;
         }
 
@@ -153,12 +158,15 @@ const fetchPaises = async () => {
             setShowGuestAlert(true);
             return;
         }
-        try {
-            await deleteProveedor(id);
-            setProveedores(prev => prev.filter(p => p.id !== id));
-        } catch (error) {
-            console.error('Error al eliminar el proveedor', error);
-        }
+        
+        showConfirm('¿Está seguro que desea eliminar este proveedor?', async () => {
+            try {
+                await deleteProveedor(id);
+                setProveedores(prev => prev.filter(p => p.id !== id));
+            } catch (error) {
+                console.error('Error al eliminar el proveedor', error);
+            }
+        });
     };
 
     const handleChangePage = (event, value) => {
@@ -306,6 +314,8 @@ const fetchPaises = async () => {
                     <Button variant="contained" color="primary" onClick={() => setShowGuestAlert(false)}>Entendido</Button>
                 </Box>
             </Modal>
+            
+            <CustomModal config={modalConfig} onClose={hideModal} />
         </div>
     );
 };

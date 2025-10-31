@@ -6,6 +6,8 @@ import { getRoles } from '../../services/RolService';
 import { format } from 'date-fns';
 import es from 'date-fns/locale/es';
 import TicketPanelUnificado from './TicketPanelUnificado';
+import { useModal } from '../../hooks/useModal';
+import CustomModal from '../../components/CustomModal';
 
 // Componente de estrellas para calificación
 const StarRating = ({ value, onChange, selectedTicket, currentUser }) => {
@@ -184,7 +186,7 @@ const AsignarResponsableModal = ({ open, onClose, onAssign, ticketId, usuarios }
 
     const handleAssign = () => {
         if (!responsableId) {
-            alert('Seleccione un responsable');
+            showAlert('Seleccione un responsable', 'Validación', 'warning');
             return;
         }
         onAssign(ticketId, responsableId);
@@ -254,7 +256,7 @@ const ComentariosModal = ({ open, onClose, ticketId }) => {
             setNuevoComentario('');
             fetchComentarios();
         } catch (error) {
-            alert('Error al agregar comentario.');
+            showError('Error al agregar comentario.');
         }
     };
 
@@ -307,6 +309,9 @@ const GestionIncidentes = ({ usuarios = [], currentUserId }) => {
     const [ticketSeleccionado, setTicketSeleccionado] = useState(null);
     const [filtroEstado, setFiltroEstado] = useState('');
     const [calificacion, setCalificacion] = useState(0); // Estado para la calificación
+    
+    // Hook para modals
+    const { modalConfig, showAlert, showConfirm, showError, hideModal } = useModal();
 
     const [nuevoTicketData, setNuevoTicketData] = useState({
         descripcion: '',
@@ -394,7 +399,7 @@ const GestionIncidentes = ({ usuarios = [], currentUserId }) => {
             fetchTickets();
         } catch (error) {
             console.error('Error al guardar el ticket:', error);
-            alert('Error al guardar el ticket: ' + (error.message || 'Error desconocido'));
+            showError('Error al guardar el ticket: ' + (error.message || 'Error desconocido'));
         }
     };
 
@@ -403,19 +408,23 @@ const GestionIncidentes = ({ usuarios = [], currentUserId }) => {
             await asignarTicket(ticketId, responsableId);
             fetchTickets();
         } catch (error) {
-            alert('Error al asignar responsable: ' + (error.message || 'Error desconocido'));
+            showError('Error al asignar responsable: ' + (error.message || 'Error desconocido'));
         }
     };
 
     const handleDeleteTicket = async (id) => {
-        if (window.confirm('¿Está seguro de eliminar este ticket?')) {
-            try {
-                await deleteTicket(id);
-                fetchTickets();
-            } catch (error) {
-                alert('Error al eliminar el ticket: ' + (error.message || 'Error desconocido'));
-            }
-        }
+        showConfirm(
+            '¿Está seguro de eliminar este ticket?',
+            async () => {
+                try {
+                    await deleteTicket(id);
+                    fetchTickets();
+                } catch (error) {
+                    showError('Error al eliminar el ticket: ' + (error.message || 'Error desconocido'));
+                }
+            },
+            'Confirmar Eliminación'
+        );
     };
 
     const handleCambiarEstado = async (ticketId, estadoActual) => {
@@ -428,14 +437,18 @@ const GestionIncidentes = ({ usuarios = [], currentUserId }) => {
             default: return;
         }
 
-        if (window.confirm(`¿Desea cambiar el estado del ticket a ${nuevoEstado.replace('_', ' ')}?`)) {
-            try {
-                await cambiarEstadoTicket(ticketId, nuevoEstado);
-                fetchTickets();
-            } catch (error) {
-                alert('Error al cambiar estado: ' + (error.message || 'Error desconocido'));
-            }
-        }
+        showConfirm(
+            `¿Desea cambiar el estado del ticket a ${nuevoEstado.replace('_', ' ')}?`,
+            async () => {
+                try {
+                    await cambiarEstadoTicket(ticketId, nuevoEstado);
+                    fetchTickets();
+                } catch (error) {
+                    showError('Error al cambiar estado: ' + (error.message || 'Error desconocido'));
+                }
+            },
+            'Cambiar Estado'
+        );
     };
 
     const formatTicketDate = (dateString) => {
@@ -590,6 +603,8 @@ const GestionIncidentes = ({ usuarios = [], currentUserId }) => {
                 onSave={handleSaveTicket}
                 onAssignResponsible={handleAssignResponsable}
             />
+            
+            <CustomModal config={modalConfig} onClose={hideModal} />
         </div>
     );
 };
