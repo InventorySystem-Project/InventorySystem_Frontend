@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Button, Modal, Box, TextField, Select, MenuItem, InputLabel, FormControl, Typography, CircularProgress, Chip, IconButton, Divider, Card, CardContent } from '@mui/material';
+import { Button, Modal, Box, TextField, Select, MenuItem, InputLabel, FormControl, Typography, CircularProgress, Chip, IconButton, Divider, Card, CardContent, Tabs, Tab } from '@mui/material';
 import { X, Send, User, Clock, MessageSquare } from 'lucide-react';
 import { addComentario, getComentariosPorTicket } from '../../services/SoporteService';
 import { getRoles } from '../../services/RolService';
 import { format } from 'date-fns';
 import es from 'date-fns/locale/es';
+import ActividadLog from '../../components/ActividadLog';
 
 // Componente de estrellas para calificación
 const StarRating = ({ value, onChange, selectedTicket, currentUser }) => {
@@ -69,6 +70,14 @@ const TicketPanelUnificado = ({
     const [loadingComentarios, setLoadingComentarios] = useState(false);
     const [rolesMap, setRolesMap] = useState({});
     const [loadingRoles, setLoadingRoles] = useState(false);
+    const [currentTab, setCurrentTab] = useState(0);
+
+    // Resetear tab cuando se abre el modal
+    useEffect(() => {
+        if (open) {
+            setCurrentTab(0);
+        }
+    }, [open]);
 
     // Cargar comentarios cuando se abre el modal en modo edición
     useEffect(() => {
@@ -212,7 +221,7 @@ const TicketPanelUnificado = ({
                 }}>
                     <div>
                         <Typography variant="h5" style={{ fontWeight: 600, color: '#0F172A' }}>
-                            {isEditing ? `Ticket #${ticketData?.id || ''}` : 'Nuevo Ticket'}
+                            {isEditing ? `Ticket ${ticketData?.formattedId || ticketData?.id || ''}` : 'Nuevo Ticket'}
                         </Typography>
                         {isEditing && ticketData?.fechaCreacion && (
                             <Typography variant="caption" color="textSecondary">
@@ -227,17 +236,34 @@ const TicketPanelUnificado = ({
 
                 {/* Contenido */}
                 {isEditing ? (
-                    // Modo Edición: Layout de 2 columnas
-                    <Box style={{ flex: 1, display: 'flex', overflow: 'hidden', width: '100%' }}>
-                        {/* COLUMNA IZQUIERDA - Descripción y Comentarios */}
-                        <Box style={{ 
-                            flex: 1,
-                            minWidth: 0,
-                            padding: '30px', 
-                            overflowY: 'auto',
-                            borderRight: '1px solid #e5e7eb',
-                            backgroundColor: '#fff'
-                        }}>
+                    // Modo Edición: Layout con Tabs
+                    <Box style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', width: '100%' }}>
+                        {/* Tabs Navigation */}
+                        <Box style={{ borderBottom: '1px solid #e5e7eb', backgroundColor: '#f9fafb' }}>
+                            <Tabs 
+                                value={currentTab} 
+                                onChange={(e, newValue) => setCurrentTab(newValue)}
+                                textColor="primary"
+                                indicatorColor="primary"
+                            >
+                                <Tab label="Detalles" />
+                                <Tab label="Actividad" />
+                            </Tabs>
+                        </Box>
+
+                        {/* Tab Content */}
+                        {currentTab === 0 ? (
+                            // Tab 1: Detalles - Layout de 2 columnas (contenido original)
+                            <Box style={{ flex: 1, display: 'flex', overflow: 'hidden', width: '100%' }}>
+                                {/* COLUMNA IZQUIERDA - Descripción y Comentarios */}
+                                <Box style={{ 
+                                    flex: 1,
+                                    minWidth: 0,
+                                    padding: '30px', 
+                                    overflowY: 'auto',
+                                    borderRight: '1px solid #e5e7eb',
+                                    backgroundColor: '#fff'
+                                }}>
                             {/* Descripción */}
                             <Typography variant="h6" style={{ marginBottom: '15px', fontWeight: 600, color: '#0F172A' }}>
                                 Descripción
@@ -506,6 +532,13 @@ const TicketPanelUnificado = ({
                                 </Box>
                             )}
                         </Box>
+                    </Box>
+                        ) : (
+                            // Tab 2: Actividad - Mostrar log de actividades
+                            <Box style={{ flex: 1, overflow: 'hidden' }}>
+                                <ActividadLog ticketId={ticketData?.id} />
+                            </Box>
+                        )}
                     </Box>
                 ) : (
                     // Modo Creación: Formulario simple

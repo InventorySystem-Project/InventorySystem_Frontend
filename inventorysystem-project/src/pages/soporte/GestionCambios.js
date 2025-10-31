@@ -95,6 +95,8 @@ const GestionCambios = ({ usuarios }) => {
         if (rfc) {
             setRfcEditando(rfc);
             setNuevoRfcData({
+                id: rfc.id,
+                formattedId: rfc.formattedId,
                 titulo: rfc.titulo,
                 descripcion: rfc.descripcion,
                 justificacion: rfc.justificacion,
@@ -271,7 +273,7 @@ const GestionCambios = ({ usuarios }) => {
                             <TableBody>
                                 {rfcsPaginados.length > 0 ? rfcsPaginados.map((rfc) => (
                                     <TableRow key={rfc.id} hover>
-                                        <TableCell>{rfc.id}</TableCell>
+                                        <TableCell>{rfc.formattedId || rfc.id}</TableCell>
                                         <TableCell style={{ maxWidth: 350, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                                             <MuiTooltip title={rfc.titulo} arrow><span>{rfc.titulo}</span></MuiTooltip>
                                         </TableCell>

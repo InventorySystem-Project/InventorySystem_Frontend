@@ -83,6 +83,8 @@ const GestionProblemas = ({ usuarios }) => {
         if (errorConocido) {
             setErrorEditando(errorConocido);
             setNuevoErrorData({
+                id: errorConocido.id,
+                formattedId: errorConocido.formattedId,
                 descripcionError: errorConocido.descripcionError,
                 sintomas: errorConocido.sintomas || '',
                 causaRaiz: errorConocido.causaRaiz || '',
@@ -176,7 +178,7 @@ const GestionProblemas = ({ usuarios }) => {
                             <TableBody>
                                 {erroresPaginados.length > 0 ? erroresPaginados.map((err) => (
                                     <TableRow key={err.id} hover>
-                                        <TableCell>{err.id}</TableCell>
+                                        <TableCell>{err.formattedId || err.id}</TableCell>
                                         <TableCell style={{ maxWidth: 400, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                                             <MuiTooltip title={err.descripcionError} arrow>
                                                 <span>{err.descripcionError}</span>

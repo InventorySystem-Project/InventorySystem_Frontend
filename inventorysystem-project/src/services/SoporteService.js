@@ -243,3 +243,14 @@ export const cambiarEstadoRFC = async (rfcId, nuevoEstado) => {
         throw error;
     }
 };
+
+// --- Obtener actividades de un ticket ---
+export const getActividades = async (ticketId) => {
+    try {
+        const response = await axios.get(`${environment.url}/api/soporte/ticketsoporte/${ticketId}/actividades`, { headers: getAuthHeaders() });
+        return response.data;
+    } catch (error) {
+        console.error(`Error al obtener actividades del ticket ${ticketId}:`, error.response?.data || error.message);
+        throw error;
+    }
+};

@@ -342,6 +342,7 @@ const GestionIncidentes = ({ usuarios = [], currentUserId }) => {
             setTicketSeleccionado(ticket);
             setNuevoTicketData({
                 id: ticket.id,
+                formattedId: ticket.formattedId,
                 descripcion: ticket.descripcion,
                 prioridad: ticket.prioridad,
                 tipo: ticket.tipo,
@@ -530,7 +531,7 @@ const GestionIncidentes = ({ usuarios = [], currentUserId }) => {
                             <TableBody>
                                 {ticketsPaginados.length > 0 ? ticketsPaginados.map((ticket) => (
                                     <TableRow key={ticket.id} hover>
-                                        <TableCell>{ticket.id}</TableCell>
+                                        <TableCell>{ticket.formattedId || ticket.id}</TableCell>
                                         <TableCell style={{ maxWidth: 300, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                                             <MuiTooltip title={ticket.descripcion} arrow>
                                                 <span>{ticket.descripcion}</span>
