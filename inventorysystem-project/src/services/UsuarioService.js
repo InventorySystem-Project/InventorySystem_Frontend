@@ -85,3 +85,19 @@ export const deleteUsuario = async (id) => {
         throw error;
     }
 };
+
+/**
+ * Nueva función para obtener solo usuarios que pueden ser responsables.
+ * Incluye roles: ADMIN, SOPORTE_N1, SOPORTE_N2
+ */
+export const getUsuariosAsignables = async () => {
+    try {
+        const response = await axios.get(`${API_URL}/asignables`, {
+            headers: getAuthHeaders(),
+        });
+        return response.data;
+    } catch (error) {
+        console.error('Error al obtener usuarios asignables:', error.response || error.message);
+        throw error;
+    }
+};

@@ -13,6 +13,7 @@ import {
 import { LifeBuoy, TriangleAlert, Wrench, Bolt, Plus } from 'lucide-react';
 import useAuth from '../hooks/useAuth';
 import { ROLES } from '../constants/roles';
+import './StarRating.css'; // Importar estilos para las estrellas
 
 // Importa los componentes específicos para cada pestaña
 import GestionIncidentes from './soporte/GestionIncidentes';
@@ -20,7 +21,7 @@ import GestionProblemas from './soporte/GestionProblemas';
 import GestionCambios from './soporte/GestionCambios';
 
 // Importa los servicios necesarios
-import { getUsuarios } from '../services/UsuarioService';
+import { getUsuarios, getUsuariosAsignables } from '../services/UsuarioService';
 
 function TabPanel(props) {
     const { children, value, index, ...other } = props;
@@ -67,9 +68,10 @@ const SoporteCliente = () => {
                 try {
                     setLoadingData(true);
                     setError('');
-                    // Solo cargar todos los usuarios si no es USER
+                    // Solo cargar usuarios asignables si no es USER
                     if (role !== ROLES.USER) {
-                        const usuariosData = await getUsuarios();
+                        // Llamamos al nuevo servicio para obtener solo usuarios asignables
+                        const usuariosData = await getUsuariosAsignables();
                         setUsuarios(usuariosData || []);
                     }
                 } catch (err) {

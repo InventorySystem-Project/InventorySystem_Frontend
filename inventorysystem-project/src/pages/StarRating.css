@@ -1,0 +1,43 @@
+/* src/pages/StarRating.css */
+
+.star-rating {
+  display: flex;
+  align-items: center;
+  gap: 8px; /* Espacio entre el label y las estrellas */
+  margin-top: 10px;
+  margin-bottom: 15px;
+}
+
+.star-rating label {
+  margin-bottom: 0; /* Anular margen por defecto de bootstrap */
+  font-weight: bold;
+}
+
+.star-rating button {
+  background-color: transparent;
+  border: none;
+  outline: none;
+  cursor: pointer;
+  padding: 0 2px;
+}
+
+.star-rating button .star {
+  font-size: 2rem; /* Tamaño de la estrella */
+  transition: color 0.2s;
+}
+
+.star-rating button.on .star {
+  color: #ffc107; /* Color de estrella seleccionada (amarillo) */
+}
+
+.star-rating button.off .star {
+  color: #e0e0e0; /* Color de estrella apagada (gris) */
+}
+
+.star-rating button:disabled {
+  cursor: not-allowed;
+}
+
+.star-rating button:disabled .star {
+   color: #e0e0e0 !important; /* Siempre gris si está deshabilitado */
+}

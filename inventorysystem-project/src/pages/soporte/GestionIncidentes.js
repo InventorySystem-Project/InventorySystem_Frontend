@@ -5,8 +5,63 @@ import { getTickets, addTicket, updateTicket, deleteTicket, asignarTicket, cambi
 import { format } from 'date-fns';
 import es from 'date-fns/locale/es';
 
+// Componente de estrellas para calificación
+const StarRating = ({ value, onChange, selectedTicket, currentUser }) => {
+    const [hover, setHover] = useState(0);
+
+    // --- INICIO DE LA LÓGICA CORREGIDA ---
+
+    // 1. Verificar si el ticket está en estado final
+    const isTicketResolved = selectedTicket && 
+        (selectedTicket.estado === 'RESUELTO' || selectedTicket.estado === 'CERRADO');
+
+    // 2. Verificar si el usuario actual es el creador del ticket.
+    //    Usamos '==' (en lugar de '===') para comparar flexiblemente (ej. 5 == "5")
+    //    También nos aseguramos que 'currentUser' y 'selectedTicket.usuario' existan.
+    const isCreator = currentUser && 
+                      selectedTicket && 
+                      selectedTicket.usuario && 
+                      (currentUser.id == selectedTicket.usuario.id);
+
+    // 3. El usuario solo puede calificar si es el CREADOR.
+    const canRate = isCreator;
+
+    // --- FIN DE LA LÓGICA CORREGIDA ---
+
+    // No mostrar el componente en absoluto si el ticket no está resuelto.
+    if (!isTicketResolved) {
+        return null;
+    }
+
+    // Si está resuelto, lo mostramos, pero lo deshabilitamos si no es el creador.
+    const isDisabled = !canRate;
+
+    return (
+        <div className="star-rating" style={{ marginTop: '20px', marginBottom: '15px' }}>
+            <label>Tu Calificación:</label>
+            {[...Array(5)].map((star, index) => {
+                index += 1;
+                return (
+                    <button
+                        type="button"
+                        key={index}
+                        className={index <= (hover || value) ? "on" : "off"}
+                        onClick={() => !isDisabled && onChange(index)}
+                        onMouseEnter={() => !isDisabled && setHover(index)}
+                        onMouseLeave={() => !isDisabled && setHover(value)}
+                        disabled={isDisabled}
+                        title={isDisabled ? "Solo el creador del ticket puede calificar" : `${index} estrellas`}
+                    >
+                        <span className="star">&#9733;</span>
+                    </button>
+                );
+            })}
+        </div>
+    );
+};
+
 // Componente reutilizable para el modal de formulario
-const TicketFormModal = ({ open, onClose, onSave, ticketData, setTicketData, usuarios, isEditing }) => {
+const TicketFormModal = ({ open, onClose, onSave, ticketData, setTicketData, usuarios, isEditing, currentUserId, calificacion, setCalificacion }) => {
     const handleInputChange = (e) => {
         const { name, value } = e.target;
         setTicketData(prev => ({ ...prev, [name]: value }));
@@ -35,6 +90,50 @@ const TicketFormModal = ({ open, onClose, onSave, ticketData, setTicketData, usu
                     </Select>
                 </FormControl>
                 <TextField label="Solución Aplicada (Opcional)" name="solucion" value={ticketData.solucion || ''} onChange={handleInputChange} fullWidth multiline rows={3} margin="normal" />
+
+                {/* Mostrar información de duración si es edición */}
+                {isEditing && ticketData && (
+                    <>
+                        <hr style={{ margin: '20px 0', border: 'none', borderTop: '1px solid #e0e0e0' }} />
+                        <Typography variant="h6" style={{ marginBottom: '15px', fontSize: '16px', fontWeight: 600 }}>
+                            Detalles de Atención
+                        </Typography>
+                        
+                        <TextField
+                            label="Inicio de Atención"
+                            value={ticketData.fechaInicioAtencion ? new Date(ticketData.fechaInicioAtencion).toLocaleString('es-ES') : 'N/A'}
+                            fullWidth
+                            margin="normal"
+                            InputProps={{ readOnly: true }}
+                        />
+                        <TextField
+                            label="Fecha Resolución"
+                            value={ticketData.fechaResolucion ? new Date(ticketData.fechaResolucion).toLocaleString('es-ES') : 'N/A'}
+                            fullWidth
+                            margin="normal"
+                            InputProps={{ readOnly: true }}
+                        />
+                        <TextField
+                            label="Duración (Minutos)"
+                            value={ticketData.duracionAtencionMinutos != null ? ticketData.duracionAtencionMinutos : 'N/A'}
+                            fullWidth
+                            margin="normal"
+                            InputProps={{ readOnly: true }}
+                        />
+
+                        {/* Sistema de calificación con estrellas */}
+                        <StarRating
+                            value={calificacion || 0}
+                            onChange={(newRating) => {
+                                // La lógica de habilitación ya está en el componente StarRating.
+                                // Aquí solo actualizamos el estado.
+                                setCalificacion(newRating);
+                            }}
+                            selectedTicket={ticketData}
+                            currentUser={{ id: currentUserId }}
+                        />
+                    </>
+                )}
 
                 <div style={{ marginTop: '20px', display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
                     <Button onClick={onClose} variant="outlined">Cancelar</Button>
@@ -168,7 +267,7 @@ const ComentariosModal = ({ open, onClose, ticketId }) => {
 };
 
 // Componente principal de Gestión de Incidentes
-const GestionIncidentes = ({ usuarios = [] }) => {
+const GestionIncidentes = ({ usuarios = [], currentUserId }) => {
     const [tickets, setTickets] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
@@ -177,6 +276,7 @@ const GestionIncidentes = ({ usuarios = [] }) => {
     const [commentsModalOpen, setCommentsModalOpen] = useState(false);
     const [ticketSeleccionado, setTicketSeleccionado] = useState(null);
     const [filtroEstado, setFiltroEstado] = useState('');
+    const [calificacion, setCalificacion] = useState(0); // Estado para la calificación
 
     const [nuevoTicketData, setNuevoTicketData] = useState({
         descripcion: '',
@@ -214,11 +314,19 @@ const GestionIncidentes = ({ usuarios = [] }) => {
                 descripcion: ticket.descripcion,
                 prioridad: ticket.prioridad,
                 tipo: ticket.tipo,
-                solucion: ticket.solucion || ''
+                solucion: ticket.solucion || '',
+                estado: ticket.estado,
+                usuario: ticket.usuario,
+                fechaInicioAtencion: ticket.fechaInicioAtencion,
+                fechaResolucion: ticket.fechaResolucion,
+                duracionAtencionMinutos: ticket.duracionAtencionMinutos
             });
+            // Establecer la calificación actual del ticket
+            setCalificacion(ticket.calificacion || 0);
         } else {
             setTicketSeleccionado(null);
             setNuevoTicketData({ descripcion: '', prioridad: 'MEDIA', tipo: 'INCIDENTE', solucion: '' });
+            setCalificacion(0);
         }
         setModalOpen(true);
     };
@@ -226,14 +334,21 @@ const GestionIncidentes = ({ usuarios = [] }) => {
     const handleCloseModal = () => {
         setModalOpen(false);
         setTicketSeleccionado(null);
+        setCalificacion(0); // Resetear la calificación
     };
 
     const handleSaveTicket = async () => {
         try {
+            const ticketData = {
+                ...nuevoTicketData,
+                // Añadir la calificación si existe
+                calificacion: calificacion > 0 ? calificacion : null
+            };
+            
             if (ticketSeleccionado) {
-                await updateTicket(ticketSeleccionado.id, nuevoTicketData);
+                await updateTicket(ticketSeleccionado.id, ticketData);
             } else {
-                await addTicket(nuevoTicketData);
+                await addTicket(ticketData);
             }
             handleCloseModal();
             fetchTickets();
@@ -441,7 +556,18 @@ const GestionIncidentes = ({ usuarios = [] }) => {
                 </div>
             )}
 
-            <TicketFormModal open={modalOpen} onClose={handleCloseModal} onSave={handleSaveTicket} ticketData={nuevoTicketData} setTicketData={setNuevoTicketData} usuarios={usuarios} isEditing={!!ticketSeleccionado} />
+            <TicketFormModal 
+                open={modalOpen} 
+                onClose={handleCloseModal} 
+                onSave={handleSaveTicket} 
+                ticketData={nuevoTicketData} 
+                setTicketData={setNuevoTicketData} 
+                usuarios={usuarios} 
+                isEditing={!!ticketSeleccionado}
+                currentUserId={currentUserId}
+                calificacion={calificacion}
+                setCalificacion={setCalificacion}
+            />
             <AsignarResponsableModal open={assignModalOpen} onClose={() => setAssignModalOpen(false)} onAssign={handleAssignResponsable} ticketId={ticketSeleccionado?.id} usuarios={usuarios} />
             <ComentariosModal open={commentsModalOpen} onClose={() => setCommentsModalOpen(false)} ticketId={ticketSeleccionado?.id} />
         </div>
