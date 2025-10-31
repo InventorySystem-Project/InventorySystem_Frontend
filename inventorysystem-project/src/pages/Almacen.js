@@ -278,7 +278,7 @@ const Almacen = () => {
 
       {/* Modal de registro/edición (tu código existente) */}
       <Modal open={mostrarModal} onClose={() => setMostrarModal(false)} style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-        <Box sx={{ background: '#fff', padding: '20px', borderRadius: '10px', minWidth: '400px', maxHeight: '90vh', overflowY: 'auto' }}>
+        <Box sx={{ background: '#fff', padding: '20px', borderRadius: '10px', width: '450px', maxHeight: '90vh', overflowY: 'auto' }}>
           <h3>{formulario.id ? 'Editar Almacén' : 'Nuevo Almacén'}</h3>
           <TextField fullWidth label="Nombre del Almacén" value={formulario.nombre} onChange={(e) => setFormulario({ ...formulario, nombre: e.target.value })} margin="normal" />
           <TextField fullWidth label="Ubicación" value={formulario.ubicacion} onChange={(e) => setFormulario({ ...formulario, ubicacion: e.target.value })} margin="normal" />

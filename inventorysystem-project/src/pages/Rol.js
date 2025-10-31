@@ -160,9 +160,9 @@ const Rol = () => {
             </div>
 
             <Modal open={mostrarFormulario} onClose={() => setMostrarFormulario(false)} style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-                <Box style={{ background: '#fff', padding: '20px', borderRadius: '10px', minWidth: '400px' }}>
+                <Box style={{ background: '#fff', padding: '20px', borderRadius: '10px', width: '450px', maxHeight: '90vh', overflowY: 'auto' }}>
                     <h3>{rolEditando ? 'Editar Rol' : 'Nuevo Rol'}</h3>
-                    <TextField label="Rol" name="rol" value={nuevoRol.rol} onChange={handleInputChange} fullWidth />
+                    <TextField label="Rol" name="rol" value={nuevoRol.rol} onChange={handleInputChange} fullWidth margin="normal" />
 
                     {/* Desplegable para seleccionar usuario 
                     <TextField
@@ -180,7 +180,7 @@ const Rol = () => {
                         ))}
                     </TextField>*/}
 
-                    <div style={{ display: 'flex', justifyContent: 'center', gap: '10px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'center', gap: '10px', marginTop: '20px' }}>
                         <Button variant="outlined" color="primary" onClick={handleCancelar}>Cancelar</Button>
                         <Button variant="contained" color="primary" onClick={handleAgregarRol}>Guardar</Button>
                     </div>

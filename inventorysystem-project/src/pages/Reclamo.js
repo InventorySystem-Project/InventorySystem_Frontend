@@ -230,7 +230,7 @@ const Reclamo = () => {
           background: '#fff',
           padding: '20px',
           borderRadius: '10px',
-          minWidth: '500px',
+          width: '450px',
           maxHeight: '90vh',
           overflowY: 'auto'
         }}>

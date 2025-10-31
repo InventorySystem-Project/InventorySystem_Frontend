@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Button, Modal, Box, TextField, Table, TableBody, TableCell, TableHead, TableRow, Pagination, Select, MenuItem, InputLabel, FormControl, Typography, CircularProgress, Alert, Chip, IconButton, Tooltip as MuiTooltip } from '@mui/material';
-import { Plus, Edit, Trash2, UserPlus, MessageSquare } from 'lucide-react';
-import { getTickets, addTicket, updateTicket, deleteTicket, asignarTicket, cambiarEstadoTicket, addComentario, getComentariosPorTicket } from '../../services/SoporteService';
+import { Button, Modal, Box, TextField, Table, TableBody, TableCell, TableHead, TableRow, Pagination, Select, MenuItem, InputLabel, FormControl, Typography, CircularProgress, Alert, Chip, IconButton, Tooltip as MuiTooltip, Divider, Card, CardContent } from '@mui/material';
+import { Plus, Edit, Trash2, UserPlus, MessageSquare, X, Send, User, Clock, AlertCircle } from 'lucide-react';
+import { getTickets, addTicket, updateTicket, deleteTicket, asignarTicket, cambiarEstadoTicket, addComentario, getComentariosPorTicket, calificarTicket } from '../../services/SoporteService';
+import { getRoles } from '../../services/RolService';
 import { format } from 'date-fns';
 import es from 'date-fns/locale/es';
+import TicketPanelUnificado from './TicketPanelUnificado';
 
 // Componente de estrellas para calificación
 const StarRating = ({ value, onChange, selectedTicket, currentUser }) => {
@@ -149,6 +151,36 @@ const TicketFormModal = ({ open, onClose, onSave, ticketData, setTicketData, usu
 // Componente para asignar responsable
 const AsignarResponsableModal = ({ open, onClose, onAssign, ticketId, usuarios }) => {
     const [responsableId, setResponsableId] = useState('');
+    const [rolesMap, setRolesMap] = useState({});
+    const [loadingRoles, setLoadingRoles] = useState(true);
+
+    // Cargar roles cuando el modal se abre
+    useEffect(() => {
+        const fetchRoles = async () => {
+            if (open) {
+                try {
+                    setLoadingRoles(true);
+                    const rolesData = await getRoles();
+                    // Crear un mapa de rolId -> nombre del rol
+                    const map = {};
+                    rolesData.forEach(rol => {
+                        map[rol.id] = rol.rol || rol.nombreRol || 'Sin rol';
+                    });
+                    setRolesMap(map);
+                } catch (error) {
+                    console.error('Error al cargar roles:', error);
+                } finally {
+                    setLoadingRoles(false);
+                }
+            }
+        };
+        
+        fetchRoles();
+        
+        if (!open) {
+            setResponsableId('');
+        }
+    }, [open]);
 
     const handleAssign = () => {
         if (!responsableId) {
@@ -159,28 +191,28 @@ const AsignarResponsableModal = ({ open, onClose, onAssign, ticketId, usuarios }
         onClose();
     };
 
-    useEffect(() => {
-        if (!open) {
-            setResponsableId('');
-        }
-    }, [open]);
-
     return (
         <Modal open={open} onClose={onClose} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <Box style={{ background: '#fff', padding: '30px', borderRadius: '10px', width: '90%', maxWidth: '400px' }}>
                 <Typography variant="h6" gutterBottom>Asignar Responsable</Typography>
                 <FormControl fullWidth margin="normal">
                     <InputLabel id="responsable-label">Responsable</InputLabel>
-                    <Select labelId="responsable-label" label="Responsable" value={responsableId} onChange={(e) => setResponsableId(e.target.value)}>
+                    <Select labelId="responsable-label" label="Responsable" value={responsableId} onChange={(e) => setResponsableId(e.target.value)} disabled={loadingRoles}>
                         <MenuItem value="" disabled><em>-- Seleccione --</em></MenuItem>
-                        {usuarios.map(u => (
-                            <MenuItem key={u.id} value={u.id}>{`${u.nombre} ${u.apellido}`}</MenuItem>
-                        ))}
+                        {usuarios.map(u => {
+                            // Obtener el nombre del rol usando el rolId del usuario
+                            const rolNombre = rolesMap[u.rolId] || 'Sin rol';
+                            return (
+                                <MenuItem key={u.id} value={u.id}>
+                                    {`${u.nombre} ${u.apellido} - ${rolNombre}`}
+                                </MenuItem>
+                            );
+                        })}
                     </Select>
                 </FormControl>
                 <div style={{ marginTop: '20px', display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
                     <Button onClick={onClose} variant="outlined">Cancelar</Button>
-                    <Button onClick={handleAssign} variant="contained" disabled={!responsableId}>Asignar</Button>
+                    <Button onClick={handleAssign} variant="contained" disabled={!responsableId || loadingRoles}>Asignar</Button>
                 </div>
             </Box>
         </Modal>
@@ -272,8 +304,6 @@ const GestionIncidentes = ({ usuarios = [], currentUserId }) => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
     const [modalOpen, setModalOpen] = useState(false);
-    const [assignModalOpen, setAssignModalOpen] = useState(false);
-    const [commentsModalOpen, setCommentsModalOpen] = useState(false);
     const [ticketSeleccionado, setTicketSeleccionado] = useState(null);
     const [filtroEstado, setFiltroEstado] = useState('');
     const [calificacion, setCalificacion] = useState(0); // Estado para la calificación
@@ -311,14 +341,17 @@ const GestionIncidentes = ({ usuarios = [], currentUserId }) => {
         if (ticket) {
             setTicketSeleccionado(ticket);
             setNuevoTicketData({
+                id: ticket.id,
                 descripcion: ticket.descripcion,
                 prioridad: ticket.prioridad,
                 tipo: ticket.tipo,
                 solucion: ticket.solucion || '',
                 estado: ticket.estado,
                 usuario: ticket.usuario,
+                responsable: ticket.responsable,
                 fechaInicioAtencion: ticket.fechaInicioAtencion,
                 fechaResolucion: ticket.fechaResolucion,
+                fechaCreacion: ticket.fechaCreacion,
                 duracionAtencionMinutos: ticket.duracionAtencionMinutos
             });
             // Establecer la calificación actual del ticket
@@ -339,27 +372,29 @@ const GestionIncidentes = ({ usuarios = [], currentUserId }) => {
 
     const handleSaveTicket = async () => {
         try {
-            const ticketData = {
-                ...nuevoTicketData,
-                // Añadir la calificación si existe
-                calificacion: calificacion > 0 ? calificacion : null
-            };
-            
             if (ticketSeleccionado) {
+                // Si estamos editando un ticket
+                const ticketData = {
+                    ...nuevoTicketData
+                };
+                
+                // Actualizar el ticket (sin incluir la calificación en el body de PUT)
                 await updateTicket(ticketSeleccionado.id, ticketData);
+                
+                // Si hay una calificación nueva o modificada, usar el endpoint específico
+                if (calificacion > 0 && calificacion !== ticketSeleccionado.calificacion) {
+                    await calificarTicket(ticketSeleccionado.id, calificacion);
+                }
             } else {
-                await addTicket(ticketData);
+                // Si estamos creando un ticket nuevo
+                await addTicket(nuevoTicketData);
             }
             handleCloseModal();
             fetchTickets();
         } catch (error) {
+            console.error('Error al guardar el ticket:', error);
             alert('Error al guardar el ticket: ' + (error.message || 'Error desconocido'));
         }
-    };
-
-    const handleOpenAssignModal = (ticket) => {
-        setTicketSeleccionado(ticket);
-        setAssignModalOpen(true);
     };
 
     const handleAssignResponsable = async (ticketId, responsableId) => {
@@ -369,11 +404,6 @@ const GestionIncidentes = ({ usuarios = [], currentUserId }) => {
         } catch (error) {
             alert('Error al asignar responsable: ' + (error.message || 'Error desconocido'));
         }
-    };
-
-    const handleOpenCommentsModal = (ticket) => {
-        setTicketSeleccionado(ticket);
-        setCommentsModalOpen(true);
     };
 
     const handleDeleteTicket = async (id) => {
@@ -519,17 +549,7 @@ const GestionIncidentes = ({ usuarios = [], currentUserId }) => {
                                         <TableCell>{formatTicketDate(ticket.fechaReporte)}</TableCell>
                                         <TableCell>
                                             <div style={{ display: 'flex', gap: '4px' }}>
-                                                <MuiTooltip title="Asignar Responsable" arrow>
-                                                    <IconButton size="small" color="info" onClick={() => handleOpenAssignModal(ticket)}>
-                                                        <UserPlus size={18} />
-                                                    </IconButton>
-                                                </MuiTooltip>
-                                                <MuiTooltip title="Ver/Agregar Comentarios" arrow>
-                                                    <IconButton size="small" color="secondary" onClick={() => handleOpenCommentsModal(ticket)}>
-                                                        <MessageSquare size={18} />
-                                                    </IconButton>
-                                                </MuiTooltip>
-                                                <MuiTooltip title="Editar Ticket" arrow>
+                                                <MuiTooltip title="Ver/Editar Ticket" arrow>
                                                     <IconButton size="small" color="primary" onClick={() => handleOpenModal(ticket)}>
                                                         <Edit size={18} />
                                                     </IconButton>
@@ -556,10 +576,9 @@ const GestionIncidentes = ({ usuarios = [], currentUserId }) => {
                 </div>
             )}
 
-            <TicketFormModal 
+            <TicketPanelUnificado 
                 open={modalOpen} 
                 onClose={handleCloseModal} 
-                onSave={handleSaveTicket} 
                 ticketData={nuevoTicketData} 
                 setTicketData={setNuevoTicketData} 
                 usuarios={usuarios} 
@@ -567,9 +586,9 @@ const GestionIncidentes = ({ usuarios = [], currentUserId }) => {
                 currentUserId={currentUserId}
                 calificacion={calificacion}
                 setCalificacion={setCalificacion}
+                onSave={handleSaveTicket}
+                onAssignResponsible={handleAssignResponsable}
             />
-            <AsignarResponsableModal open={assignModalOpen} onClose={() => setAssignModalOpen(false)} onAssign={handleAssignResponsable} ticketId={ticketSeleccionado?.id} usuarios={usuarios} />
-            <ComentariosModal open={commentsModalOpen} onClose={() => setCommentsModalOpen(false)} ticketId={ticketSeleccionado?.id} />
         </div>
     );
 };

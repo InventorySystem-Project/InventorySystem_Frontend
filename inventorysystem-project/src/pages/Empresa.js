@@ -181,13 +181,13 @@ const fetchPaises = async () => {
             </div>
 
             <Modal open={mostrarFormulario} onClose={() => setMostrarFormulario(false)} style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-                <Box style={{ background: '#fff', padding: '20px', borderRadius: '10px', minWidth: '400px' }}>
+                <Box style={{ background: '#fff', padding: '20px', borderRadius: '10px', width: '450px', maxHeight: '90vh', overflowY: 'auto' }}>
                     <h3>{empresaEditando ? 'Editar Empresa' : 'Nueva Empresa'}</h3>
-                    <TextField label="Nombre" name="nombre" value={nuevaEmpresa.nombre} onChange={handleInputChange} fullWidth />
-                    <TextField label="RUC" name="ruc" value={nuevaEmpresa.ruc} onChange={handleInputChange} fullWidth />
-                    <TextField label="Dirección" name="direccion" value={nuevaEmpresa.direccion} onChange={handleInputChange} fullWidth />
-                    <TextField label="Teléfono" name="telefono" value={nuevaEmpresa.telefono} onChange={handleInputChange} fullWidth />
-                    <TextField label="Correo" name="correo" value={nuevaEmpresa.correo} onChange={handleInputChange} fullWidth />
+                    <TextField label="Nombre" name="nombre" value={nuevaEmpresa.nombre} onChange={handleInputChange} fullWidth margin="normal" />
+                    <TextField label="RUC" name="ruc" value={nuevaEmpresa.ruc} onChange={handleInputChange} fullWidth margin="normal" />
+                    <TextField label="Dirección" name="direccion" value={nuevaEmpresa.direccion} onChange={handleInputChange} fullWidth margin="normal" />
+                    <TextField label="Teléfono" name="telefono" value={nuevaEmpresa.telefono} onChange={handleInputChange} fullWidth margin="normal" />
+                    <TextField label="Correo" name="correo" value={nuevaEmpresa.correo} onChange={handleInputChange} fullWidth margin="normal" />
 
                     {/* Desplegable de países */}
                     <TextField
@@ -197,6 +197,7 @@ const fetchPaises = async () => {
                         onChange={handleInputChange}
                         select
                         fullWidth
+                        margin="normal"
                         SelectProps={{ native: true }}
                     >
                         {paises.map((pais) => (
@@ -206,7 +207,7 @@ const fetchPaises = async () => {
                         ))}
                     </TextField>
 
-                    <div style={{ display: 'flex', justifyContent: 'center', gap: '10px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'center', gap: '10px', marginTop: '20px' }}>
                         <Button variant="outlined" color="primary" onClick={handleCancelar}>Cancelar</Button>
                         <Button variant="contained" color="primary" onClick={handleGuardarEmpresa}>Guardar</Button>
                     </div>

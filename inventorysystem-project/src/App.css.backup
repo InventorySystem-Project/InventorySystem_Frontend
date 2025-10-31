@@ -425,6 +425,18 @@ textarea {
   margin: 20px;
 }
 
+/* Modificar el espacio dentro del modal */
+.MuiBox-root {
+  background: #fff;
+  
+  /*min-width: 400px;*/
+  width: 60%;
+  max-width: 600px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;  /* Añadido espacio entre los elementos dentro del modal */
+}
 
 .MuiModal-root {
   display: flex;

@@ -252,7 +252,7 @@ const fetchPaises = async () => {
                 onClose={() => setMostrarFormulario(false)}
                 style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}
             >
-                <Box style={{ background: '#fff', padding: '20px', borderRadius: '10px', minWidth: '400px' }}>
+                <Box style={{ background: '#fff', padding: '20px', borderRadius: '10px', width: '450px', maxHeight: '90vh', overflowY: 'auto' }}>
                     <h3>{proveedorEditando ? 'Editar Proveedor' : 'Nuevo Proveedor'}</h3>
                     <TextField
                         label="Nombre Empresa"
@@ -260,12 +260,13 @@ const fetchPaises = async () => {
                         value={nuevoProveedor.nombreEmpresaProveedor}
                         onChange={handleInputChange}
                         fullWidth
+                        margin="normal"
                     />
 
-                    <TextField label="RUC" name="ruc" value={nuevoProveedor.ruc} onChange={handleInputChange} fullWidth />
-                    <TextField label="Nombre de Contacto" name="nombreContacto" value={nuevoProveedor.nombreContacto} onChange={handleInputChange} fullWidth />
-                    <TextField label="Teléfono" name="telefono" value={nuevoProveedor.telefono} onChange={handleInputChange} fullWidth />
-                    <TextField label="Correo" name="correo" value={nuevoProveedor.correo} onChange={handleInputChange} fullWidth />
+                    <TextField label="RUC" name="ruc" value={nuevoProveedor.ruc} onChange={handleInputChange} fullWidth margin="normal" />
+                    <TextField label="Nombre de Contacto" name="nombreContacto" value={nuevoProveedor.nombreContacto} onChange={handleInputChange} fullWidth margin="normal" />
+                    <TextField label="Teléfono" name="telefono" value={nuevoProveedor.telefono} onChange={handleInputChange} fullWidth margin="normal" />
+                    <TextField label="Correo" name="correo" value={nuevoProveedor.correo} onChange={handleInputChange} fullWidth margin="normal" />
                     <TextField
                         fullWidth
                         select
@@ -274,6 +275,7 @@ const fetchPaises = async () => {
                         value={nuevoProveedor.pais}
                         onChange={handleInputChange}
                         disabled={paises.length === 0}
+                        margin="normal"
                     >
                         {paises.length === 0 ? (
                             <MenuItem disabled value=""><em>Cargando países...</em></MenuItem>
@@ -286,8 +288,8 @@ const fetchPaises = async () => {
                         )}
                     </TextField>
 
-                    <TextField label="Dirección" name="direccion" value={nuevoProveedor.direccion} onChange={handleInputChange} fullWidth />
-                    <div style={{ display: 'flex', justifyContent: 'center', gap: '10px' }}>
+                    <TextField label="Dirección" name="direccion" value={nuevoProveedor.direccion} onChange={handleInputChange} fullWidth margin="normal" />
+                    <div style={{ display: 'flex', justifyContent: 'center', gap: '10px', marginTop: '20px' }}>
                         <Button variant="outlined" color="primary" onClick={handleCancelar}>Cancelar</Button>
                         <Button variant="contained" color="primary" onClick={handleAgregarProveedor}>Guardar</Button>
                     </div>

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { TextField, Button, Modal, Box, Table, TableBody, TableCell, TableHead, TableRow, Pagination, MenuItem } from '@mui/material';
-import { Plus, Trash2, Edit } from 'lucide-react';
-import { getUsuarios, addUsuario, updateUsuario, deleteUsuario } from '../services/UsuarioService';
+import { TextField, Button, Modal, Box, Table, TableBody, TableCell, TableHead, TableRow, Pagination, MenuItem, Alert } from '@mui/material';
+import { Plus, Trash2, Edit, Key } from 'lucide-react';
+import { getUsuarios, addUsuario, updateUsuario, deleteUsuario, updatePassword } from '../services/UsuarioService';
 import { getEmpresas } from '../services/EmpresaService';
 import { getRoles } from '../services/RolService';
 
@@ -9,6 +9,7 @@ const Usuario = () => {
     const [usuarios, setUsuarios] = useState([]);
     const [empresas, setEmpresas] = useState([]);
     const [roles, setRoles] = useState([]);
+    const [rolesMap, setRolesMap] = useState({}); // Mapa de rolId -> nombre del rol
     const [nuevoUsuario, setNuevoUsuario] = useState({
         id: '',
         nombre: '',
@@ -30,6 +31,13 @@ const Usuario = () => {
     const [paginaActual, setPaginaActual] = useState(1);
     const [usuariosPorPagina, setUsuariosPorPagina] = useState(5);
     const [errors, setErrors] = useState({});
+    
+    // Estado para el modal de restablecer contraseña
+    const [mostrarModalPassword, setMostrarModalPassword] = useState(false);
+    const [nuevaPassword, setNuevaPassword] = useState('');
+    const [confirmarPassword, setConfirmarPassword] = useState('');
+    const [usuarioParaPassword, setUsuarioParaPassword] = useState(null);
+    const [errorPassword, setErrorPassword] = useState('');
 
     // Opciones para el género
     const opcionesGenero = [
@@ -93,6 +101,13 @@ const Usuario = () => {
         try {
             const roles = await getRoles();
             setRoles(roles);
+            
+            // Crear un mapa de rolId -> nombre del rol
+            const map = {};
+            roles.forEach(rol => {
+                map[rol.id] = rol.rol || rol.nombreRol || 'Sin rol';
+            });
+            setRolesMap(map);
         } catch (error) {
             console.error('Error al obtener roles', error);
         }
@@ -193,6 +208,13 @@ const Usuario = () => {
     const handleEditarUsuario = (usuarioAEditar) => {
         if (!usuarioAEditar) return;
 
+        // Mapear género del backend (texto completo) al formato del formulario (letra)
+        let generoMapeado = usuarioAEditar.genero || '';
+        if (generoMapeado === 'Masculino') generoMapeado = 'M';
+        else if (generoMapeado === 'Femenino') generoMapeado = 'F';
+        else if (generoMapeado === 'Otro') generoMapeado = 'O';
+        // Si ya viene como 'M', 'F', 'O', se mantiene igual
+
         setUsuarioEditando(usuarioAEditar);
         setNuevoUsuario({
             id: usuarioAEditar.id,
@@ -202,9 +224,9 @@ const Usuario = () => {
             dni: usuarioAEditar.dni || '',
             fechaNacimiento: usuarioAEditar.fechaNacimiento ? new Date(usuarioAEditar.fechaNacimiento).toISOString().split('T')[0] : '',
             telefono: usuarioAEditar.telefono || '',
-            genero: usuarioAEditar.genero || '',
-            empresaId: usuarioAEditar.empresa?.id || '',
-            rolId: usuarioAEditar.rol?.id || '',
+            genero: generoMapeado,
+            empresaId: usuarioAEditar.empresa?.id || usuarioAEditar.empresaId || '',
+            rolId: usuarioAEditar.rol?.id || usuarioAEditar.rolId || '',
             enabled: usuarioAEditar.enabled ?? true,
             username: usuarioAEditar.username || ''
             // No incluimos password al editar
@@ -224,6 +246,54 @@ const Usuario = () => {
         }
     };
 
+    // Función para abrir el modal de restablecer contraseña
+    const handleAbrirModalPassword = (usuario) => {
+        setUsuarioParaPassword(usuario);
+        setNuevaPassword('');
+        setConfirmarPassword('');
+        setErrorPassword('');
+        setMostrarModalPassword(true);
+    };
+
+    // Función para cerrar el modal de contraseña
+    const handleCerrarModalPassword = () => {
+        setMostrarModalPassword(false);
+        setUsuarioParaPassword(null);
+        setNuevaPassword('');
+        setConfirmarPassword('');
+        setErrorPassword('');
+    };
+
+    // Función para restablecer contraseña
+    const handleRestablecerPassword = async () => {
+        setErrorPassword('');
+
+        // Validaciones
+        if (!nuevaPassword || !confirmarPassword) {
+            setErrorPassword('Por favor complete todos los campos');
+            return;
+        }
+
+        if (nuevaPassword.length < 6) {
+            setErrorPassword('La contraseña debe tener al menos 6 caracteres');
+            return;
+        }
+
+        if (nuevaPassword !== confirmarPassword) {
+            setErrorPassword('Las contraseñas no coinciden');
+            return;
+        }
+
+        try {
+            await updatePassword(usuarioParaPassword.id, nuevaPassword);
+            alert('Contraseña actualizada exitosamente');
+            handleCerrarModalPassword();
+        } catch (error) {
+            console.error('Error al actualizar contraseña:', error);
+            setErrorPassword('Error al actualizar la contraseña. Por favor, intente nuevamente.');
+        }
+    };
+
     const handleChangePage = (event, value) => {
         setPaginaActual(value);
     };
@@ -235,9 +305,18 @@ const Usuario = () => {
     const totalPages = Math.ceil(usuarios.length / usuariosPorPagina);
 
     // Función para renderizar el fondo de los roles
-    const renderBackgroundRol = (rol) => {
-        // Asegurándonos de que podemos manejar tanto "rol" como objeto o como string directamente
-        const rolName = typeof rol === 'object' ? rol?.rol : rol;
+    const renderBackgroundRol = (usuario) => {
+        // Obtener el nombre del rol usando el rolId del usuario
+        let rolName = '';
+        
+        // Si el usuario tiene un objeto rol, usarlo
+        if (usuario.rol && typeof usuario.rol === 'object') {
+            rolName = usuario.rol.rol || usuario.rol.nombreRol;
+        } 
+        // Si tiene rolId, buscar en el mapa
+        else if (usuario.rolId && rolesMap[usuario.rolId]) {
+            rolName = rolesMap[usuario.rolId];
+        }
 
         switch (rolName) {
             case "ADMIN":
@@ -268,8 +347,86 @@ const Usuario = () => {
                         Usuario
                     </div>
                 );
+            case "SOPORTE_N1":
+                return (
+                    <div style={{
+                        backgroundColor: '#10b981',
+                        color: 'white',
+                        padding: '4px 10px',
+                        borderRadius: '20px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        width: 'fit-content'
+                    }}>
+                        Soporte N1
+                    </div>
+                );
+            case "SOPORTE_N2":
+                return (
+                    <div style={{
+                        backgroundColor: '#059669',
+                        color: 'white',
+                        padding: '4px 10px',
+                        borderRadius: '20px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        width: 'fit-content'
+                    }}>
+                        Soporte N2
+                    </div>
+                );
+            case "GESTOR_CAMBIOS":
+                return (
+                    <div style={{
+                        backgroundColor: '#f59e0b',
+                        color: 'white',
+                        padding: '4px 10px',
+                        borderRadius: '20px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        width: 'fit-content'
+                    }}>
+                        Gestor de Cambios
+                    </div>
+                );
+            case "CAB_MEMBER":
+                return (
+                    <div style={{
+                        backgroundColor: '#8b5cf6',
+                        color: 'white',
+                        padding: '4px 10px',
+                        borderRadius: '20px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        width: 'fit-content'
+                    }}>
+                        Miembro CAB
+                    </div>
+                );
+            case "PROJECT_MANAGER":
+                return (
+                    <div style={{
+                        backgroundColor: '#ec4899',
+                        color: 'white',
+                        padding: '4px 10px',
+                        borderRadius: '20px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        width: 'fit-content'
+                    }}>
+                        Project Manager
+                    </div>
+                );
             default:
-                return <div>{rolName}</div>;
+                return <div style={{
+                    backgroundColor: '#6b7280',
+                    color: 'white',
+                    padding: '4px 10px',
+                    borderRadius: '20px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    width: 'fit-content'
+                }}>{rolName || 'Sin rol'}</div>;
         }
     };
 
@@ -316,7 +473,7 @@ const Usuario = () => {
                                         }</TableCell>
                                         <TableCell>{usuario.telefono}</TableCell>
                                         <TableCell>{usuario.enabled ? 'Activo' : 'Inactivo'}</TableCell>
-                                        <TableCell>{renderBackgroundRol(usuario.rol)}</TableCell>
+                                        <TableCell>{renderBackgroundRol(usuario)}</TableCell>
                                         <TableCell>
                                             <Button color="primary" onClick={() => handleEditarUsuario(usuario)}>
                                                 <Edit size={18} />
@@ -422,18 +579,33 @@ const Usuario = () => {
                             style={{ flex: 1 }}
                         />
 
-                        <TextField
-                            label="Contraseña"
-                            name="password"
-                            type="password"
-                            value={nuevoUsuario.password}
-                            onChange={handleInputChange}
-                            fullWidth
-                            required={!usuarioEditando}
-                            error={!!errors.password}
-                            helperText={errors.password}
-                            style={{ flex: 1 }}
-                        />
+                        {usuarioEditando ? (
+                            // Modo edición: mostrar asteriscos y deshabilitar
+                            <TextField
+                                label="Contraseña"
+                                name="password"
+                                type="password"
+                                value="********"
+                                fullWidth
+                                disabled
+                                style={{ flex: 1 }}
+                                helperText="Use el botón 'Restablecer Contraseña' para cambiarla"
+                            />
+                        ) : (
+                            // Modo creación: permitir ingresar contraseña
+                            <TextField
+                                label="Contraseña"
+                                name="password"
+                                type="password"
+                                value={nuevoUsuario.password}
+                                onChange={handleInputChange}
+                                fullWidth
+                                required
+                                error={!!errors.password}
+                                helperText={errors.password}
+                                style={{ flex: 1 }}
+                            />
+                        )}
                     </div>
 
                     {/* Cuarta fila: DNI y Teléfono */}
@@ -515,7 +687,7 @@ const Usuario = () => {
                     </div>
 
                     {/* Botones de acción */}
-                    <div style={{ display: 'flex', justifyContent: 'center', gap: '20px', marginTop: '30px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'center', gap: '20px', marginTop: '30px', flexWrap: 'wrap' }}>
                         <Button
                             variant="outlined"
                             color="primary"
@@ -524,6 +696,19 @@ const Usuario = () => {
                         >
                             Cancelar
                         </Button>
+                        
+                        {usuarioEditando && (
+                            <Button
+                                variant="outlined"
+                                color="warning"
+                                onClick={() => handleAbrirModalPassword(usuarioEditando)}
+                                startIcon={<Key size={18} />}
+                                style={{ minWidth: '180px' }}
+                            >
+                                Restablecer Contraseña
+                            </Button>
+                        )}
+                        
                         <Button
                             variant="contained"
                             color="primary"
@@ -531,6 +716,69 @@ const Usuario = () => {
                             style={{ minWidth: '120px' }}
                         >
                             {usuarioEditando ? 'Actualizar' : 'Guardar'}
+                        </Button>
+                    </div>
+                </Box>
+            </Modal>
+
+            {/* Modal para Restablecer Contraseña */}
+            <Modal
+                open={mostrarModalPassword}
+                onClose={handleCerrarModalPassword}
+                style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}
+            >
+                <Box style={{ background: '#fff', padding: '30px', borderRadius: '10px', width: '450px', maxWidth: '90%' }}>
+                    <h3 style={{ textAlign: 'center', marginBottom: '20px' }}>
+                        Restablecer Contraseña
+                    </h3>
+                    
+                    {usuarioParaPassword && (
+                        <Alert severity="info" style={{ marginBottom: '20px' }}>
+                            Usuario: <strong>{usuarioParaPassword.nombre} {usuarioParaPassword.apellido}</strong>
+                        </Alert>
+                    )}
+
+                    {errorPassword && (
+                        <Alert severity="error" style={{ marginBottom: '15px' }}>
+                            {errorPassword}
+                        </Alert>
+                    )}
+
+                    <TextField
+                        label="Nueva Contraseña"
+                        type="password"
+                        value={nuevaPassword}
+                        onChange={(e) => setNuevaPassword(e.target.value)}
+                        fullWidth
+                        margin="normal"
+                        placeholder="Mínimo 6 caracteres"
+                    />
+
+                    <TextField
+                        label="Confirmar Contraseña"
+                        type="password"
+                        value={confirmarPassword}
+                        onChange={(e) => setConfirmarPassword(e.target.value)}
+                        fullWidth
+                        margin="normal"
+                        placeholder="Repita la contraseña"
+                    />
+
+                    <div style={{ display: 'flex', justifyContent: 'center', gap: '15px', marginTop: '25px' }}>
+                        <Button
+                            variant="outlined"
+                            onClick={handleCerrarModalPassword}
+                            style={{ minWidth: '120px' }}
+                        >
+                            Cancelar
+                        </Button>
+                        <Button
+                            variant="contained"
+                            color="primary"
+                            onClick={handleRestablecerPassword}
+                            style={{ minWidth: '120px' }}
+                        >
+                            Actualizar
                         </Button>
                     </div>
                 </Box>

@@ -186,14 +186,14 @@ const Producto = () => {
             </div>
 
 <Modal open={mostrarFormulario} onClose={() => setMostrarFormulario(false)} style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-                <Box style={{ background: '#fff', padding: '20px', borderRadius: '10px', minWidth: '400px' }}>
+                <Box style={{ background: '#fff', padding: '20px', borderRadius: '10px', width: '450px', maxHeight: '90vh', overflowY: 'auto' }}>
                     <h3>{productoEditando ? 'Editar Producto' : 'Nuevo Producto'}</h3>
-                    <TextField label="Nombre" name="nombre" value={nuevoProducto.nombre} onChange={handleInputChange} fullWidth />
-                    <TextField label="Tipo" name="tipo" value={nuevoProducto.tipo} onChange={handleInputChange} fullWidth />
-                    <TextField label="Modelo" name="modelo" value={nuevoProducto.modelo} onChange={handleInputChange} fullWidth />
-                    <TextField label="Color" name="color" value={nuevoProducto.color} onChange={handleInputChange} fullWidth />
-                    <TextField label="Precio Unitario" name="precioUnitario" value={nuevoProducto.precioUnitario} onChange={handleInputChange} fullWidth />
-                    <div style={{ display: 'flex', justifyContent: 'center', gap: '10px' }}>
+                    <TextField label="Nombre" name="nombre" value={nuevoProducto.nombre} onChange={handleInputChange} fullWidth margin="normal" />
+                    <TextField label="Tipo" name="tipo" value={nuevoProducto.tipo} onChange={handleInputChange} fullWidth margin="normal" />
+                    <TextField label="Modelo" name="modelo" value={nuevoProducto.modelo} onChange={handleInputChange} fullWidth margin="normal" />
+                    <TextField label="Color" name="color" value={nuevoProducto.color} onChange={handleInputChange} fullWidth margin="normal" />
+                    <TextField label="Precio Unitario" name="precioUnitario" value={nuevoProducto.precioUnitario} onChange={handleInputChange} fullWidth margin="normal" />
+                    <div style={{ display: 'flex', justifyContent: 'center', gap: '10px', marginTop: '20px' }}>
                         <Button variant="outlined" color="primary" onClick={handleCancelar}>Cancelar</Button>
                         <Button variant="contained" color="primary" onClick={handleAgregarProducto}>Guardar</Button>
                     </div>

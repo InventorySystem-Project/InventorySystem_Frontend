@@ -168,9 +168,9 @@ const MateriaPrima = () => {
             </div>
 
             <Modal open={mostrarFormulario} onClose={() => setMostrarFormulario(false)} style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-                <Box style={{ background: '#fff', padding: '20px', borderRadius: '10px', minWidth: '400px' }}>
+                <Box style={{ background: '#fff', padding: '20px', borderRadius: '10px', width: '450px', maxHeight: '90vh', overflowY: 'auto' }}>
                     <h3>{materiaPrimaEditando ? 'Editar Materia Prima' : 'Nueva Materia Prima'}</h3>
-                    <TextField label="Nombre" name="nombre" value={nuevaMateriaPrima.nombre} onChange={handleInputChange} fullWidth />
+                    <TextField label="Nombre" name="nombre" value={nuevaMateriaPrima.nombre} onChange={handleInputChange} fullWidth margin="normal" />
                     <TextField
                         select
                         label="Unidad"
@@ -178,6 +178,7 @@ const MateriaPrima = () => {
                         value={nuevaMateriaPrima.unidad}
                         onChange={handleInputChange}
                         fullWidth
+                        margin="normal"
                     >
                         <MenuItem value="m²">Metro cuadrado (m²)</MenuItem>
                         <MenuItem value="cm²">Centímetro cuadrado (cm²)</MenuItem>
@@ -192,7 +193,7 @@ const MateriaPrima = () => {
                         <MenuItem value="par">Par</MenuItem>
                         <MenuItem value="pies">Pies</MenuItem>
                     </TextField>
-                    <div style={{ display: 'flex', justifyContent: 'center', gap: '10px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'center', gap: '10px', marginTop: '20px' }}>
                         <Button variant="outlined" color="primary" onClick={handleCancelar}>Cancelar</Button>
                         <Button variant="contained" color="primary" onClick={handleAgregarMateriaPrima}>Guardar</Button>
                     </div>

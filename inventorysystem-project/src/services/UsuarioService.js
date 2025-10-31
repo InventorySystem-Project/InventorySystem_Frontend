@@ -101,3 +101,22 @@ export const getUsuariosAsignables = async () => {
         throw error;
     }
 };
+
+/**
+ * Actualizar contraseña de un usuario
+ * El backend debe encriptar la contraseña con bcrypt
+ */
+export const updatePassword = async (userId, newPassword) => {
+    try {
+        const response = await axios.patch(`${API_URL}/${userId}/password`, 
+            { password: newPassword },
+            {
+                headers: getAuthHeaders(),
+            }
+        );
+        return response.data;
+    } catch (error) {
+        console.error('Error al actualizar contraseña:', error.response || error.message);
+        throw error;
+    }
+};

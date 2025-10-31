@@ -135,6 +135,23 @@ export const addComentario = async (ticketId, comentarioData) => {
     }
 };
 
+/**
+ * Califica un ticket resuelto.
+ * @param {number} ticketId - El ID del ticket.
+ * @param {number} calificacion - El valor de la calificación (1-5).
+ * @returns {Promise<Object>} - El ticket actualizado.
+ */
+export const calificarTicket = async (ticketId, calificacion) => {
+    try {
+        // Llama al nuevo endpoint PATCH con el body esperado
+        const response = await axios.patch(`${API_URL_TICKETS}/${ticketId}/calificar`, { calificacion }, { headers: getAuthHeaders() });
+        return response.data;
+    } catch (error) {
+        console.error('Error al calificar el ticket:', error.response || error);
+        throw error.response?.data || error;
+    }
+};
+
 // --- Operaciones CRUD para Errores Conocidos (Gestión de Problemas) ---
 export const getErroresConocidos = async () => {
     try {
