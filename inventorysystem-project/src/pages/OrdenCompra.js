@@ -80,7 +80,7 @@ const OrdenCompra = () => {
     const [showGuestAlert, setShowGuestAlert] = useState(false);
     
     // Hook para modals
-    const { modalConfig, showAlert, showSuccess, showError, hideModal } = useModal();
+    const { modalConfig, showAlert, showSuccess, showError, showConfirm, hideModal } = useModal();
 
     // --- useEffects (sin cambios) ---
     useEffect(() => {
@@ -135,7 +135,7 @@ const OrdenCompra = () => {
     const handleAnadirDesdeAlerta = (productoId) => {
         const yaExiste = productosSeleccionados.some(p => p.productoId === productoId);
         if (yaExiste) {
-            alert("Este producto ya está en la orden de compra.");
+                        showAlert("Este producto ya está en la orden de compra.", 'Producto Duplicado', 'warning');
             return;
         }
         // Buscar el producto para determinar el tipo si es necesario
@@ -145,7 +145,7 @@ const OrdenCompra = () => {
 
         // Si la orden actual es de otro tipo, preguntar o cambiar
         if(tipoProducto && tipoOrden !== tipoProducto) {
-             alert(`Este producto es de tipo '${tipoProducto === 'materiasPrimas' ? 'Materias Primas' : 'Productos Terminados'}'. Cambie el tipo de orden o añada productos del tipo correcto.`);
+             showAlert(`Este producto es de tipo '${tipoProducto === 'materiasPrimas' ? 'Materias Primas' : 'Productos Terminados'}'. Cambie el tipo de orden o añada productos del tipo correcto.`, 'Tipo Incorrecto', 'warning');
              return; // O cambia setTipoOrden(tipoProducto) si quieres forzar el cambio
         }
 
@@ -171,7 +171,7 @@ const OrdenCompra = () => {
         try {
             if (isGuest) { setShowGuestAlert(true); return; }
             if (!formulario.empresaId || !formulario.proveedorId || !formulario.fechaEmision || !formulario.estado || productosSeleccionados.length === 0) {
-                alert("Por favor, complete todos los campos de la orden y añada al menos un producto.");
+                showAlert("Por favor, complete todos los campos de la orden y añada al menos un producto.", 'Campos Requeridos', 'warning');
                 return;
             }
             const nuevaOrdenParaBD = {
@@ -188,19 +188,17 @@ const OrdenCompra = () => {
                 }))
             };
 
-            if (ordenEditando) {
-                await updateOrdenCompra({ ...nuevaOrdenParaBD, id: ordenEditando.id });
-                alert("Orden actualizada con éxito.");
-            } else {
-                await addOrdenCompra(nuevaOrdenParaBD);
-                alert("Orden registrada con éxito.");
-            }
-
-            setMostrarModal(false);
+            if (ordenEditando) {
+                await updateOrdenCompra({ ...nuevaOrdenParaBD, id: ordenEditando.id });
+                showSuccess("Orden actualizada con éxito.");
+            } else {
+                await addOrdenCompra(nuevaOrdenParaBD);
+                showSuccess("Orden registrada con éxito.");
+            }            setMostrarModal(false);
             fetchOrdenesYRecalcular();
         } catch (error) {
             console.error("❌ Error en handleRegistrarOrden:", error.response?.data || error.message || error);
-            alert("Hubo un error al registrar/actualizar la orden: " + (error.response?.data?.message || error.message));
+            showError("Hubo un error al registrar/actualizar la orden: " + (error.response?.data?.message || error.message));
         }
     };
 
@@ -238,14 +236,17 @@ const OrdenCompra = () => {
 
     const handleEliminarOrden = async (id) => {
         if (isGuest) { setShowGuestAlert(true); return; }
-        try {
-            await deleteOrdenCompra(id);
-            alert('Orden eliminada con éxito.');
-            fetchOrdenesYRecalcular();
-        } catch (error) {
-            console.error('Error eliminando orden:', error);
-            alert('No se pudo eliminar la orden.');
-        }
+        
+        showConfirm('¿Está seguro que desea eliminar esta orden de compra?', async () => {
+            try {
+                await deleteOrdenCompra(id);
+                showSuccess('Orden eliminada con éxito.');
+                fetchOrdenesYRecalcular();
+            } catch (error) {
+                console.error('Error eliminando orden:', error);
+                showError('No se pudo eliminar la orden.');
+            }
+        });
     };
     // --- Fin Handlers ---
 
@@ -306,7 +307,7 @@ const OrdenCompra = () => {
             setMostrarModalPdf(true); // Cambiado a setMostrarModalPdf
         } catch (error) {
             console.error("Error generando PDF para vista previa:", error);
-            alert("No se pudo generar la vista previa del PDF.");
+            showError("No se pudo generar la vista previa del PDF.");
         }
     };
     // --- Fin handler abrir PDF ---
@@ -453,10 +454,10 @@ const OrdenCompra = () => {
                          <div className="producto-formulario-boton">
                              <Button variant="outlined" onClick={() => {
                                  if (!productoActual.productoId || !productoActual.cantidad || productoActual.cantidad < 1) {
-                                     alert('Seleccione un producto y una cantidad válida (mayor a 0).'); return;
+                                     showAlert('Seleccione un producto y una cantidad válida (mayor a 0).', 'Validación', 'warning'); return;
                                  }
                                  if (productosSeleccionados.some(p => p.productoId === productoActual.productoId)) {
-                                     alert('Este producto ya está en la lista.'); return;
+                                     showAlert('Este producto ya está en la lista.', 'Producto Duplicado', 'warning'); return;
                                  }
                                  setProductosSeleccionados([...productosSeleccionados, productoActual]);
                                  setProductoActual({ productoId: '', cantidad: '' });
@@ -560,6 +561,12 @@ const OrdenCompra = () => {
                 </Box>
             </Modal>
             {/* --- FIN MODAL PDF --- */}
+
+            {/* Modal del sistema de alertas profesional */}
+            <CustomModal
+                config={modalConfig}
+                onClose={hideModal}
+            />
 
         </div> // Cierre container-general
     );

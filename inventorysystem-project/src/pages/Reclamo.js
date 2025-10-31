@@ -16,6 +16,8 @@ import {
 import { getReclamos, addReclamo, deleteReclamo, updateReclamo } from '../services/ReclamoService';
 import { getOrdenesCompra } from '../services/OrdenCompraService';
 import { getProveedores } from '../services/ProveedorService';
+import { useModal } from '../hooks/useModal';
+import CustomModal from '../components/CustomModal';
 
 const Reclamo = () => {
   const [reclamos, setReclamos] = useState([]);
@@ -29,6 +31,9 @@ const Reclamo = () => {
   const [mostrarModal, setMostrarModal] = useState(false);
   const [paginaActual, setPaginaActual] = useState(1);
   const [reclamoEditando, setReclamoEditando] = useState(null);
+
+  // Hook para modals
+  const { modalConfig, showAlert, hideModal } = useModal();
 
   const reclamosPorPagina = 5;
 
@@ -84,7 +89,7 @@ const Reclamo = () => {
   const handleRegistrarReclamo = async () => {
     try {
       if (!formulario.motivo || !formulario.ordenCompraId) {
-        alert('Por favor ingrese todos los campos requeridos');
+        showAlert('Por favor ingrese todos los campos requeridos', 'Validación', 'warning');
         return;
       }
       
@@ -287,6 +292,11 @@ const Reclamo = () => {
           </div>
         </Box>
       </Modal>
+
+      <CustomModal
+        config={modalConfig}
+        onClose={hideModal}
+      />
     </div>
   );
 };

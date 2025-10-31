@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { TextField, Button, Modal, Box, Pagination, Table, TableBody, TableCell, TableHead, TableRow,MenuItem, Typography } from '@mui/material';
 import { Plus, Pencil, Trash2, Edit } from "lucide-react";
-import { getProveedores, addProveedor, updateProveedor, deleteProveedor } from '../services/ProveedorService';
+import { getProveedores, addProveedor, updateProveedor, deleteProveedor, getProveedorById, getPaises } from '../services/ProveedorService';
 import useAuth from '../hooks/useAuth';
 import { ROLES } from '../constants/roles';
 import { useModal } from '../hooks/useModal';
@@ -32,12 +32,82 @@ const Proveedores = () => {
     const [paisesNombreCompleto, setPaisesNombreCompleto] = useState({});  // Mapa de códigos ISO a nombres completos de países
     
     // Hook para modals
-    const { modalConfig, showAlert, showConfirm, hideModal } = useModal();
+    const { modalConfig, showAlert, showConfirm, showError, showSuccess, hideModal } = useModal();
 
     useEffect(() => {
-        fetchProveedores();
-        fetchPaises();  // Llamar a la función para obtener los países
+        const initializeData = async () => {
+            try {
+                await fetchProveedores();
+                await fetchPaises();
+            } catch (error) {
+                console.error('Error al inicializar datos:', error);
+                showError('Error al cargar datos iniciales');
+            }
+        };
+        
+        initializeData();
     }, []);
+
+    // ✅ Monitorear cuando se cargan los países
+    useEffect(() => {
+        console.log('Países actualizados:', paises.length, paises);
+    }, [paises]);
+
+    // ✅ Monitorear cuando se actualiza nuevoProveedor
+    useEffect(() => {
+        if (proveedorEditando) {
+            console.log('NuevoProveedor actualizado:', nuevoProveedor);
+            console.log('País en nuevoProveedor:', nuevoProveedor.pais);
+        }
+    }, [nuevoProveedor, proveedorEditando]);
+
+    // ✅ Función para validar y ajustar el país del proveedor
+    const validarPaisProveedor = (proveedor) => {
+        console.log('Validando país del proveedor:', proveedor.pais);
+        console.log('Países disponibles para validar:', paises.map(p => ({ 
+            code: p.code || p.cca2, 
+            name: p.name || p.name?.common 
+        })));
+
+        if (!proveedor.pais || paises.length === 0) {
+            console.log('País vacío o países no cargados, devolviendo proveedor original');
+            return proveedor;
+        }
+
+        // Buscar el país en diferentes formatos
+        const paisExiste = paises.find(pais => 
+            (pais.code === proveedor.pais) || 
+            (pais.cca2 === proveedor.pais) ||
+            (pais.name === proveedor.pais) ||
+            (pais.name?.common === proveedor.pais)
+        );
+
+        if (paisExiste) {
+            console.log('País encontrado:', paisExiste);
+            // Asegurar que usamos el código correcto
+            const codigoPais = paisExiste.code || paisExiste.cca2;
+            return {
+                ...proveedor,
+                pais: codigoPais
+            };
+        } else {
+            console.warn(`País "${proveedor.pais}" no encontrado en lista de países disponibles`);
+            // Si el país no existe, agregar temporalmente a la lista
+            const paisTemporal = {
+                code: proveedor.pais,
+                name: proveedor.pais
+            };
+            setPaises(prev => {
+                const yaExiste = prev.some(p => (p.code === proveedor.pais) || (p.cca2 === proveedor.pais));
+                if (!yaExiste) {
+                    console.log('Agregando país temporal:', paisTemporal);
+                    return [...prev, paisTemporal];
+                }
+                return prev;
+            });
+            return proveedor;
+        }
+    };
 
     const fetchProveedores = async () => {
         try {
@@ -50,7 +120,50 @@ const Proveedores = () => {
 
 const fetchPaises = async () => {
         try {
-            // URL corregida para pedir solo los campos necesarios y evitar el error 400
+            // ✅ Intentar backend primero, con fallback automático a API externa
+            console.log('Intentando obtener países del backend...');
+            const paisesData = await getPaises();
+            console.log('Países recibidos del backend:', paisesData);
+            
+            if (Array.isArray(paisesData) && paisesData.length > 0) {
+                // ✅ Filtrar y validar países antes de ordenar
+                const paisesValidos = paisesData.filter(pais => pais && pais.name && pais.code);
+                
+                if (paisesValidos.length > 0) {
+                    const paisesOrdenados = paisesValidos.sort((a, b) => {
+                        const nombreA = a.name || '';
+                        const nombreB = b.name || '';
+                        return nombreA.localeCompare(nombreB);
+                    });
+                    
+                    setPaises(paisesOrdenados);
+                    
+                    // ✅ Crear mapa de códigos a nombres para compatibilidad
+                    const mapaCodigosNombres = {};
+                    paisesOrdenados.forEach(pais => {
+                        if (pais.code && pais.name) {
+                            mapaCodigosNombres[pais.code] = pais.name;
+                        }
+                    });
+                    setPaisesNombreCompleto(mapaCodigosNombres);
+                    
+                    console.log('Países cargados desde backend:', paisesOrdenados.length);
+                    return; // Éxito, no necesitar fallback
+                }
+            }
+            
+            // Si llegamos aquí, el backend no devolvió datos válidos
+            throw new Error('Backend no devolvió países válidos');
+            
+        } catch (error) {
+            console.warn('Backend de países falló, usando API externa como fallback:', error);
+            await fetchPaisesExternal();
+        }
+    };
+
+    // Función de fallback para API externa
+    const fetchPaisesExternal = async () => {
+        try {
             const response = await fetch('https://restcountries.com/v3.1/all?fields=name,cca2');
             
             if (!response.ok) {
@@ -61,24 +174,52 @@ const fetchPaises = async () => {
             const data = await response.json();
             
             if (Array.isArray(data)) {
-                const paisesOrdenados = data.sort((a, b) => 
-                    a.name.common.localeCompare(b.name.common)
+                // ✅ Filtrar y validar países de API externa
+                const paisesValidos = data.filter(pais => 
+                    pais && pais.name && pais.name.common && pais.cca2
                 );
+                
+                const paisesOrdenados = paisesValidos.sort((a, b) => {
+                    const nombreA = a.name?.common || '';
+                    const nombreB = b.name?.common || '';
+                    return nombreA.localeCompare(nombreB);
+                });
+                
                 setPaises(paisesOrdenados);
-            } else {
-                 console.error('La respuesta de la API de países no es un array:', data);
+                
+                // ✅ Crear mapa de códigos a nombres para API externa también
+                const mapaCodigosNombres = {};
+                paisesOrdenados.forEach(pais => {
+                    if (pais.cca2 && pais.name?.common) {
+                        mapaCodigosNombres[pais.cca2] = pais.name.common;
+                    }
+                });
+                setPaisesNombreCompleto(mapaCodigosNombres);
+                
+                console.log('Países cargados desde API externa:', paisesOrdenados.length);
             }
         } catch (error) {
-            console.error('Error al obtener los países:', error);
+            console.error('Error al obtener países de API externa:', error);
         }
     };
 
     const handleInputChange = (e) => {
-        const { name, value } = e.target;
-        setNuevoProveedor(prev => ({
-            ...prev,
-            [name]: value
-        }));
+        try {
+            const { name, value } = e.target;
+            
+            // Logging para debug cuando se selecciona país
+            if (name === 'pais') {
+                console.log('País seleccionado:', value);
+            }
+            
+            setNuevoProveedor(prev => ({
+                ...prev,
+                [name]: value
+            }));
+        } catch (error) {
+            console.error('Error en handleInputChange:', error);
+            showError('Error al actualizar el campo');
+        }
     };
 
     const handleAgregarProveedor = async () => {
@@ -101,14 +242,23 @@ const fetchPaises = async () => {
             let proveedor;
 
             if (proveedorEditando) {
-                // Si estamos editando un proveedor, lo actualizamos
-                await updateProveedor(proveedorEditando.id, nuevoProveedor);
-                setProveedores(prev => prev.map(p => p.id === proveedorEditando.id ? { ...nuevoProveedor, id: proveedorEditando.id } : p));
+                // ✅ Si estamos editando un proveedor, lo actualizamos con el endpoint corregido
+                const proveedorActualizado = await updateProveedor(proveedorEditando.id, nuevoProveedor);
+                
+                // ✅ Recargar la lista completa para asegurar datos frescos y consistentes
+                console.log('Recargando lista de proveedores después de actualizar...');
+                await fetchProveedores();
+                console.log('Lista de proveedores recargada');
+                
+                showSuccess('Proveedor actualizado correctamente');
             } else {
                 // Si es un nuevo proveedor, lo agregamos
-                proveedor = { ...nuevoProveedor, id: Date.now() }; // Usamos una id temporal
-                setProveedores(prev => [proveedor, ...prev]);  // Actualizamos inmediatamente el estado
-                await addProveedor(nuevoProveedor);  // Ahora sincronizamos con el backend
+                const nuevoProveedorCreado = await addProveedor(nuevoProveedor);
+                
+                // Recargar la lista completa para obtener el ID correcto del backend
+                await fetchProveedores();
+                
+                showSuccess('Proveedor agregado correctamente');
             }
 
             // Limpiar los campos después de agregar o editar el proveedor
@@ -126,8 +276,15 @@ const fetchPaises = async () => {
 
             setProveedorEditando(null);
             setMostrarFormulario(false);  // Cerrar el formulario
+            
+            // ✅ Asegurar que los países estén cargados después de operaciones
+            if (paises.length === 0) {
+                await fetchPaises();
+            }
         } catch (error) {
             console.error('Error al agregar o actualizar proveedor', error);
+            const mensaje = proveedorEditando ? 'Error al actualizar proveedor' : 'Error al agregar proveedor';
+            showError(`${mensaje}: ${error.response?.data?.message || error.message}`);
         }
     };
 
@@ -147,10 +304,29 @@ const fetchPaises = async () => {
         });
     };
 
-    const handleEditarProveedor = (proveedor) => {
-        setProveedorEditando(proveedor);
-        setNuevoProveedor(proveedor);
-        setMostrarFormulario(true);
+    const handleEditarProveedor = async (proveedor) => {
+        try {
+            // ✅ Asegurar que los países estén cargados ANTES de editar
+            if (paises.length === 0) {
+                console.log('Cargando países antes de editar...');
+                await fetchPaises();
+                // Esperar un poco para asegurar que el estado se actualice
+                await new Promise(resolve => setTimeout(resolve, 100));
+            }
+            
+            // ✅ Obtener datos actualizados del proveedor desde el backend
+            const proveedorActualizado = await getProveedorById(proveedor.id);
+            
+            // ✅ Validar y ajustar el país si es necesario
+            const proveedorValidado = validarPaisProveedor(proveedorActualizado);
+            
+            setProveedorEditando(proveedorValidado);
+            setNuevoProveedor(proveedorValidado);
+            setMostrarFormulario(true);
+        } catch (error) {
+            console.error('Error al obtener proveedor para editar:', error);
+            showError('Error al cargar los datos del proveedor');
+        }
     };
 
     const handleEliminarProveedor = async (id) => {
@@ -228,16 +404,21 @@ const fetchPaises = async () => {
                                     <TableCell>
                                         {/* Contenedor para la bandera y el nombre del país */}
                                         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                                            <img
-                                                src={`https://flagcdn.com/w320/${proveedor.pais.toLowerCase()}.png`}
-                                                alt={proveedor.pais}
-                                                style={{
-                                                    width: '24px',
-                                                    height: '16px',
-                                                    borderRadius: '2px',  // Borde redondeado solo en la imagen
-                                                }}
-                                            />
-                                            <span>{paisesNombreCompleto[proveedor.pais] || proveedor.pais}</span> {/* Aquí mostramos el nombre completo del país */}
+                                            {proveedor.pais ? (
+                                                <img
+                                                    src={`https://flagcdn.com/w320/${proveedor.pais.toLowerCase()}.png`}
+                                                    alt={proveedor.pais}
+                                                    style={{
+                                                        width: '24px',
+                                                        height: '16px',
+                                                        borderRadius: '2px',
+                                                    }}
+                                                    onError={(e) => {
+                                                        e.target.style.display = 'none';
+                                                    }}
+                                                />
+                                            ) : null}
+                                            <span>{paisesNombreCompleto[proveedor.pais] || proveedor.pais || 'Sin país'}</span>
                                         </div>
                                     </TableCell>
                                     <TableCell>{proveedor.telefono}</TableCell>
@@ -280,19 +461,38 @@ const fetchPaises = async () => {
                         select
                         label="País"
                         name="pais"
-                        value={nuevoProveedor.pais}
-                        onChange={handleInputChange}
+                        value={nuevoProveedor.pais || ""}
+                        onChange={(e) => {
+                            console.log('País seleccionado:', e.target.value);
+                            console.log('Opciones disponibles:', paises.map(p => p.code || p.cca2));
+                            handleInputChange(e);
+                        }}
                         disabled={paises.length === 0}
                         margin="normal"
+                        error={false}
                     >
                         {paises.length === 0 ? (
                             <MenuItem disabled value=""><em>Cargando países...</em></MenuItem>
                         ) : (
-                            paises.map((pais) => (
-                                <MenuItem key={pais.cca2} value={pais.cca2}>
-                                    {pais.name.common}
-                                </MenuItem>
-                            ))
+                            paises.map((pais, index) => {
+                                // ✅ Validaciones de seguridad para evitar crashes
+                                if (!pais) return null;
+                                
+                                const codigo = pais.code || pais.cca2 || `pais-${index}`;
+                                const nombre = (typeof pais.name === 'string' ? pais.name : pais.name?.common) || 'País sin nombre';
+                                
+                                // Validar que tenemos datos válidos antes de renderizar
+                                if (!codigo || !nombre) {
+                                    console.warn('País con datos inválidos:', pais);
+                                    return null;
+                                }
+                                
+                                return (
+                                    <MenuItem key={codigo} value={codigo}>
+                                        {nombre}
+                                    </MenuItem>
+                                );
+                            }).filter(Boolean) // Filtrar elementos nulos
                         )}
                     </TextField>
 

@@ -3,6 +3,8 @@ import { TextField, Button, Modal, Box, Pagination, Table, TableBody, TableCell,
 import { Plus, Pencil, Trash2, Edit } from "lucide-react";
 import Flag from 'react-world-flags'; // Para mostrar banderas
 import { getEmpresas, addEmpresa, updateEmpresa, deleteEmpresa } from '../services/EmpresaService';
+import { useModal } from '../hooks/useModal';
+import CustomModal from '../components/CustomModal';
 
 const Empresa = () => {
     const [empresas, setEmpresas] = useState([]);
@@ -15,6 +17,9 @@ const Empresa = () => {
     const [empresasPorPagina, setEmpresasPorPagina] = useState(5);
     const [paises, setPaises] = useState([]);  // Nuevo estado para los países
     const [paisesNombreCompleto, setPaisesNombreCompleto] = useState({});  // Mapa de códigos ISO a nombres completos de países
+
+    // Hook para modals
+    const { modalConfig, showAlert, hideModal } = useModal();
 
     // Obtener la lista de empresas
     const fetchEmpresas = async () => {
@@ -63,7 +68,7 @@ const fetchPaises = async () => {
 
     const handleGuardarEmpresa = async () => {
         if (!nuevaEmpresa.nombre || !nuevaEmpresa.ruc || !nuevaEmpresa.direccion || !nuevaEmpresa.telefono || !nuevaEmpresa.correo || !nuevaEmpresa.pais) {
-            alert('Por favor complete todos los campos');
+            showAlert('Por favor complete todos los campos', 'Validación', 'warning');
             return;
         }
 
@@ -213,6 +218,11 @@ const fetchPaises = async () => {
                     </div>
                 </Box>
             </Modal>
+
+            <CustomModal
+                config={modalConfig}
+                onClose={hideModal}
+            />
         </div>
     );
 };

@@ -49,15 +49,41 @@ export const getProveedores = async () => {
     }
   };
   
+  // Obtener un proveedor por ID
+  export const getProveedorById = async (id) => {
+    try {
+      const response = await axios.get(`${API_URL}/${id}`, {
+        headers: getAuthHeaders(),
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Error al obtener proveedor por ID:', error.response || error.message);
+      throw error;
+    }
+  };
+
   // Actualizar un proveedor existente
   export const updateProveedor = async (id, proveedor) => {
     try {
-      const response = await axios.put(`${API_URL}`, proveedor, {  // Ruta PUT
+      const response = await axios.put(`${API_URL}/${id}`, proveedor, {  // ✅ Corregido: Incluye ID en URL
         headers: getAuthHeaders(),
       });
       return response.data;
     } catch (error) {
       console.error('Error al actualizar proveedor:', error.response || error.message);
+      throw error;
+    }
+  };
+
+  // Obtener lista de países disponibles
+  export const getPaises = async () => {
+    try {
+      const response = await axios.get(`${API_URL}/paises`, {
+        headers: getAuthHeaders(),
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Error al obtener países:', error.response || error.message);
       throw error;
     }
   };
