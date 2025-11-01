@@ -26,8 +26,13 @@ import { getMateriasPrimas } from '../services/MateriaPrimaService';
 import { getProductosTerminados } from '../services/ProductoTerminadoService';
 import { useModal } from '../hooks/useModal';
 import CustomModal from '../components/CustomModal';
+import useAuth from '../hooks/useAuth';
+import { ROLES } from '../constants/roles';
 
 const MovimientoInventario = () => {
+    const { role } = useAuth();
+    const isGuest = role === ROLES.GUEST;
+    const [showGuestAlert, setShowGuestAlert] = useState(false);
     // CAMBIO 1: Leer el estado inicial desde localStorage.
     // Usamos una función en useState para que se ejecute solo la primera vez.
     const [tipoInventario, setTipoInventario] = useState(() => {
@@ -200,6 +205,7 @@ const MovimientoInventario = () => {
     };
 
     const handleAgregarMovimiento = async () => {
+        if (isGuest) { setShowGuestAlert(true); return; }
         try {
             if (tipoInventarioForm === 'materiasPrimas') {
                 if (!nuevoMovimientoMP.almacenId || !nuevoMovimientoMP.materiaPrimaId || !nuevoMovimientoMP.cantidad || !nuevoMovimientoMP.motivo) {
@@ -463,7 +469,7 @@ const MovimientoInventario = () => {
             {/* ... todo tu return sigue igual ... */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
                 <h2>Gestión de Movimientos de Inventario</h2>
-                <Button variant="contained" color="primary" onClick={() => { setMostrarFormulario(true); setTipoInventarioForm(tipoInventario); }}>
+                <Button variant="contained" color="primary" onClick={() => isGuest ? setShowGuestAlert(true) : (() => { setMostrarFormulario(true); setTipoInventarioForm(tipoInventario); })()}>
                     <Plus size={16} /> Nuevo Movimiento
                 </Button>
             </div>
@@ -546,10 +552,10 @@ const MovimientoInventario = () => {
                                                 )}
                                             </TableCell>
                                             <TableCell>
-                                                <Button color="primary" onClick={() => handleEditarMovimiento(movimiento, tipoInventario)}>
+                                                <Button color="primary" onClick={() => isGuest ? setShowGuestAlert(true) : handleEditarMovimiento(movimiento, tipoInventario)}>
                                                     <Edit size={18} />
                                                 </Button>
-                                                <Button color="error" onClick={() => handleEliminarMovimiento(movimiento.id, tipoInventario)}>
+                                                <Button color="error" onClick={() => isGuest ? setShowGuestAlert(true) : handleEliminarMovimiento(movimiento.id, tipoInventario)}>
                                                     <Trash2 size={18} />
                                                 </Button>
                                             </TableCell>
@@ -700,6 +706,16 @@ const MovimientoInventario = () => {
                 config={modalConfig}
                 onClose={hideModal}
             />
+
+            <Modal open={showGuestAlert} onClose={() => setShowGuestAlert(false)} style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                <Box style={{ background: '#fff', padding: '25px', borderRadius: '10px', minWidth: '400px', textAlign: 'center', borderTop: '5px solid #f44336' }}>
+                    <Typography variant="h6" style={{ color: '#f44336', fontWeight: '600' }}>Acción Restringida</Typography>
+                    <Typography style={{ margin: '15px 0' }}>
+                        No tienes permisos para realizar esta acción. Solicita autorización a un administrador mediante un ticket de incidente.
+                    </Typography>
+                    <Button variant="contained" color="primary" onClick={() => setShowGuestAlert(false)}>Entendido</Button>
+                </Box>
+            </Modal>
         </div>
     );
 };
