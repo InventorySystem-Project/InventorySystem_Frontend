@@ -301,6 +301,7 @@ const OrdenCompra = () => {
 
     // --- Handler para abrir el modal de vista previa (sin cambios) ---
     const handleAbrirPdfPreview = (orden) => {
+        if (isGuest) { setShowGuestAlert(true); return; }
         try {
             const dataUrl = generarPdfDataUrl(orden);
             setPdfPreviewUrl(dataUrl);
@@ -361,7 +362,7 @@ const OrdenCompra = () => {
                                 <TableCell>{orden.fechaEmision ? new Date(orden.fechaEmision).toLocaleDateString('es-ES') : '-'}</TableCell>
                                 <TableCell>{renderEstado(orden.estado)}</TableCell>
                                 <TableCell align="right">
-                                    <Button color="primary" onClick={() => handleAbrirPdfPreview(orden)} style={{ minWidth: 'auto', padding: '6px' }}>
+                                    <Button color="primary" onClick={() => isGuest ? setShowGuestAlert(true) : handleAbrirPdfPreview(orden)} style={{ minWidth: 'auto', padding: '6px' }}>
                                         <FileText size={18} />
                                     </Button>
                                     <Button color="info" onClick={() => isGuest ? setShowGuestAlert(true) : handleEditarOrden(orden)} style={{ minWidth: 'auto', padding: '6px' }}>

@@ -165,6 +165,12 @@ const MovimientoInventario = () => {
         console.log("Cambiado tipo de inventario en formulario a:", newValue);
     }
     const handleCheckboxChange = (e, id, tipoInventario) => {
+        if (isGuest) { 
+            e.preventDefault(); 
+            setShowGuestAlert(true); 
+            return; 
+        }
+        
         const nuevoEstado = e.target.checked;
         const mensaje = nuevoEstado
             ? '¿Deseas confirmar el movimiento?'
@@ -542,12 +548,14 @@ const MovimientoInventario = () => {
                                                 {tipoInventario === 'materiasPrimas' ? (
                                                     <Checkbox
                                                         checked={movimiento.estadoRecepcion || false}
-                                                        onChange={(e) => handleCheckboxChange(e, movimiento.id, 'materiasPrimas')}
+                                                        disabled={isGuest}
+                                                        onChange={(e) => isGuest ? setShowGuestAlert(true) : handleCheckboxChange(e, movimiento.id, 'materiasPrimas')}
                                                     />
                                                 ) : (
                                                     <Checkbox
                                                         checked={movimiento.estadoEntrega || false}
-                                                        onChange={(e) => handleCheckboxChange(e, movimiento.id, 'productosTerminados')}
+                                                        disabled={isGuest}
+                                                        onChange={(e) => isGuest ? setShowGuestAlert(true) : handleCheckboxChange(e, movimiento.id, 'productosTerminados')}
                                                     />
                                                 )}
                                             </TableCell>
