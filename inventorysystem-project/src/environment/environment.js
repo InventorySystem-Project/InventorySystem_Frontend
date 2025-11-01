@@ -1,7 +1,7 @@
 export const environment = {
-  production: false,
+  production: true,
   appName: 'Sistema de Inventario',
   version: '1.0.0',
-  debugMode: true,
-  url: 'https://systeminventory-backend.jhonsikos.xyz',//'https://systeminventory-backend.jhonsikos.xyz''http://localhost:8080', 
+  debugMode: false,
+  url: 'https://systeminventory-backend.jhonsikos.xyz', // 'http://localhost:8080', 
 };
