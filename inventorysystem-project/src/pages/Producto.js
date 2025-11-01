@@ -181,8 +181,8 @@ const Producto = () => {
                                     <TableCell>{producto.color}</TableCell>
                                     <TableCell>{"S/. "+producto.precioUnitario}</TableCell>
                                     <TableCell>
-                                        <Button color="primary" onClick={() => isGuest ? setShowGuestAlert(true) : handleEditarProducto(producto)}><Edit size={18} /></Button>
-                                        <Button color="error" onClick={() => isGuest ? setShowGuestAlert(true) : handleEliminarProducto(producto.id)}><Trash2 size={18} /></Button>
+                                        <Button color="primary" onClick={() => isGuest ? setShowGuestAlert(true) : handleEditarProducto(producto)} style={{ minWidth: 'auto', padding: '6px' }}><Edit size={18} /></Button>
+                                        <Button color="error" onClick={() => isGuest ? setShowGuestAlert(true) : handleEliminarProducto(producto.id)} style={{ minWidth: 'auto', padding: '6px' }}><Trash2 size={18} /></Button>
                                     </TableCell>
                                 </TableRow>
                             ))}

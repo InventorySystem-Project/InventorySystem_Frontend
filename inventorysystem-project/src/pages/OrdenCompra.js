@@ -361,16 +361,15 @@ const OrdenCompra = () => {
                                 <TableCell>{orden.fechaEmision ? new Date(orden.fechaEmision).toLocaleDateString('es-ES') : '-'}</TableCell>
                                 <TableCell>{renderEstado(orden.estado)}</TableCell>
                                 <TableCell align="right">
-                                     {/* ---- BOTÓN VISTA PREVIA ACTUALIZADO ---- */}
-                                    <IconButton color="primary" onClick={() => handleAbrirPdfPreview(orden)} title="Vista Previa PDF">
+                                    <Button color="primary" onClick={() => handleAbrirPdfPreview(orden)} style={{ minWidth: 'auto', padding: '6px' }}>
                                         <FileText size={18} />
-                                    </IconButton>
-                                    <IconButton color="info" onClick={() => isGuest ? setShowGuestAlert(true) : handleEditarOrden(orden)} title="Editar Orden">
+                                    </Button>
+                                    <Button color="info" onClick={() => isGuest ? setShowGuestAlert(true) : handleEditarOrden(orden)} style={{ minWidth: 'auto', padding: '6px' }}>
                                         <Edit size={18} />
-                                    </IconButton>
-                                    <IconButton color="error" title="Eliminar Orden" onClick={() => isGuest ? setShowGuestAlert(true) : handleEliminarOrden(orden.id)} >
+                                    </Button>
+                                    <Button color="error" onClick={() => isGuest ? setShowGuestAlert(true) : handleEliminarOrden(orden.id)} style={{ minWidth: 'auto', padding: '6px' }}>
                                         <Trash2 size={18} />
-                                    </IconButton>
+                                    </Button>
                                 </TableCell>
                             </TableRow>
                         )) : (
@@ -515,12 +514,12 @@ const OrdenCompra = () => {
 
             {/* --- MODAL ACCIÓN RESTRINGIDA PARA GUESTS --- */}
             <Modal open={showGuestAlert} onClose={() => setShowGuestAlert(false)} style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-                <Box style={{ background: '#fff', padding: '20px', borderRadius: '10px', minWidth: '320px' }}>
-                    <Typography variant="h6" sx={{ mb: 1 }}>Acción Restringida</Typography>
-                    <Typography sx={{ mb: 2 }}>No tienes permisos para realizar esta acción. Contacta con un administrador si necesitas permisos adicionales.</Typography>
-                    <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                        <Button variant="contained" color="primary" onClick={() => setShowGuestAlert(false)}>Entendido</Button>
-                    </div>
+                <Box style={{ background: '#fff', padding: '25px', borderRadius: '10px', minWidth: '400px', textAlign: 'center', borderTop: '5px solid #f44336' }}>
+                    <Typography variant="h6" style={{ color: '#f44336', fontWeight: '600' }}>Acción Restringida</Typography>
+                    <Typography style={{ margin: '15px 0' }}>
+                        No tienes permisos para realizar esta acción. Solicita autorización a un administrador mediante un ticket de incidente.
+                    </Typography>
+                    <Button variant="contained" color="primary" onClick={() => setShowGuestAlert(false)}>Entendido</Button>
                 </Box>
             </Modal>
 

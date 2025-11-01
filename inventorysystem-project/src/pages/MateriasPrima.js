@@ -157,8 +157,8 @@ const MateriaPrima = () => {
                                     <TableCell>{materiaPrima.nombre}</TableCell>
                                     <TableCell>{materiaPrima.unidad}</TableCell>
                                     <TableCell>
-                                        <Button color="primary" onClick={() => isGuest ? setShowGuestAlert(true) : handleEditarMateriaPrima(materiaPrima)}><Edit size={18} /></Button>
-                                        <Button color="error" onClick={() => isGuest ? setShowGuestAlert(true) : handleEliminarMateriaPrima(materiaPrima.id)}><Trash2 size={18} /></Button>
+                                        <Button color="primary" onClick={() => isGuest ? setShowGuestAlert(true) : handleEditarMateriaPrima(materiaPrima)} style={{ minWidth: 'auto', padding: '6px' }}><Edit size={18} /></Button>
+                                        <Button color="error" onClick={() => isGuest ? setShowGuestAlert(true) : handleEliminarMateriaPrima(materiaPrima.id)} style={{ minWidth: 'auto', padding: '6px' }}><Trash2 size={18} /></Button>
                                     </TableCell>
                                 </TableRow>
                             ))}

@@ -552,10 +552,10 @@ const MovimientoInventario = () => {
                                                 )}
                                             </TableCell>
                                             <TableCell>
-                                                <Button color="primary" onClick={() => isGuest ? setShowGuestAlert(true) : handleEditarMovimiento(movimiento, tipoInventario)}>
+                                                <Button color="primary" onClick={() => isGuest ? setShowGuestAlert(true) : handleEditarMovimiento(movimiento, tipoInventario)} style={{ minWidth: 'auto', padding: '6px' }}>
                                                     <Edit size={18} />
                                                 </Button>
-                                                <Button color="error" onClick={() => isGuest ? setShowGuestAlert(true) : handleEliminarMovimiento(movimiento.id, tipoInventario)}>
+                                                <Button color="error" onClick={() => isGuest ? setShowGuestAlert(true) : handleEliminarMovimiento(movimiento.id, tipoInventario)} style={{ minWidth: 'auto', padding: '6px' }}>
                                                     <Trash2 size={18} />
                                                 </Button>
                                             </TableCell>
