@@ -305,7 +305,7 @@ const Almacen = () => {
         <Box style={{ background: '#fff', padding: '25px', borderRadius: '10px', minWidth: '400px', textAlign: 'center', borderTop: '5px solid #f44336' }}>
           <Typography variant="h6" style={{ color: '#f44336', fontWeight: '600' }}>Acción Restringida</Typography>
           <Typography style={{ margin: '15px 0' }}>
-            No tienes permisos para realizar esta acción. Solicita autorización a un administrador mediante un ticket de incidente.
+            No tienes permisos para realizar esta acción. Solicita autorización a un administrador al WhastApp 985804246.
           </Typography>
           <Button variant="contained" color="primary" onClick={() => setShowGuestAlert(false)}>Entendido</Button>
         </Box>
