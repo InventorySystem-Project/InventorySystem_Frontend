@@ -150,8 +150,8 @@ const TicketFormModal = ({ open, onClose, onSave, ticketData, setTicketData, usu
     );
 };
 
-// Componente para asignar responsable
-const AsignarResponsableModal = ({ open, onClose, onAssign, ticketId, usuarios }) => {
+// Componente para asignar responsable (TEMPORALMENTE COMENTADO)
+/* const AsignarResponsableModal = ({ open, onClose, onAssign, ticketId, usuarios, showAlert }) => {
     const [responsableId, setResponsableId] = useState('');
     const [rolesMap, setRolesMap] = useState({});
     const [loadingRoles, setLoadingRoles] = useState(true);
@@ -219,10 +219,10 @@ const AsignarResponsableModal = ({ open, onClose, onAssign, ticketId, usuarios }
             </Box>
         </Modal>
     );
-};
+}; */
 
-// Componente para ver/agregar comentarios
-const ComentariosModal = ({ open, onClose, ticketId }) => {
+// Componente para ver/agregar comentarios (TEMPORALMENTE COMENTADO)
+/* const ComentariosModal = ({ open, onClose, ticketId, showError }) => {
     const [comentarios, setComentarios] = useState([]);
     const [nuevoComentario, setNuevoComentario] = useState('');
     const [loadingComentarios, setLoadingComentarios] = useState(false);
@@ -298,7 +298,7 @@ const ComentariosModal = ({ open, onClose, ticketId }) => {
             </Box>
         </Modal>
     );
-};
+}; */
 
 // Componente principal de Gestión de Incidentes
 const GestionIncidentes = ({ usuarios = [], currentUserId }) => {
