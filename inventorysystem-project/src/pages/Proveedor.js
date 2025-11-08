@@ -234,6 +234,11 @@ const fetchPaises = async () => {
             return;
         }
         
+        if (!nuevoProveedor.ruc || nuevoProveedor.ruc.trim() === '') {
+            showAlert('El campo "RUC" es obligatorio', 'Campo Obligatorio', 'warning');
+            return;
+        }
+        
         if (!nuevoProveedor.nombreContacto || nuevoProveedor.nombreContacto.trim() === '') {
             showAlert('El campo "Nombre de Contacto" es obligatorio', 'Campo Obligatorio', 'warning');
             return;
@@ -244,8 +249,18 @@ const fetchPaises = async () => {
             return;
         }
         
-        if (!nuevoProveedor.ruc || nuevoProveedor.ruc.trim() === '') {
-            showAlert('El campo "RUC" es obligatorio', 'Campo Obligatorio', 'warning');
+        if (!nuevoProveedor.correo || nuevoProveedor.correo.trim() === '') {
+            showAlert('El campo "Correo" es obligatorio', 'Campo Obligatorio', 'warning');
+            return;
+        }
+        
+        if (!nuevoProveedor.pais || nuevoProveedor.pais.trim() === '') {
+            showAlert('El campo "País" es obligatorio', 'Campo Obligatorio', 'warning');
+            return;
+        }
+        
+        if (!nuevoProveedor.direccion || nuevoProveedor.direccion.trim() === '') {
+            showAlert('El campo "Dirección" es obligatorio', 'Campo Obligatorio', 'warning');
             return;
         }
 
@@ -462,6 +477,9 @@ const fetchPaises = async () => {
                         onChange={handleInputChange}
                         fullWidth
                         margin="normal"
+                        required
+                        error={nuevoProveedor.nombreEmpresaProveedor !== undefined && nuevoProveedor.nombreEmpresaProveedor.trim() === ''}
+                        helperText={nuevoProveedor.nombreEmpresaProveedor !== undefined && nuevoProveedor.nombreEmpresaProveedor.trim() === '' ? 'Este campo es obligatorio' : ''}
                     />
 
                     <TextField 
@@ -471,12 +489,28 @@ const fetchPaises = async () => {
                         value={nuevoProveedor.ruc} 
                         onChange={handleInputChange} 
                         fullWidth 
-                        margin="normal" 
+                        margin="normal"
+                        required
                         InputProps={{ inputProps: { min: 0, step: 1 } }}
                         onKeyDown={(e) => { if (e.key === '-' || e.key === 'e' || e.key === 'E' || e.key === '.') e.preventDefault(); }}
-                        helperText="Solo números positivos"
+                        error={nuevoProveedor.ruc !== undefined && nuevoProveedor.ruc.trim() === ''}
+                        helperText={
+                            nuevoProveedor.ruc !== undefined && nuevoProveedor.ruc.trim() === ''
+                            ? 'Este campo es obligatorio'
+                            : 'Solo números positivos'
+                        }
                     />
-                    <TextField label="Nombre de Contacto" name="nombreContacto" value={nuevoProveedor.nombreContacto} onChange={handleInputChange} fullWidth margin="normal" />
+                    <TextField 
+                        label="Nombre de Contacto" 
+                        name="nombreContacto" 
+                        value={nuevoProveedor.nombreContacto} 
+                        onChange={handleInputChange} 
+                        fullWidth 
+                        margin="normal"
+                        required
+                        error={nuevoProveedor.nombreContacto !== undefined && nuevoProveedor.nombreContacto.trim() === ''}
+                        helperText={nuevoProveedor.nombreContacto !== undefined && nuevoProveedor.nombreContacto.trim() === '' ? 'Este campo es obligatorio' : ''}
+                    />
                     <TextField 
                         type="number"
                         label="Teléfono" 
@@ -484,12 +518,28 @@ const fetchPaises = async () => {
                         value={nuevoProveedor.telefono} 
                         onChange={handleInputChange} 
                         fullWidth 
-                        margin="normal" 
+                        margin="normal"
+                        required
                         InputProps={{ inputProps: { min: 0, step: 1 } }}
                         onKeyDown={(e) => { if (e.key === '-' || e.key === 'e' || e.key === 'E' || e.key === '.') e.preventDefault(); }}
-                        helperText="Solo números positivos"
+                        error={nuevoProveedor.telefono !== undefined && nuevoProveedor.telefono.trim() === ''}
+                        helperText={
+                            nuevoProveedor.telefono !== undefined && nuevoProveedor.telefono.trim() === ''
+                            ? 'Este campo es obligatorio'
+                            : 'Solo números positivos'
+                        }
                     />
-                    <TextField label="Correo" name="correo" value={nuevoProveedor.correo} onChange={handleInputChange} fullWidth margin="normal" />
+                    <TextField 
+                        label="Correo" 
+                        name="correo" 
+                        value={nuevoProveedor.correo} 
+                        onChange={handleInputChange} 
+                        fullWidth 
+                        margin="normal"
+                        required
+                        error={nuevoProveedor.correo !== undefined && nuevoProveedor.correo.trim() === ''}
+                        helperText={nuevoProveedor.correo !== undefined && nuevoProveedor.correo.trim() === '' ? 'Este campo es obligatorio' : ''}
+                    />
                     <TextField
                         fullWidth
                         select
@@ -503,7 +553,9 @@ const fetchPaises = async () => {
                         }}
                         disabled={paises.length === 0}
                         margin="normal"
-                        error={false}
+                        required
+                        error={nuevoProveedor.pais !== undefined && (!nuevoProveedor.pais || nuevoProveedor.pais.trim() === '')}
+                        helperText={nuevoProveedor.pais !== undefined && (!nuevoProveedor.pais || nuevoProveedor.pais.trim() === '') ? 'Este campo es obligatorio' : ''}
                     >
                         {paises.length === 0 ? (
                             <MenuItem disabled value=""><em>Cargando países...</em></MenuItem>
@@ -530,7 +582,17 @@ const fetchPaises = async () => {
                         )}
                     </TextField>
 
-                    <TextField label="Dirección" name="direccion" value={nuevoProveedor.direccion} onChange={handleInputChange} fullWidth margin="normal" />
+                    <TextField 
+                        label="Dirección" 
+                        name="direccion" 
+                        value={nuevoProveedor.direccion} 
+                        onChange={handleInputChange} 
+                        fullWidth 
+                        margin="normal"
+                        required
+                        error={nuevoProveedor.direccion !== undefined && nuevoProveedor.direccion.trim() === ''}
+                        helperText={nuevoProveedor.direccion !== undefined && nuevoProveedor.direccion.trim() === '' ? 'Este campo es obligatorio' : ''}
+                    />
                     <div style={{ display: 'flex', justifyContent: 'center', gap: '10px', marginTop: '20px' }}>
                         <Button variant="outlined" color="primary" onClick={handleCancelar}>Cancelar</Button>
                         <Button variant="contained" color="primary" onClick={handleAgregarProveedor}>Guardar</Button>
