@@ -615,25 +615,29 @@ const Usuario = () => {
                     {/* Cuarta fila: DNI y Teléfono */}
                     <div style={{ display: 'flex', gap: '20px', marginBottom: '15px' }}>
                         <TextField
+                            type="number"
                             label="DNI"
                             name="dni"
                             value={nuevoUsuario.dni}
                             onChange={handleInputChange}
                             fullWidth
                             error={!!errors.dni}
-                            helperText={errors.dni}
-                            inputProps={{ inputMode: 'numeric', pattern: '[0-9]*' }}
+                            helperText={errors.dni || "Solo números positivos"}
+                            InputProps={{ inputProps: { min: 0, step: 1 } }}
+                            onKeyDown={(e) => { if (e.key === '-' || e.key === 'e' || e.key === 'E' || e.key === '.') e.preventDefault(); }}
                             style={{ flex: 1 }}
                         />
                         <TextField
+                            type="number"
                             label="Teléfono"
                             name="telefono"
                             value={nuevoUsuario.telefono}
                             onChange={handleInputChange}
                             fullWidth
                             error={!!errors.telefono}
-                            helperText={errors.telefono}
-                            inputProps={{ inputMode: 'numeric', pattern: '[0-9]*' }}
+                            helperText={errors.telefono || "Solo números positivos"}
+                            InputProps={{ inputProps: { min: 0, step: 1 } }}
+                            onKeyDown={(e) => { if (e.key === '-' || e.key === 'e' || e.key === 'E' || e.key === '.') e.preventDefault(); }}
                             style={{ flex: 1 }}
                         />
                     </div>

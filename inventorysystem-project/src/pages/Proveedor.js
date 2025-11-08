@@ -453,9 +453,31 @@ const fetchPaises = async () => {
                         margin="normal"
                     />
 
-                    <TextField label="RUC" name="ruc" value={nuevoProveedor.ruc} onChange={handleInputChange} fullWidth margin="normal" />
+                    <TextField 
+                        type="number"
+                        label="RUC" 
+                        name="ruc" 
+                        value={nuevoProveedor.ruc} 
+                        onChange={handleInputChange} 
+                        fullWidth 
+                        margin="normal" 
+                        InputProps={{ inputProps: { min: 0, step: 1 } }}
+                        onKeyDown={(e) => { if (e.key === '-' || e.key === 'e' || e.key === 'E' || e.key === '.') e.preventDefault(); }}
+                        helperText="Solo números positivos"
+                    />
                     <TextField label="Nombre de Contacto" name="nombreContacto" value={nuevoProveedor.nombreContacto} onChange={handleInputChange} fullWidth margin="normal" />
-                    <TextField label="Teléfono" name="telefono" value={nuevoProveedor.telefono} onChange={handleInputChange} fullWidth margin="normal" />
+                    <TextField 
+                        type="number"
+                        label="Teléfono" 
+                        name="telefono" 
+                        value={nuevoProveedor.telefono} 
+                        onChange={handleInputChange} 
+                        fullWidth 
+                        margin="normal" 
+                        InputProps={{ inputProps: { min: 0, step: 1 } }}
+                        onKeyDown={(e) => { if (e.key === '-' || e.key === 'e' || e.key === 'E' || e.key === '.') e.preventDefault(); }}
+                        helperText="Solo números positivos"
+                    />
                     <TextField label="Correo" name="correo" value={nuevoProveedor.correo} onChange={handleInputChange} fullWidth margin="normal" />
                     <TextField
                         fullWidth

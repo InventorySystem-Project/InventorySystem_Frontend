@@ -757,12 +757,14 @@ const handleRegisterSubmit = async (e) => {
             <label style={styles.inputLabel}>DNI</label>
             <input
               style={styles.input}
-              type="text"
+              type="number"
               name="dni"
               value={registerData.dni}
               onChange={handleRegisterChange}
               placeholder="DNI"
               required
+              min="0"
+              onKeyDown={(e) => { if (e.key === '-' || e.key === 'e' || e.key === 'E' || e.key === '.') e.preventDefault(); }}
             />
           </div>
 
@@ -770,12 +772,14 @@ const handleRegisterSubmit = async (e) => {
             <label style={styles.inputLabel}>Teléfono</label>
             <input
               style={styles.input}
-              type="text"
+              type="number"
               name="telefono"
               value={registerData.telefono}
               onChange={handleRegisterChange}
               placeholder="Teléfono"
               required
+              min="0"
+              onKeyDown={(e) => { if (e.key === '-' || e.key === 'e' || e.key === 'E' || e.key === '.') e.preventDefault(); }}
             />
           </div>
         </div>

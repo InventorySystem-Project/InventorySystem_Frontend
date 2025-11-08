@@ -672,7 +672,20 @@ const MovimientoInventario = () => {
                                     ))
                                 ) : (<MenuItem value="" disabled> No hay materias primas disponibles </MenuItem>)}
                             </TextField>
-                            <TextField label="Cantidad" name="cantidad" value={nuevoMovimientoMP.cantidad} onChange={handleInputChangeMP} fullWidth style={{ marginBottom: '15px' }} InputProps={{ inputProps: { min: 0 } }} InputLabelProps={{ shrink: true, }} error={!nuevoMovimientoMP.cantidad && nuevoMovimientoMP.cantidad !== ''} helperText={!nuevoMovimientoMP.cantidad && nuevoMovimientoMP.cantidad !== '' ? 'Ingrese una cantidad válida' : ''} />
+                            <TextField 
+                                type="number" 
+                                label="Cantidad" 
+                                name="cantidad" 
+                                value={nuevoMovimientoMP.cantidad} 
+                                onChange={handleInputChangeMP} 
+                                fullWidth 
+                                style={{ marginBottom: '15px' }} 
+                                InputProps={{ inputProps: { min: 0, step: 1 } }} 
+                                InputLabelProps={{ shrink: true }} 
+                                error={!nuevoMovimientoMP.cantidad && nuevoMovimientoMP.cantidad !== ''} 
+                                helperText={!nuevoMovimientoMP.cantidad && nuevoMovimientoMP.cantidad !== '' ? 'Ingrese una cantidad válida (no puede ser negativa)' : ''} 
+                                onKeyDown={(e) => { if (e.key === '-' || e.key === 'e' || e.key === 'E') e.preventDefault(); }}
+                            />
                             <TextField label="Motivo" name="motivo" value={nuevoMovimientoMP.motivo} onChange={handleInputChangeMP} placeholder="Motivo del movimiento" fullWidth style={{ marginBottom: '20px' }} InputLabelProps={{ shrink: true }} error={!nuevoMovimientoMP.motivo && nuevoMovimientoMP.motivo !== ''} helperText={!nuevoMovimientoMP.motivo && nuevoMovimientoMP.motivo !== '' ? 'Ingrese un motivo' : ''} />
                             {/*<FormControlLabel control={ <Checkbox checked={nuevoMovimientoMP.estadoRecepcion || false} onChange={(e) => setNuevoMovimientoMP({ ...nuevoMovimientoMP, estadoRecepcion: e.target.checked })} name="estadoRecepcion" color="primary" /> } label="Estado de Recepción" style={{ marginBottom: '15px' }} />*/}
                         </>
@@ -697,7 +710,20 @@ const MovimientoInventario = () => {
                                     ))
                                 ) : (<MenuItem value="" disabled> No hay productos terminados disponibles </MenuItem>)}
                             </TextField>
-                            <TextField type="number" label="Cantidad" name="cantidad" value={nuevoMovimientoPT.cantidad} onChange={handleInputChangePT} fullWidth style={{ marginBottom: '15px' }} InputLabelProps={{ shrink: true }} error={!nuevoMovimientoPT.cantidad && nuevoMovimientoPT.cantidad !== ''} helperText={!nuevoMovimientoPT.cantidad && nuevoMovimientoPT.cantidad !== '' ? 'Ingrese una cantidad válida' : ''} />
+                            <TextField 
+                                type="number" 
+                                label="Cantidad" 
+                                name="cantidad" 
+                                value={nuevoMovimientoPT.cantidad} 
+                                onChange={handleInputChangePT} 
+                                fullWidth 
+                                style={{ marginBottom: '15px' }} 
+                                InputProps={{ inputProps: { min: 0, step: 1 } }}
+                                InputLabelProps={{ shrink: true }} 
+                                error={!nuevoMovimientoPT.cantidad && nuevoMovimientoPT.cantidad !== ''} 
+                                helperText={!nuevoMovimientoPT.cantidad && nuevoMovimientoPT.cantidad !== '' ? 'Ingrese una cantidad válida (no puede ser negativa)' : ''} 
+                                onKeyDown={(e) => { if (e.key === '-' || e.key === 'e' || e.key === 'E') e.preventDefault(); }}
+                            />
                             <TextField label="Motivo" name="motivo" value={nuevoMovimientoPT.motivo} onChange={handleInputChangePT} placeholder="Motivo del movimiento" fullWidth style={{ marginBottom: '20px' }} InputLabelProps={{ shrink: true }} error={!nuevoMovimientoPT.motivo && nuevoMovimientoPT.motivo !== ''} helperText={!nuevoMovimientoPT.motivo && nuevoMovimientoPT.motivo !== '' ? 'Ingrese un motivo' : ''} />
                             {/*<FormControlLabel control={ <Checkbox checked={nuevoMovimientoPT.estadoEntrega || false} onChange={(e) => setNuevoMovimientoPT({ ...nuevoMovimientoPT, estadoEntrega: e.target.checked })} name="estadoEntrega" color="primary" /> } label="Estado de Entrega" style={{ marginBottom: '15px' }} />*/}
                         </>

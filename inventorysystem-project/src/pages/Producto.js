@@ -200,7 +200,18 @@ const Producto = () => {
                     <TextField label="Tipo" name="tipo" value={nuevoProducto.tipo} onChange={handleInputChange} fullWidth margin="normal" />
                     <TextField label="Modelo" name="modelo" value={nuevoProducto.modelo} onChange={handleInputChange} fullWidth margin="normal" />
                     <TextField label="Color" name="color" value={nuevoProducto.color} onChange={handleInputChange} fullWidth margin="normal" />
-                    <TextField label="Precio Unitario" name="precioUnitario" value={nuevoProducto.precioUnitario} onChange={handleInputChange} fullWidth margin="normal" />
+                    <TextField 
+                        type="number" 
+                        label="Precio Unitario" 
+                        name="precioUnitario" 
+                        value={nuevoProducto.precioUnitario} 
+                        onChange={handleInputChange} 
+                        fullWidth 
+                        margin="normal" 
+                        InputProps={{ inputProps: { min: 0, step: 0.01 } }}
+                        onKeyDown={(e) => { if (e.key === '-' || e.key === 'e' || e.key === 'E') e.preventDefault(); }}
+                        helperText="No puede ser negativo"
+                    />
                     <div style={{ display: 'flex', justifyContent: 'center', gap: '10px', marginTop: '20px' }}>
                         <Button variant="outlined" color="primary" onClick={handleCancelar}>Cancelar</Button>
                         <Button variant="contained" color="primary" onClick={handleAgregarProducto}>Guardar</Button>
