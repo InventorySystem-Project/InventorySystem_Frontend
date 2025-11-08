@@ -67,25 +67,21 @@ const Producto = () => {
         }
 
         try {
-
-            let producto;
-
             if (productoEditando) {
                 // Si estamos editando un producto, lo actualizamos
                 await updateProductoTerminado(productoEditando.id, nuevoProducto);
-                setProductos((prev) =>
-                    prev.map((p) =>
-                        p.id === productoEditando.id ? { ...nuevoProducto, id: productoEditando.id } : p
-                    )
-                );
                 showSuccess('Producto actualizado correctamente');
             } else {
                 // Si es un nuevo producto, lo agregamos
-                const nuevoProductoResponse = await addProductoTerminado(nuevoProducto);
-                setProductos((prev) => [nuevoProductoResponse, ...prev]);
+                await addProductoTerminado(nuevoProducto);
                 showSuccess('Producto creado correctamente');
             }
 
+            // Recargar la lista completa desde el servidor
+            const productosActualizados = await getProductosTerminados();
+            setProductos(productosActualizados);
+
+            // Limpiar formulario
             setNuevoProducto({
                 nombre: '',
                 tipo: '',
@@ -128,8 +124,11 @@ const Producto = () => {
         showConfirm('¿Está seguro que desea eliminar este producto?', async () => {
             try {
                 await deleteProductoTerminado(id);
-                setProductos((prev) => prev.filter((p) => p.id !== id));
                 showSuccess('Producto eliminado correctamente');
+                
+                // Recargar la lista completa desde el servidor
+                const productosActualizados = await getProductosTerminados();
+                setProductos(productosActualizados);
             } catch (error) {
                 console.error('Error al eliminar producto', error);
             }

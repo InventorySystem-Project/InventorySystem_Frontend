@@ -176,13 +176,15 @@ const Almacen = () => {
     try {
       if (formulario.id) {
         await updateAlmacen(formulario);
-        setAlmacenes(prev => prev.map(a => a.id === formulario.id ? formulario : a));
         showSuccess('Almacén actualizado correctamente');
       } else {
-        const nuevoAlmacen = await addAlmacen(formulario);
-        setAlmacenes(prev => [nuevoAlmacen, ...prev]);
+        await addAlmacen(formulario);
         showSuccess('Almacén creado correctamente');
       }
+      
+      // Recargar la lista completa desde el servidor
+      await fetchAlmacenes();
+      
       setMostrarModal(false);
       setFormulario({ id: '', empresaId: '', nombre: '', ubicacion: '' });
     } catch (error) {
@@ -200,8 +202,10 @@ const Almacen = () => {
       async () => {
         try {
           await deleteAlmacen(id);
-          setAlmacenes(prev => prev.filter(a => a.id !== id));
           showSuccess('Almacén eliminado correctamente');
+          
+          // Recargar la lista completa desde el servidor
+          await fetchAlmacenes();
         } catch (error) {
           console.error('❌ Error al eliminar almacén:', error);
         }

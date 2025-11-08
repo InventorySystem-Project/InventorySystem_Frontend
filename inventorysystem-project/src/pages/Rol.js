@@ -63,19 +63,17 @@ const Rol = () => {
         try {
             if (rolEditando) {
                 // Si estamos editando un rol, lo actualizamos
-                const rolActualizado = await updateRol(rolEditando.id, nuevoRol);
-                setRoles((prev) =>
-                    prev.map((r) =>
-                        r.id === rolEditando.id ? (rolActualizado || { ...nuevoRol, id: rolEditando.id }) : r
-                    )
-                );
+                await updateRol(rolEditando.id, nuevoRol);
                 showSuccess('Rol actualizado correctamente');
             } else {
                 // Si es un nuevo rol, lo agregamos
-                const rolCreado = await addRol(nuevoRol);
-                setRoles((prev) => [rolCreado, ...prev]);
+                await addRol(nuevoRol);
                 showSuccess('Rol creado correctamente');
             }
+
+            // Recargar la lista completa desde el servidor
+            const rolesActualizados = await getRoles();
+            setRoles(rolesActualizados);
 
             setNuevoRol({
                 rol: ''
@@ -109,8 +107,11 @@ const Rol = () => {
             async () => {
                 try {
                     await deleteRol(id);
-                    setRoles((prev) => prev.filter((r) => r.id !== id));
                     showSuccess('Rol eliminado correctamente');
+                    
+                    // Recargar la lista completa desde el servidor
+                    const rolesActualizados = await getRoles();
+                    setRoles(rolesActualizados);
                 } catch (error) {
                     console.error('Error al eliminar rol', error);
                     showError('Error al eliminar el rol. Por favor, intente nuevamente.');

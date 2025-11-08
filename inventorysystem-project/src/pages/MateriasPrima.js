@@ -68,15 +68,14 @@ const MateriaPrima = () => {
         try {
             if (materiaPrimaEditando) {
                 await updateMateriaPrima(materiaPrimaEditando.id, nuevaMateriaPrima);
-                setMateriasPrimas(prev => 
-                    prev.map(m => m.id === materiaPrimaEditando.id ? { ...nuevaMateriaPrima, id: materiaPrimaEditando.id } : m)
-                );
                 showSuccess('Materia prima actualizada correctamente');
             } else {
-                const nuevaMateriaPrimaResponse = await addMateriaPrima(nuevaMateriaPrima);
-                setMateriasPrimas(prev => [nuevaMateriaPrimaResponse, ...prev]);
+                await addMateriaPrima(nuevaMateriaPrima);
                 showSuccess('Materia prima creada correctamente');
             }
+
+            // Recargar la lista completa desde el servidor
+            await fetchMateriasPrimas();
 
             // Limpiar formulario
             setNuevaMateriaPrima({ nombre: "", unidad: "" });
@@ -108,8 +107,10 @@ const MateriaPrima = () => {
         showConfirm('¿Está seguro que desea eliminar esta materia prima?', async () => {
             try {
                 await deleteMateriaPrima(id);
-                setMateriasPrimas(prev => prev.filter(m => m.id !== id));
                 showSuccess('Materia prima eliminada correctamente');
+                
+                // Recargar la lista completa desde el servidor
+                await fetchMateriasPrimas();
             } catch (error) {
                 console.error('Error al eliminar materia prima', error);
             }
