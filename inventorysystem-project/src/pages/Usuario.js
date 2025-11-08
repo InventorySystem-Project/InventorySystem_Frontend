@@ -145,11 +145,11 @@ const Usuario = () => {
         const nuevoErrors = {};
 
         // Validar campos obligatorios
-        if (!nuevoUsuario.nombre) nuevoErrors.nombre = 'El nombre es obligatorio';
-        if (!nuevoUsuario.apellido) nuevoErrors.apellido = 'El apellido es obligatorio';
-        if (!nuevoUsuario.correo) nuevoErrors.correo = 'El correo es obligatorio';
-        if (!nuevoUsuario.password && !usuarioEditando) nuevoErrors.password = 'La contraseña es obligatoria';
-        if (!nuevoUsuario.username) nuevoErrors.username = 'El nombre de usuario es obligatorio';
+        if (!nuevoUsuario.nombre || nuevoUsuario.nombre.trim() === '') nuevoErrors.nombre = 'El nombre es obligatorio';
+        if (!nuevoUsuario.apellido || nuevoUsuario.apellido.trim() === '') nuevoErrors.apellido = 'El apellido es obligatorio';
+        if (!nuevoUsuario.correo || nuevoUsuario.correo.trim() === '') nuevoErrors.correo = 'El correo es obligatorio';
+        if ((!nuevoUsuario.password || nuevoUsuario.password.trim() === '') && !usuarioEditando) nuevoErrors.password = 'La contraseña es obligatoria';
+        if (!nuevoUsuario.username || nuevoUsuario.username.trim() === '') nuevoErrors.username = 'El nombre de usuario es obligatorio';
         if (!nuevoUsuario.rolId) nuevoErrors.rolId = 'El rol es obligatorio';
 
         // Validar formato correo

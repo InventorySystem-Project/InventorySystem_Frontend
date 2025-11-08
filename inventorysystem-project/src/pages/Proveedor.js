@@ -227,14 +227,25 @@ const fetchPaises = async () => {
             setShowGuestAlert(true);
             return;
         }
-        // Verificar si todos los campos están completos
-        if (
-            !nuevoProveedor.nombreEmpresaProveedor ||
-            !nuevoProveedor.nombreContacto ||
-            !nuevoProveedor.telefono ||
-            !nuevoProveedor.ruc
-        ) {
-            showAlert('Por favor complete los campos obligatorios', 'Validación', 'warning');
+        
+        // Validar campos obligatorios
+        if (!nuevoProveedor.nombreEmpresaProveedor || nuevoProveedor.nombreEmpresaProveedor.trim() === '') {
+            showAlert('El campo "Nombre de Empresa Proveedor" es obligatorio', 'Campo Obligatorio', 'warning');
+            return;
+        }
+        
+        if (!nuevoProveedor.nombreContacto || nuevoProveedor.nombreContacto.trim() === '') {
+            showAlert('El campo "Nombre de Contacto" es obligatorio', 'Campo Obligatorio', 'warning');
+            return;
+        }
+        
+        if (!nuevoProveedor.telefono || nuevoProveedor.telefono.trim() === '') {
+            showAlert('El campo "Teléfono" es obligatorio', 'Campo Obligatorio', 'warning');
+            return;
+        }
+        
+        if (!nuevoProveedor.ruc || nuevoProveedor.ruc.trim() === '') {
+            showAlert('El campo "RUC" es obligatorio', 'Campo Obligatorio', 'warning');
             return;
         }
 

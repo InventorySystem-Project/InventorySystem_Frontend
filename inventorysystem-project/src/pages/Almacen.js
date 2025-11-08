@@ -173,6 +173,38 @@ const Almacen = () => {
       setShowGuestAlert(true);
       return;
     }
+    
+    // Validar campos obligatorios
+    if (!formulario.nombre || formulario.nombre.trim() === '') {
+      showConfirm(
+        'El campo "Nombre del Almacén" es obligatorio.',
+        () => {},
+        'Campo Obligatorio',
+        false
+      );
+      return;
+    }
+    
+    if (!formulario.ubicacion || formulario.ubicacion.trim() === '') {
+      showConfirm(
+        'El campo "Ubicación" es obligatorio.',
+        () => {},
+        'Campo Obligatorio',
+        false
+      );
+      return;
+    }
+    
+    if (!formulario.empresaId) {
+      showConfirm(
+        'Debe seleccionar una Empresa.',
+        () => {},
+        'Campo Obligatorio',
+        false
+      );
+      return;
+    }
+    
     try {
       if (formulario.id) {
         await updateAlmacen(formulario);
@@ -301,9 +333,37 @@ const Almacen = () => {
       <Modal open={mostrarModal} onClose={() => setMostrarModal(false)} style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
         <Box sx={{ background: '#fff', padding: '20px', borderRadius: '10px', width: '450px', maxHeight: '90vh', overflowY: 'auto' }}>
           <h3>{formulario.id ? 'Editar Almacén' : 'Nuevo Almacén'}</h3>
-          <TextField fullWidth label="Nombre del Almacén" value={formulario.nombre} onChange={(e) => setFormulario({ ...formulario, nombre: e.target.value })} margin="normal" />
-          <TextField fullWidth label="Ubicación" value={formulario.ubicacion} onChange={(e) => setFormulario({ ...formulario, ubicacion: e.target.value })} margin="normal" />
-          <TextField fullWidth select label="Empresa" value={formulario.empresaId} onChange={(e) => setFormulario({ ...formulario, empresaId: e.target.value })} margin="normal">
+          <TextField 
+            fullWidth 
+            label="Nombre del Almacén" 
+            value={formulario.nombre} 
+            onChange={(e) => setFormulario({ ...formulario, nombre: e.target.value })} 
+            margin="normal" 
+            required
+            error={formulario.nombre !== undefined && formulario.nombre.trim() === ''}
+            helperText={formulario.nombre !== undefined && formulario.nombre.trim() === '' ? 'Este campo es obligatorio' : ''}
+          />
+          <TextField 
+            fullWidth 
+            label="Ubicación" 
+            value={formulario.ubicacion} 
+            onChange={(e) => setFormulario({ ...formulario, ubicacion: e.target.value })} 
+            margin="normal" 
+            required
+            error={formulario.ubicacion !== undefined && formulario.ubicacion.trim() === ''}
+            helperText={formulario.ubicacion !== undefined && formulario.ubicacion.trim() === '' ? 'Este campo es obligatorio' : ''}
+          />
+          <TextField 
+            fullWidth 
+            select 
+            label="Empresa" 
+            value={formulario.empresaId} 
+            onChange={(e) => setFormulario({ ...formulario, empresaId: e.target.value })} 
+            margin="normal"
+            required
+            error={formulario.empresaId !== undefined && !formulario.empresaId}
+            helperText={formulario.empresaId !== undefined && !formulario.empresaId ? 'Debe seleccionar una empresa' : ''}
+          >
             {empresas.map(e => (<MenuItem key={e.id} value={e.id}>{e.nombre}</MenuItem>))}
           </TextField>
           <div style={{ display: 'flex', justifyContent: 'center', gap: '10px', marginTop: '20px' }}>

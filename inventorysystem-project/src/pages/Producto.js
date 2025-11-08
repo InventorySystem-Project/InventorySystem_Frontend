@@ -57,12 +57,19 @@ const Producto = () => {
             return;
         }
 
-        if (
-            !nuevoProducto.nombre ||
-            !nuevoProducto.tipo ||
-            !nuevoProducto.precioUnitario
-        ) {
-            showAlert('Por favor complete los campos obligatorios', 'Validación', 'warning');
+        // Validar campos obligatorios
+        if (!nuevoProducto.nombre || nuevoProducto.nombre.trim() === '') {
+            showAlert('El campo "Nombre" es obligatorio', 'Campo Obligatorio', 'warning');
+            return;
+        }
+
+        if (!nuevoProducto.tipo || nuevoProducto.tipo.trim() === '') {
+            showAlert('El campo "Tipo" es obligatorio', 'Campo Obligatorio', 'warning');
+            return;
+        }
+
+        if (!nuevoProducto.precioUnitario || nuevoProducto.precioUnitario <= 0) {
+            showAlert('El campo "Precio Unitario" es obligatorio y debe ser mayor a 0', 'Campo Obligatorio', 'warning');
             return;
         }
 
@@ -196,10 +203,44 @@ const Producto = () => {
 <Modal open={mostrarFormulario} onClose={() => setMostrarFormulario(false)} style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
                 <Box style={{ background: '#fff', padding: '20px', borderRadius: '10px', width: '450px', maxHeight: '90vh', overflowY: 'auto' }}>
                     <h3>{productoEditando ? 'Editar Producto' : 'Nuevo Producto'}</h3>
-                    <TextField label="Nombre" name="nombre" value={nuevoProducto.nombre} onChange={handleInputChange} fullWidth margin="normal" />
-                    <TextField label="Tipo" name="tipo" value={nuevoProducto.tipo} onChange={handleInputChange} fullWidth margin="normal" />
-                    <TextField label="Modelo" name="modelo" value={nuevoProducto.modelo} onChange={handleInputChange} fullWidth margin="normal" />
-                    <TextField label="Color" name="color" value={nuevoProducto.color} onChange={handleInputChange} fullWidth margin="normal" />
+                    <TextField 
+                        label="Nombre" 
+                        name="nombre" 
+                        value={nuevoProducto.nombre} 
+                        onChange={handleInputChange} 
+                        fullWidth 
+                        margin="normal"
+                        required
+                        error={nuevoProducto.nombre !== undefined && nuevoProducto.nombre.trim() === ''}
+                        helperText={nuevoProducto.nombre !== undefined && nuevoProducto.nombre.trim() === '' ? 'Este campo es obligatorio' : ''}
+                    />
+                    <TextField 
+                        label="Tipo" 
+                        name="tipo" 
+                        value={nuevoProducto.tipo} 
+                        onChange={handleInputChange} 
+                        fullWidth 
+                        margin="normal"
+                        required
+                        error={nuevoProducto.tipo !== undefined && nuevoProducto.tipo.trim() === ''}
+                        helperText={nuevoProducto.tipo !== undefined && nuevoProducto.tipo.trim() === '' ? 'Este campo es obligatorio' : ''}
+                    />
+                    <TextField 
+                        label="Modelo" 
+                        name="modelo" 
+                        value={nuevoProducto.modelo} 
+                        onChange={handleInputChange} 
+                        fullWidth 
+                        margin="normal"
+                    />
+                    <TextField 
+                        label="Color" 
+                        name="color" 
+                        value={nuevoProducto.color} 
+                        onChange={handleInputChange} 
+                        fullWidth 
+                        margin="normal"
+                    />
                     <TextField 
                         type="number" 
                         label="Precio Unitario" 
@@ -207,10 +248,16 @@ const Producto = () => {
                         value={nuevoProducto.precioUnitario} 
                         onChange={handleInputChange} 
                         fullWidth 
-                        margin="normal" 
+                        margin="normal"
+                        required
                         InputProps={{ inputProps: { min: 0, step: 0.01 } }}
                         onKeyDown={(e) => { if (e.key === '-' || e.key === 'e' || e.key === 'E') e.preventDefault(); }}
-                        helperText="No puede ser negativo"
+                        error={nuevoProducto.precioUnitario !== undefined && (!nuevoProducto.precioUnitario || nuevoProducto.precioUnitario <= 0)}
+                        helperText={
+                            nuevoProducto.precioUnitario !== undefined && (!nuevoProducto.precioUnitario || nuevoProducto.precioUnitario <= 0)
+                            ? 'Este campo es obligatorio y debe ser mayor a 0'
+                            : 'No puede ser negativo'
+                        }
                     />
                     <div style={{ display: 'flex', justifyContent: 'center', gap: '10px', marginTop: '20px' }}>
                         <Button variant="outlined" color="primary" onClick={handleCancelar}>Cancelar</Button>

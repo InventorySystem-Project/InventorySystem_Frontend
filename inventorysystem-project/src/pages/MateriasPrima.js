@@ -60,8 +60,15 @@ const MateriaPrima = () => {
             setShowGuestAlert(true);
             return;
         }
-        if (!nuevaMateriaPrima.nombre || !nuevaMateriaPrima.unidad) {
-            showAlert('Por favor complete los campos obligatorios', 'Validación', 'warning');
+        
+        // Validar campos obligatorios
+        if (!nuevaMateriaPrima.nombre || nuevaMateriaPrima.nombre.trim() === '') {
+            showAlert('El campo "Nombre" es obligatorio', 'Campo Obligatorio', 'warning');
+            return;
+        }
+        
+        if (!nuevaMateriaPrima.unidad || nuevaMateriaPrima.unidad.trim() === '') {
+            showAlert('El campo "Unidad de Medida" es obligatorio', 'Campo Obligatorio', 'warning');
             return;
         }
 
@@ -184,7 +191,17 @@ const MateriaPrima = () => {
             <Modal open={mostrarFormulario} onClose={() => setMostrarFormulario(false)} style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
                 <Box style={{ background: '#fff', padding: '20px', borderRadius: '10px', width: '450px', maxHeight: '90vh', overflowY: 'auto' }}>
                     <h3>{materiaPrimaEditando ? 'Editar Materia Prima' : 'Nueva Materia Prima'}</h3>
-                    <TextField label="Nombre" name="nombre" value={nuevaMateriaPrima.nombre} onChange={handleInputChange} fullWidth margin="normal" />
+                    <TextField 
+                        label="Nombre" 
+                        name="nombre" 
+                        value={nuevaMateriaPrima.nombre} 
+                        onChange={handleInputChange} 
+                        fullWidth 
+                        margin="normal"
+                        required
+                        error={nuevaMateriaPrima.nombre !== undefined && nuevaMateriaPrima.nombre.trim() === ''}
+                        helperText={nuevaMateriaPrima.nombre !== undefined && nuevaMateriaPrima.nombre.trim() === '' ? 'Este campo es obligatorio' : ''}
+                    />
                     <TextField
                         select
                         label="Unidad"
@@ -193,6 +210,9 @@ const MateriaPrima = () => {
                         onChange={handleInputChange}
                         fullWidth
                         margin="normal"
+                        required
+                        error={nuevaMateriaPrima.unidad !== undefined && nuevaMateriaPrima.unidad.trim() === ''}
+                        helperText={nuevaMateriaPrima.unidad !== undefined && nuevaMateriaPrima.unidad.trim() === '' ? 'Este campo es obligatorio' : ''}
                     >
                         <MenuItem value="m²">Metro cuadrado (m²)</MenuItem>
                         <MenuItem value="cm²">Centímetro cuadrado (cm²)</MenuItem>
