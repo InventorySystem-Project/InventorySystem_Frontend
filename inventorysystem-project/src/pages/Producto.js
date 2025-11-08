@@ -68,6 +68,16 @@ const Producto = () => {
             return;
         }
 
+        if (!nuevoProducto.modelo || nuevoProducto.modelo.trim() === '') {
+            showAlert('El campo "Modelo" es obligatorio', 'Campo Obligatorio', 'warning');
+            return;
+        }
+
+        if (!nuevoProducto.color || nuevoProducto.color.trim() === '') {
+            showAlert('El campo "Color" es obligatorio', 'Campo Obligatorio', 'warning');
+            return;
+        }
+
         if (!nuevoProducto.precioUnitario || nuevoProducto.precioUnitario <= 0) {
             showAlert('El campo "Precio Unitario" es obligatorio y debe ser mayor a 0', 'Campo Obligatorio', 'warning');
             return;
@@ -232,6 +242,9 @@ const Producto = () => {
                         onChange={handleInputChange} 
                         fullWidth 
                         margin="normal"
+                        required
+                        error={nuevoProducto.modelo !== undefined && nuevoProducto.modelo.trim() === ''}
+                        helperText={nuevoProducto.modelo !== undefined && nuevoProducto.modelo.trim() === '' ? 'Este campo es obligatorio' : ''}
                     />
                     <TextField 
                         label="Color" 
@@ -240,6 +253,9 @@ const Producto = () => {
                         onChange={handleInputChange} 
                         fullWidth 
                         margin="normal"
+                        required
+                        error={nuevoProducto.color !== undefined && nuevoProducto.color.trim() === ''}
+                        helperText={nuevoProducto.color !== undefined && nuevoProducto.color.trim() === '' ? 'Este campo es obligatorio' : ''}
                     />
                     <TextField 
                         type="number" 
