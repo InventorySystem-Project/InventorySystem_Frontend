@@ -21,14 +21,25 @@ import {
 } from "lucide-react";
 import useAuth from '../hooks/useAuth';
 import { ROLES } from '../constants/roles';
+import LogoutConfirmModal from './LogoutConfirmModal';
 
 const SideMenu = ({ isCollapsed, toggleCollapse }) => {
   const [activeItem, setActiveItem] = useState('');
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
   const navigate = useNavigate();
   const { role, username, logout } = useAuth();
 
-  const handleLogout = () => {
+  const handleLogoutClick = () => {
+    setShowLogoutModal(true);
+  };
+
+  const handleLogoutConfirm = () => {
+    setShowLogoutModal(false);
     logout();
+  };
+
+  const handleLogoutCancel = () => {
+    setShowLogoutModal(false);
   };
 
   const handleItemClick = (item) => {
@@ -132,11 +143,19 @@ const SideMenu = ({ isCollapsed, toggleCollapse }) => {
         )}
 
         {/* Botón de Salir (Visible para todos) */}
-        <div className="menu-item" onClick={handleLogout} data-tooltip="Salir" >
+        <div className="menu-item" onClick={handleLogoutClick} data-tooltip="Salir" >
           <span className="menu-icon"><LogOut /></span>
           {!isCollapsed && <span>Salir</span>}
         </div>
       </div>
+
+      {/* Modal de confirmación de cierre de sesión */}
+      <LogoutConfirmModal
+        isOpen={showLogoutModal}
+        onConfirm={handleLogoutConfirm}
+        onCancel={handleLogoutCancel}
+        username={username}
+      />
     </div>
   );
 };
