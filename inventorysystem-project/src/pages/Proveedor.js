@@ -305,6 +305,7 @@ const fetchPaises = async () => {
             });
 
             setProveedorEditando(null);
+            setIntentoGuardar(false);
             setMostrarFormulario(false);  // Cerrar el formulario
             
             // ✅ Asegurar que los países estén cargados después de operaciones
@@ -321,6 +322,7 @@ const fetchPaises = async () => {
     const handleCancelar = () => {
         setMostrarFormulario(false);
         setProveedorEditando(null);
+        setIntentoGuardar(false);
         setNuevoProveedor({
             nombreEmpresaProveedor: "",
             nombreContacto: "",
@@ -346,6 +348,8 @@ const fetchPaises = async () => {
             
             // ✅ Obtener datos actualizados del proveedor desde el backend
             const proveedorActualizado = await getProveedorById(proveedor.id);
+            
+            setIntentoGuardar(false);
             
             // ✅ Validar y ajustar el país si es necesario
             const proveedorValidado = validarPaisProveedor(proveedorActualizado);
@@ -401,7 +405,14 @@ const fetchPaises = async () => {
         <div className="container-general">
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
                 <h2 >Gestión de Proveedores</h2>
-                <Button variant="contained" color="primary" onClick={() => isGuest ? setShowGuestAlert(true) : setMostrarFormulario(true)}>
+                <Button variant="contained" color="primary" onClick={() => {
+                    if (isGuest) {
+                        setShowGuestAlert(true);
+                    } else {
+                        setIntentoGuardar(false);
+                        setMostrarFormulario(true);
+                    }
+                }}>
                     <Plus /> Nuevo Proveedor
                 </Button>
 
@@ -482,8 +493,8 @@ const fetchPaises = async () => {
                         fullWidth
                         margin="normal"
                         required
-                        error={nuevoProveedor.nombreEmpresaProveedor !== undefined && nuevoProveedor.nombreEmpresaProveedor.trim() === ''}
-                        helperText={nuevoProveedor.nombreEmpresaProveedor !== undefined && nuevoProveedor.nombreEmpresaProveedor.trim() === '' ? 'Este campo es obligatorio' : ''}
+                        error={intentoGuardar && (!nuevoProveedor.nombreEmpresaProveedor || nuevoProveedor.nombreEmpresaProveedor.trim() === '')}
+                        helperText={intentoGuardar && (!nuevoProveedor.nombreEmpresaProveedor || nuevoProveedor.nombreEmpresaProveedor.trim() === '') ? 'Este campo es obligatorio' : ''}
                     />
 
                     <TextField 
@@ -497,9 +508,9 @@ const fetchPaises = async () => {
                         required
                         InputProps={{ inputProps: { min: 0, step: 1 } }}
                         onKeyDown={(e) => { if (e.key === '-' || e.key === 'e' || e.key === 'E' || e.key === '.') e.preventDefault(); }}
-                        error={nuevoProveedor.ruc !== undefined && nuevoProveedor.ruc.trim() === ''}
+                        error={intentoGuardar && (!nuevoProveedor.ruc || nuevoProveedor.ruc.trim() === '')}
                         helperText={
-                            nuevoProveedor.ruc !== undefined && nuevoProveedor.ruc.trim() === ''
+                            intentoGuardar && (!nuevoProveedor.ruc || nuevoProveedor.ruc.trim() === '')
                             ? 'Este campo es obligatorio'
                             : 'Solo números positivos'
                         }
@@ -512,8 +523,8 @@ const fetchPaises = async () => {
                         fullWidth 
                         margin="normal"
                         required
-                        error={nuevoProveedor.nombreContacto !== undefined && nuevoProveedor.nombreContacto.trim() === ''}
-                        helperText={nuevoProveedor.nombreContacto !== undefined && nuevoProveedor.nombreContacto.trim() === '' ? 'Este campo es obligatorio' : ''}
+                        error={intentoGuardar && (!nuevoProveedor.nombreContacto || nuevoProveedor.nombreContacto.trim() === '')}
+                        helperText={intentoGuardar && (!nuevoProveedor.nombreContacto || nuevoProveedor.nombreContacto.trim() === '') ? 'Este campo es obligatorio' : ''}
                     />
                     <TextField 
                         type="number"
@@ -526,9 +537,9 @@ const fetchPaises = async () => {
                         required
                         InputProps={{ inputProps: { min: 0, step: 1 } }}
                         onKeyDown={(e) => { if (e.key === '-' || e.key === 'e' || e.key === 'E' || e.key === '.') e.preventDefault(); }}
-                        error={nuevoProveedor.telefono !== undefined && nuevoProveedor.telefono.trim() === ''}
+                        error={intentoGuardar && (!nuevoProveedor.telefono || nuevoProveedor.telefono.trim() === '')}
                         helperText={
-                            nuevoProveedor.telefono !== undefined && nuevoProveedor.telefono.trim() === ''
+                            intentoGuardar && (!nuevoProveedor.telefono || nuevoProveedor.telefono.trim() === '')
                             ? 'Este campo es obligatorio'
                             : 'Solo números positivos'
                         }
@@ -541,8 +552,8 @@ const fetchPaises = async () => {
                         fullWidth 
                         margin="normal"
                         required
-                        error={nuevoProveedor.correo !== undefined && nuevoProveedor.correo.trim() === ''}
-                        helperText={nuevoProveedor.correo !== undefined && nuevoProveedor.correo.trim() === '' ? 'Este campo es obligatorio' : ''}
+                        error={intentoGuardar && (!nuevoProveedor.correo || nuevoProveedor.correo.trim() === '')}
+                        helperText={intentoGuardar && (!nuevoProveedor.correo || nuevoProveedor.correo.trim() === '') ? 'Este campo es obligatorio' : ''}
                     />
                     <TextField
                         fullWidth
@@ -558,8 +569,8 @@ const fetchPaises = async () => {
                         disabled={paises.length === 0}
                         margin="normal"
                         required
-                        error={nuevoProveedor.pais !== undefined && (!nuevoProveedor.pais || nuevoProveedor.pais.trim() === '')}
-                        helperText={nuevoProveedor.pais !== undefined && (!nuevoProveedor.pais || nuevoProveedor.pais.trim() === '') ? 'Este campo es obligatorio' : ''}
+                        error={intentoGuardar && (!nuevoProveedor.pais || nuevoProveedor.pais.trim() === '')}
+                        helperText={intentoGuardar && (!nuevoProveedor.pais || nuevoProveedor.pais.trim() === '') ? 'Este campo es obligatorio' : ''}
                     >
                         {paises.length === 0 ? (
                             <MenuItem disabled value=""><em>Cargando países...</em></MenuItem>
@@ -594,8 +605,8 @@ const fetchPaises = async () => {
                         fullWidth 
                         margin="normal"
                         required
-                        error={nuevoProveedor.direccion !== undefined && nuevoProveedor.direccion.trim() === ''}
-                        helperText={nuevoProveedor.direccion !== undefined && nuevoProveedor.direccion.trim() === '' ? 'Este campo es obligatorio' : ''}
+                        error={intentoGuardar && (!nuevoProveedor.direccion || nuevoProveedor.direccion.trim() === '')}
+                        helperText={intentoGuardar && (!nuevoProveedor.direccion || nuevoProveedor.direccion.trim() === '') ? 'Este campo es obligatorio' : ''}
                     />
                     <div style={{ display: 'flex', justifyContent: 'center', gap: '10px', marginTop: '20px' }}>
                         <Button variant="outlined" color="primary" onClick={handleCancelar}>Cancelar</Button>

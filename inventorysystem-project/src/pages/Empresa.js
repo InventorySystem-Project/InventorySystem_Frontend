@@ -15,6 +15,7 @@ const Empresa = () => {
     const [empresasPorPagina, setEmpresasPorPagina] = useState(5);
     const [paises, setPaises] = useState([]);  // Nuevo estado para los países
     const [paisesNombreCompleto, setPaisesNombreCompleto] = useState({});  // Mapa de códigos ISO a nombres completos de países
+    const [intentoGuardar, setIntentoGuardar] = useState(false);
 
     // Obtener la lista de empresas
     const fetchEmpresas = async () => {
@@ -62,6 +63,9 @@ const fetchPaises = async () => {
     };
 
     const handleGuardarEmpresa = async () => {
+        // Activar validación visual
+        setIntentoGuardar(true);
+        
         // Validar campos obligatorios
         if (!nuevaEmpresa.nombre || nuevaEmpresa.nombre.trim() === '') {
             alert('El campo "Nombre" es obligatorio');
@@ -103,6 +107,7 @@ const fetchPaises = async () => {
             await fetchEmpresas();
             setNuevaEmpresa({ nombre: "", ruc: "", direccion: "", telefono: "", correo: "", pais: "", enabled: true });
             setEmpresaEditando(null);
+            setIntentoGuardar(false);
             setMostrarFormulario(false);
         } catch (error) {
             console.error('Error al guardar empresa', error);
@@ -112,12 +117,14 @@ const fetchPaises = async () => {
     const handleCancelar = () => {
         setMostrarFormulario(false);
         setEmpresaEditando(null);
+        setIntentoGuardar(false);
         setNuevaEmpresa({ nombre: "", ruc: "", direccion: "", telefono: "", correo: "", pais: "", enabled: true });
     };
 
     const handleEditarEmpresa = (empresa) => {
         setEmpresaEditando(empresa);
         setNuevaEmpresa(empresa);
+        setIntentoGuardar(false);
         setMostrarFormulario(true);
     };
 
