@@ -24,6 +24,7 @@ const Producto = () => {
     const [productoEditando, setProductoEditando] = useState(null);
     const [paginaActual, setPaginaActual] = useState(1);
     const [productosPorPagina, setProductosPorPagina] = useState(5);
+    const [intentoGuardar, setIntentoGuardar] = useState(false);
     
     // Hook para modals
     const { modalConfig, showAlert, showConfirm, showSuccess, hideModal } = useModal();
@@ -56,6 +57,9 @@ const Producto = () => {
             setShowGuestAlert(true);
             return;
         }
+
+        // Activar validación visual
+        setIntentoGuardar(true);
 
         // Validar campos obligatorios
         if (!nuevoProducto.nombre || nuevoProducto.nombre.trim() === '') {
@@ -108,6 +112,7 @@ const Producto = () => {
             });
 
             setProductoEditando(null);
+            setIntentoGuardar(false);
             setMostrarFormulario(false); // Cerrar el formulario
         } catch (error) {
             console.error('Error al agregar o actualizar producto', error);
@@ -117,6 +122,7 @@ const Producto = () => {
     const handleCancelar = () => {
         setMostrarFormulario(false);
         setProductoEditando(null);
+        setIntentoGuardar(false);
         setNuevoProducto({
             nombre: '',
             tipo: '',
@@ -129,6 +135,7 @@ const Producto = () => {
     const handleEditarProducto = (producto) => {
         setProductoEditando(producto);
         setNuevoProducto(producto);
+        setIntentoGuardar(false);
         setMostrarFormulario(true);
     };
 
@@ -166,7 +173,14 @@ const Producto = () => {
         <div className="container-general">
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
                 <h2>Gestión de Productos Terminados</h2>
-                <Button variant="contained" color="primary" onClick={() => isGuest ? setShowGuestAlert(true) : setMostrarFormulario(true)}>
+                <Button variant="contained" color="primary" onClick={() => {
+                    if (isGuest) {
+                        setShowGuestAlert(true);
+                    } else {
+                        setIntentoGuardar(false);
+                        setMostrarFormulario(true);
+                    }
+                }}>
                     <Plus /> Nuevo Producto
                 </Button>
             </div>
@@ -221,8 +235,8 @@ const Producto = () => {
                         fullWidth 
                         margin="normal"
                         required
-                        error={nuevoProducto.nombre !== undefined && nuevoProducto.nombre.trim() === ''}
-                        helperText={nuevoProducto.nombre !== undefined && nuevoProducto.nombre.trim() === '' ? 'Este campo es obligatorio' : ''}
+                        error={intentoGuardar && (!nuevoProducto.nombre || nuevoProducto.nombre.trim() === '')}
+                        helperText={intentoGuardar && (!nuevoProducto.nombre || nuevoProducto.nombre.trim() === '') ? 'Este campo es obligatorio' : ''}
                     />
                     <TextField 
                         label="Tipo" 
@@ -232,8 +246,8 @@ const Producto = () => {
                         fullWidth 
                         margin="normal"
                         required
-                        error={nuevoProducto.tipo !== undefined && nuevoProducto.tipo.trim() === ''}
-                        helperText={nuevoProducto.tipo !== undefined && nuevoProducto.tipo.trim() === '' ? 'Este campo es obligatorio' : ''}
+                        error={intentoGuardar && (!nuevoProducto.tipo || nuevoProducto.tipo.trim() === '')}
+                        helperText={intentoGuardar && (!nuevoProducto.tipo || nuevoProducto.tipo.trim() === '') ? 'Este campo es obligatorio' : ''}
                     />
                     <TextField 
                         label="Modelo" 
@@ -243,8 +257,8 @@ const Producto = () => {
                         fullWidth 
                         margin="normal"
                         required
-                        error={nuevoProducto.modelo !== undefined && nuevoProducto.modelo.trim() === ''}
-                        helperText={nuevoProducto.modelo !== undefined && nuevoProducto.modelo.trim() === '' ? 'Este campo es obligatorio' : ''}
+                        error={intentoGuardar && (!nuevoProducto.modelo || nuevoProducto.modelo.trim() === '')}
+                        helperText={intentoGuardar && (!nuevoProducto.modelo || nuevoProducto.modelo.trim() === '') ? 'Este campo es obligatorio' : ''}
                     />
                     <TextField 
                         label="Color" 
@@ -254,8 +268,8 @@ const Producto = () => {
                         fullWidth 
                         margin="normal"
                         required
-                        error={nuevoProducto.color !== undefined && nuevoProducto.color.trim() === ''}
-                        helperText={nuevoProducto.color !== undefined && nuevoProducto.color.trim() === '' ? 'Este campo es obligatorio' : ''}
+                        error={intentoGuardar && (!nuevoProducto.color || nuevoProducto.color.trim() === '')}
+                        helperText={intentoGuardar && (!nuevoProducto.color || nuevoProducto.color.trim() === '') ? 'Este campo es obligatorio' : ''}
                     />
                     <TextField 
                         type="number" 
@@ -268,9 +282,9 @@ const Producto = () => {
                         required
                         InputProps={{ inputProps: { min: 0, step: 0.01 } }}
                         onKeyDown={(e) => { if (e.key === '-' || e.key === 'e' || e.key === 'E') e.preventDefault(); }}
-                        error={nuevoProducto.precioUnitario !== undefined && (!nuevoProducto.precioUnitario || nuevoProducto.precioUnitario <= 0)}
+                        error={intentoGuardar && (!nuevoProducto.precioUnitario || nuevoProducto.precioUnitario <= 0)}
                         helperText={
-                            nuevoProducto.precioUnitario !== undefined && (!nuevoProducto.precioUnitario || nuevoProducto.precioUnitario <= 0)
+                            intentoGuardar && (!nuevoProducto.precioUnitario || nuevoProducto.precioUnitario <= 0)
                             ? 'Este campo es obligatorio y debe ser mayor a 0'
                             : 'No puede ser negativo'
                         }

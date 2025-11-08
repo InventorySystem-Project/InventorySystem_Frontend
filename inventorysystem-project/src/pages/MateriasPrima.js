@@ -31,6 +31,7 @@ const MateriaPrima = () => {
     const [materiaPrimaEditando, setMateriaPrimaEditando] = useState(null);
     const [paginaActual, setPaginaActual] = useState(1);
     const [materiasPrimasPorPagina, setMateriasPrimasPorPagina] = useState(5);
+    const [intentoGuardar, setIntentoGuardar] = useState(false);
     
     // Hook para modals
     const { modalConfig, showAlert, showConfirm, showSuccess, hideModal } = useModal();
@@ -61,6 +62,9 @@ const MateriaPrima = () => {
             return;
         }
         
+        // Activar validación visual
+        setIntentoGuardar(true);
+        
         // Validar campos obligatorios
         if (!nuevaMateriaPrima.nombre || nuevaMateriaPrima.nombre.trim() === '') {
             showAlert('El campo "Nombre" es obligatorio', 'Campo Obligatorio', 'warning');
@@ -87,6 +91,7 @@ const MateriaPrima = () => {
             // Limpiar formulario
             setNuevaMateriaPrima({ nombre: "", unidad: "" });
             setMateriaPrimaEditando(null);
+            setIntentoGuardar(false);
             setMostrarFormulario(false);
         } catch (error) {
             console.error('Error al agregar o actualizar materia prima', error);
@@ -96,12 +101,14 @@ const MateriaPrima = () => {
     const handleCancelar = () => {
         setMostrarFormulario(false);
         setMateriaPrimaEditando(null);
+        setIntentoGuardar(false);
         setNuevaMateriaPrima({ nombre: "", unidad: "" });
     };
 
     const handleEditarMateriaPrima = (materiaPrima) => {
         setMateriaPrimaEditando(materiaPrima);
         setNuevaMateriaPrima(materiaPrima);
+        setIntentoGuardar(false);
         setMostrarFormulario(true);
     };
 
@@ -143,7 +150,14 @@ const MateriaPrima = () => {
         <div className="container-general">
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
                 <h2 >Gestión de Materias Primas</h2>
-                <Button variant="contained" color="primary" alignItems="center" onClick={() => isGuest ? setShowGuestAlert(true) : setMostrarFormulario(true)}>
+                <Button variant="contained" color="primary" alignItems="center" onClick={() => {
+                    if (isGuest) {
+                        setShowGuestAlert(true);
+                    } else {
+                        setIntentoGuardar(false);
+                        setMostrarFormulario(true);
+                    }
+                }}>
                     <Plus /> Nueva Materia Prima
                 </Button>
             </div>
@@ -199,8 +213,8 @@ const MateriaPrima = () => {
                         fullWidth 
                         margin="normal"
                         required
-                        error={nuevaMateriaPrima.nombre !== undefined && nuevaMateriaPrima.nombre.trim() === ''}
-                        helperText={nuevaMateriaPrima.nombre !== undefined && nuevaMateriaPrima.nombre.trim() === '' ? 'Este campo es obligatorio' : ''}
+                        error={intentoGuardar && (!nuevaMateriaPrima.nombre || nuevaMateriaPrima.nombre.trim() === '')}
+                        helperText={intentoGuardar && (!nuevaMateriaPrima.nombre || nuevaMateriaPrima.nombre.trim() === '') ? 'Este campo es obligatorio' : ''}
                     />
                     <TextField
                         select
@@ -211,8 +225,8 @@ const MateriaPrima = () => {
                         fullWidth
                         margin="normal"
                         required
-                        error={nuevaMateriaPrima.unidad !== undefined && nuevaMateriaPrima.unidad.trim() === ''}
-                        helperText={nuevaMateriaPrima.unidad !== undefined && nuevaMateriaPrima.unidad.trim() === '' ? 'Este campo es obligatorio' : ''}
+                        error={intentoGuardar && (!nuevaMateriaPrima.unidad || nuevaMateriaPrima.unidad.trim() === '')}
+                        helperText={intentoGuardar && (!nuevaMateriaPrima.unidad || nuevaMateriaPrima.unidad.trim() === '') ? 'Este campo es obligatorio' : ''}
                     >
                         <MenuItem value="m²">Metro cuadrado (m²)</MenuItem>
                         <MenuItem value="cm²">Centímetro cuadrado (cm²)</MenuItem>

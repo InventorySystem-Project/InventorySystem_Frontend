@@ -30,6 +30,7 @@ const Proveedores = () => {
     const [proveedoresPorPagina, setProveedoresPorPagina] = useState(5);
     const [paises, setPaises] = useState([]);  // Nuevo estado para los países
     const [paisesNombreCompleto, setPaisesNombreCompleto] = useState({});  // Mapa de códigos ISO a nombres completos de países
+    const [intentoGuardar, setIntentoGuardar] = useState(false);
     
     // Hook para modals
     const { modalConfig, showAlert, showConfirm, showError, showSuccess, hideModal } = useModal();
@@ -228,6 +229,9 @@ const fetchPaises = async () => {
             return;
         }
         
+        // Activar validación visual
+        setIntentoGuardar(true);
+        
         // Validar campos obligatorios
         if (!nuevoProveedor.nombreEmpresaProveedor || nuevoProveedor.nombreEmpresaProveedor.trim() === '') {
             showAlert('El campo "Nombre de Empresa Proveedor" es obligatorio', 'Campo Obligatorio', 'warning');
@@ -264,7 +268,7 @@ const fetchPaises = async () => {
             return;
         }
 
-        try {
+        try{
             let proveedor;
 
             if (proveedorEditando) {

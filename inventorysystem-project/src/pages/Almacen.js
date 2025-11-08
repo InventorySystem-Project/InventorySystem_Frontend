@@ -149,6 +149,7 @@ const Almacen = () => {
   const [almacenSeleccionado, setAlmacenSeleccionado] = useState(null);
   const [paginaActual, setPaginaActual] = useState(1);
   const almacenesPorPagina = 5;
+  const [intentoGuardar, setIntentoGuardar] = useState(false);
   
   // Hook para modals
   const { modalConfig, showConfirm, showSuccess, hideModal } = useModal();
@@ -173,6 +174,9 @@ const Almacen = () => {
       setShowGuestAlert(true);
       return;
     }
+    
+    // Activar validación visual
+    setIntentoGuardar(true);
     
     // Validar campos obligatorios
     if (!formulario.nombre || formulario.nombre.trim() === '') {
@@ -219,6 +223,7 @@ const Almacen = () => {
       
       setMostrarModal(false);
       setFormulario({ id: '', empresaId: '', nombre: '', ubicacion: '' });
+      setIntentoGuardar(false);
     } catch (error) {
       console.error('Error al registrar almacén:', error);
     }
@@ -263,6 +268,7 @@ const Almacen = () => {
 
   const handleOpenCreateModal = () => {
     setFormulario({ id: '', empresaId: '', nombre: '', ubicacion: '' });
+    setIntentoGuardar(false);
     setMostrarModal(true);
   }
 
@@ -340,8 +346,8 @@ const Almacen = () => {
             onChange={(e) => setFormulario({ ...formulario, nombre: e.target.value })} 
             margin="normal" 
             required
-            error={formulario.nombre !== undefined && formulario.nombre.trim() === ''}
-            helperText={formulario.nombre !== undefined && formulario.nombre.trim() === '' ? 'Este campo es obligatorio' : ''}
+            error={intentoGuardar && (!formulario.nombre || formulario.nombre.trim() === '')}
+            helperText={intentoGuardar && (!formulario.nombre || formulario.nombre.trim() === '') ? 'Este campo es obligatorio' : ''}
           />
           <TextField 
             fullWidth 
@@ -350,8 +356,8 @@ const Almacen = () => {
             onChange={(e) => setFormulario({ ...formulario, ubicacion: e.target.value })} 
             margin="normal" 
             required
-            error={formulario.ubicacion !== undefined && formulario.ubicacion.trim() === ''}
-            helperText={formulario.ubicacion !== undefined && formulario.ubicacion.trim() === '' ? 'Este campo es obligatorio' : ''}
+            error={intentoGuardar && (!formulario.ubicacion || formulario.ubicacion.trim() === '')}
+            helperText={intentoGuardar && (!formulario.ubicacion || formulario.ubicacion.trim() === '') ? 'Este campo es obligatorio' : ''}
           />
           <TextField 
             fullWidth 
@@ -361,8 +367,8 @@ const Almacen = () => {
             onChange={(e) => setFormulario({ ...formulario, empresaId: e.target.value })} 
             margin="normal"
             required
-            error={formulario.empresaId !== undefined && !formulario.empresaId}
-            helperText={formulario.empresaId !== undefined && !formulario.empresaId ? 'Debe seleccionar una empresa' : ''}
+            error={intentoGuardar && !formulario.empresaId}
+            helperText={intentoGuardar && !formulario.empresaId ? 'Debe seleccionar una empresa' : ''}
           >
             {empresas.map(e => (<MenuItem key={e.id} value={e.id}>{e.nombre}</MenuItem>))}
           </TextField>
