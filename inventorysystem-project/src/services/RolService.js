@@ -50,7 +50,9 @@ export const addRol = async (role) => {
 // Actualizar un rol existente
 export const updateRol = async (id, role) => {
     try {
-        const response = await axios.put(`${API_URL}`, role, {
+        // Asegurarse de incluir el ID en el objeto role
+        const roleConId = { ...role, id };
+        const response = await axios.put(`${API_URL}`, roleConId, {
             headers: getAuthHeaders(),
         });
         return response.data;

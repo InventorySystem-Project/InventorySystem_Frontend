@@ -51,7 +51,9 @@ export const addProductoTerminado = async (producto) => {
 // Actualizar un producto terminado existente
 export const updateProductoTerminado = async (id, producto) => {
     try {
-        const response = await axios.put(`${API_URL}`, producto, {  // Ruta PUT
+        // Asegurarse de incluir el ID en el objeto producto
+        const productoConId = { ...producto, id };
+        const response = await axios.put(`${API_URL}`, productoConId, {  // Ruta PUT
             headers: getAuthHeaders(),
         });
         return response.data;
