@@ -1,2 +1,12 @@
+[build]
+  publish = "build"
+  command = "npm run build"
+
 [build.environment]
   CI = "false"
+
+# Redirigir todas las rutas a index.html para que React Router maneje el enrutamiento
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
