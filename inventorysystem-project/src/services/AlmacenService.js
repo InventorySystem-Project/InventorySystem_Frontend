@@ -83,6 +83,12 @@ export const deleteAlmacen = async (id) => {
         });
     } catch (error) {
         console.error(`Error al eliminar almacén con ID ${id}:`, error.response || error.message);
+        
+        // Si el backend devuelve un mensaje de error específico, lo propagamos
+        if (error.response && error.response.data && error.response.data.message) {
+            throw new Error(error.response.data.message);
+        }
+        
         throw error;
     }
 };

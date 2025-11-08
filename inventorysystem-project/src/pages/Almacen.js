@@ -152,7 +152,7 @@ const Almacen = () => {
   const [intentoGuardar, setIntentoGuardar] = useState(false);
   
   // Hook para modals
-  const { modalConfig, showConfirm, showSuccess, hideModal } = useModal();
+  const { modalConfig, showConfirm, showSuccess, showError, hideModal } = useModal();
 
   useEffect(() => {
     fetchAlmacenes();
@@ -227,6 +227,10 @@ const Almacen = () => {
           await fetchAlmacenes();
         } catch (error) {
           console.error('❌ Error al eliminar almacén:', error);
+          
+          // Mostrar mensaje de error al usuario
+          const errorMessage = error.message || 'No se pudo eliminar el almacén. Puede que tenga movimientos registrados.';
+          showError(errorMessage, 'Error al eliminar almacén');
         }
       },
       'Eliminar Almacén'
