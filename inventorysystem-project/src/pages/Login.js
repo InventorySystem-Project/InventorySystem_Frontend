@@ -45,6 +45,29 @@ const Login = () => {
 
   const navigate = useNavigate();
 
+  // Verificar si ya hay una sesión activa al cargar el componente
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      try {
+        const decodedToken = jwtDecode(token);
+        // Verificar si el token no ha expirado
+        const currentTime = Date.now() / 1000;
+        if (decodedToken.exp > currentTime) {
+          // Token válido, redirigir al dashboard
+          navigate('/dashboard', { replace: true });
+        } else {
+          // Token expirado, limpiar localStorage
+          localStorage.clear();
+        }
+      } catch (error) {
+        // Token inválido, limpiar localStorage
+        console.error('Token inválido:', error);
+        localStorage.clear();
+      }
+    }
+  }, [navigate]);
+
   // Clear messages after a delay
   useEffect(() => {
     if (errorMsg || successMsg) {

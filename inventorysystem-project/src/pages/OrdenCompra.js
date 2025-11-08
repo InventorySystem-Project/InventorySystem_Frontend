@@ -190,12 +190,14 @@ const OrdenCompra = () => {
 
             if (ordenEditando) {
                 await updateOrdenCompra({ ...nuevaOrdenParaBD, id: ordenEditando.id });
+                setOrdenes(prev => prev.map(o => o.id === ordenEditando.id ? { ...nuevaOrdenParaBD, id: ordenEditando.id } : o));
                 showSuccess("Orden actualizada con éxito.");
             } else {
-                await addOrdenCompra(nuevaOrdenParaBD);
+                const nuevaOrdenResponse = await addOrdenCompra(nuevaOrdenParaBD);
+                setOrdenes(prev => [nuevaOrdenResponse, ...prev]);
                 showSuccess("Orden registrada con éxito.");
-            }            setMostrarModal(false);
-            fetchOrdenesYRecalcular();
+            }            
+            setMostrarModal(false);
         } catch (error) {
             console.error("❌ Error en handleRegistrarOrden:", error.response?.data || error.message || error);
             showError("Hubo un error al registrar/actualizar la orden: " + (error.response?.data?.message || error.message));
@@ -240,8 +242,8 @@ const OrdenCompra = () => {
         showConfirm('¿Está seguro que desea eliminar esta orden de compra?', async () => {
             try {
                 await deleteOrdenCompra(id);
+                setOrdenes(prev => prev.filter(o => o.id !== id));
                 showSuccess('Orden eliminada con éxito.');
-                fetchOrdenesYRecalcular();
             } catch (error) {
                 console.error('Error eliminando orden:', error);
                 showError('No se pudo eliminar la orden.');

@@ -33,7 +33,7 @@ const MateriaPrima = () => {
     const [materiasPrimasPorPagina, setMateriasPrimasPorPagina] = useState(5);
     
     // Hook para modals
-    const { modalConfig, showAlert, showConfirm, hideModal } = useModal();
+    const { modalConfig, showAlert, showConfirm, showSuccess, hideModal } = useModal();
 
     // Función para obtener materias primas desde el backend
     const fetchMateriasPrimas = async () => {
@@ -68,12 +68,15 @@ const MateriaPrima = () => {
         try {
             if (materiaPrimaEditando) {
                 await updateMateriaPrima(materiaPrimaEditando.id, nuevaMateriaPrima);
+                setMateriasPrimas(prev => 
+                    prev.map(m => m.id === materiaPrimaEditando.id ? { ...nuevaMateriaPrima, id: materiaPrimaEditando.id } : m)
+                );
+                showSuccess('Materia prima actualizada correctamente');
             } else {
-                await addMateriaPrima(nuevaMateriaPrima);
+                const nuevaMateriaPrimaResponse = await addMateriaPrima(nuevaMateriaPrima);
+                setMateriasPrimas(prev => [nuevaMateriaPrimaResponse, ...prev]);
+                showSuccess('Materia prima creada correctamente');
             }
-
-            // Refrescar lista desde backend después de agregar o actualizar
-            await fetchMateriasPrimas();
 
             // Limpiar formulario
             setNuevaMateriaPrima({ nombre: "", unidad: "" });
@@ -106,6 +109,7 @@ const MateriaPrima = () => {
             try {
                 await deleteMateriaPrima(id);
                 setMateriasPrimas(prev => prev.filter(m => m.id !== id));
+                showSuccess('Materia prima eliminada correctamente');
             } catch (error) {
                 console.error('Error al eliminar materia prima', error);
             }

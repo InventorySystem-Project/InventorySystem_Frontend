@@ -151,7 +151,7 @@ const Almacen = () => {
   const almacenesPorPagina = 5;
   
   // Hook para modals
-  const { modalConfig, showConfirm, hideModal } = useModal();
+  const { modalConfig, showConfirm, showSuccess, hideModal } = useModal();
 
   useEffect(() => {
     fetchAlmacenes();
@@ -173,14 +173,21 @@ const Almacen = () => {
       setShowGuestAlert(true);
       return;
     }
-    if (formulario.id) {
-      await updateAlmacen(formulario);
-    } else {
-      await addAlmacen(formulario);
+    try {
+      if (formulario.id) {
+        await updateAlmacen(formulario);
+        setAlmacenes(prev => prev.map(a => a.id === formulario.id ? formulario : a));
+        showSuccess('Almacén actualizado correctamente');
+      } else {
+        const nuevoAlmacen = await addAlmacen(formulario);
+        setAlmacenes(prev => [nuevoAlmacen, ...prev]);
+        showSuccess('Almacén creado correctamente');
+      }
+      setMostrarModal(false);
+      setFormulario({ id: '', empresaId: '', nombre: '', ubicacion: '' });
+    } catch (error) {
+      console.error('Error al registrar almacén:', error);
     }
-    setMostrarModal(false);
-    setFormulario({ id: '', empresaId: '', nombre: '', ubicacion: '' });
-    fetchAlmacenes();
   };
 
   const handleEliminarAlmacen = async (id) => {
@@ -193,7 +200,8 @@ const Almacen = () => {
       async () => {
         try {
           await deleteAlmacen(id);
-          fetchAlmacenes();
+          setAlmacenes(prev => prev.filter(a => a.id !== id));
+          showSuccess('Almacén eliminado correctamente');
         } catch (error) {
           console.error('❌ Error al eliminar almacén:', error);
         }

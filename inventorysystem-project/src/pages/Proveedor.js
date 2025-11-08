@@ -339,6 +339,7 @@ const fetchPaises = async () => {
             try {
                 await deleteProveedor(id);
                 setProveedores(prev => prev.filter(p => p.id !== id));
+                showSuccess('Proveedor eliminado correctamente');
             } catch (error) {
                 console.error('Error al eliminar el proveedor', error);
             }

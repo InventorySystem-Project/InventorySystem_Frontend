@@ -4,6 +4,7 @@ import { CssBaseline, ThemeProvider, createTheme } from '@mui/material';
 import setupAxiosInterceptors from './services/axiosInterceptors';
 
 import MainLayout from './components/MainLayout';
+import ProtectedRoute from './components/ProtectedRoute';
 
 import Dashboard from './pages/Dashboard';
 import Proveedor from './pages/Proveedor';
@@ -32,25 +33,119 @@ const App = () => {
     <Router>
       <MainLayout>
         <Routes>
+          {/* Ruta pública - Login */}
           <Route path="/" element={<Login />} />
-          <Route path="/dashboard" element={<Dashboard />} />
+          
+          {/* Rutas protegidas - requieren autenticación */}
+          <Route 
+            path="/dashboard" 
+            element={
+              <ProtectedRoute>
+                <Dashboard />
+              </ProtectedRoute>
+            } 
+          />
 
-          <Route path="/roles" element={<Rol />} />
-          <Route path="/usuarios" element={<Usuario />} />
+          <Route 
+            path="/roles" 
+            element={
+              <ProtectedRoute>
+                <Rol />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/usuarios" 
+            element={
+              <ProtectedRoute>
+                <Usuario />
+              </ProtectedRoute>
+            } 
+          />
 
-          <Route path="/empresas" element={<Empresa />} />
-          <Route path="/almacenes" element={<Almacen />} />
+          <Route 
+            path="/empresas" 
+            element={
+              <ProtectedRoute>
+                <Empresa />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/almacenes" 
+            element={
+              <ProtectedRoute>
+                <Almacen />
+              </ProtectedRoute>
+            } 
+          />
 
-          <Route path="/proveedores" element={<Proveedor />} />
-          <Route path="/ordenes-compra" element={<OrdenCompra />} />
-          <Route path="/detalle-orden-compra" element={<DetalleOrdenCompra />} />
-          <Route path="/movimientos" element={<MovimientoInventario />} />
+          <Route 
+            path="/proveedores" 
+            element={
+              <ProtectedRoute>
+                <Proveedor />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/ordenes-compra" 
+            element={
+              <ProtectedRoute>
+                <OrdenCompra />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/detalle-orden-compra" 
+            element={
+              <ProtectedRoute>
+                <DetalleOrdenCompra />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/movimientos" 
+            element={
+              <ProtectedRoute>
+                <MovimientoInventario />
+              </ProtectedRoute>
+            } 
+          />
 
-          <Route path="/productos" element={<Producto />} />
-          <Route path="/materias-primas" element={<MateriasPrimas />} />
+          <Route 
+            path="/productos" 
+            element={
+              <ProtectedRoute>
+                <Producto />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/materias-primas" 
+            element={
+              <ProtectedRoute>
+                <MateriasPrimas />
+              </ProtectedRoute>
+            } 
+          />
 
-          <Route path="/reclamos" element={<Reclamo />} />
-          <Route path="/soporte-cliente" element={<SoporteCliente />} />
+          <Route 
+            path="/reclamos" 
+            element={
+              <ProtectedRoute>
+                <Reclamo />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/soporte-cliente" 
+            element={
+              <ProtectedRoute>
+                <SoporteCliente />
+              </ProtectedRoute>
+            } 
+          />
         </Routes>
       </MainLayout>
     </Router>

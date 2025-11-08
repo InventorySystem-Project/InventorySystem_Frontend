@@ -28,7 +28,8 @@ const setupAxiosInterceptors = () => {
         console.warn('Token expirado o inválido - limpiando localStorage');
         localStorage.removeItem('token');
         localStorage.removeItem('userId');
-        localStorage.removeItem('role');
+        localStorage.removeItem('username');
+        localStorage.removeItem('userRole');
         
         // Mostrar mensaje de error
         const event = new CustomEvent('auth-error', {
@@ -41,7 +42,7 @@ const setupAxiosInterceptors = () => {
         
         // Redirigir al login después de un breve delay
         setTimeout(() => {
-          window.location.href = '/login';
+          window.location.href = '/';
         }, 2000);
       }
       // Manejar errores de constraint/foreign key (400)

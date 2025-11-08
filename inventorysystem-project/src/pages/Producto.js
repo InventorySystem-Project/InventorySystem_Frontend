@@ -26,7 +26,7 @@ const Producto = () => {
     const [productosPorPagina, setProductosPorPagina] = useState(5);
     
     // Hook para modals
-    const { modalConfig, showAlert, showConfirm, hideModal } = useModal();
+    const { modalConfig, showAlert, showConfirm, showSuccess, hideModal } = useModal();
 
     // Obtener productos
     useEffect(() => {
@@ -78,13 +78,13 @@ const Producto = () => {
                         p.id === productoEditando.id ? { ...nuevoProducto, id: productoEditando.id } : p
                     )
                 );
+                showSuccess('Producto actualizado correctamente');
             } else {
                 // Si es un nuevo producto, lo agregamos
-                producto = { ...nuevoProducto, id: Date.now() };  // Usamos una id temporal
-                setProductos((prev) => [producto, ...prev]);  // Actualizamos inmediatamente el estado
-                await addProductoTerminado(nuevoProducto);  // Ahora sincronizamos con el backend
+                const nuevoProductoResponse = await addProductoTerminado(nuevoProducto);
+                setProductos((prev) => [nuevoProductoResponse, ...prev]);
+                showSuccess('Producto creado correctamente');
             }
-
 
             setNuevoProducto({
                 nombre: '',
@@ -129,6 +129,7 @@ const Producto = () => {
             try {
                 await deleteProductoTerminado(id);
                 setProductos((prev) => prev.filter((p) => p.id !== id));
+                showSuccess('Producto eliminado correctamente');
             } catch (error) {
                 console.error('Error al eliminar producto', error);
             }

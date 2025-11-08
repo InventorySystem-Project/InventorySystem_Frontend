@@ -187,19 +187,18 @@ const Usuario = () => {
                         u.id === usuarioEditando.id ? usuarioActualizado : u
                     )
                 );
+                showSuccess('Usuario actualizado correctamente');
             } else {
                 // Si es un nuevo usuario, lo agregamos
                 const usuarioCreado = await addUsuario(nuevoUsuario);
 
                 // Añadir el nuevo usuario a la lista inmediatamente
                 setUsuarios((prev) => [usuarioCreado, ...prev]);
+                showSuccess('Usuario creado correctamente');
             }
 
             resetearFormulario();
             setMostrarFormulario(false);
-
-            // Opcional: Refrescar toda la lista para asegurarnos de tener datos actualizados
-            fetchUsuarios();
         } catch (error) {
             console.error('Error al agregar o actualizar usuario', error);
             showError('Error al guardar el usuario. Por favor, intente nuevamente.');
@@ -246,6 +245,7 @@ const Usuario = () => {
                 try {
                     await deleteUsuario(id);
                     setUsuarios((prev) => prev.filter((u) => u.id !== id));
+                    showSuccess('Usuario eliminado correctamente');
                 } catch (error) {
                     console.error('Error al eliminar usuario', error);
                     showError('Error al eliminar el usuario. Por favor, intente nuevamente.');

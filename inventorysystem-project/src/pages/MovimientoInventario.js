@@ -83,7 +83,7 @@ const MovimientoInventario = () => {
     });
     
     // Hook para modals
-    const { modalConfig, showAlert, showConfirm, showError, hideModal } = useModal();
+    const { modalConfig, showAlert, showConfirm, showError, showSuccess, hideModal } = useModal();
     // CAMBIO 2: Guardar la pestaña seleccionada en localStorage cada vez que cambie.
     useEffect(() => {
         localStorage.setItem('movimientoInventario_activeTab', tipoInventario);
@@ -226,16 +226,19 @@ const MovimientoInventario = () => {
                 if (movimientoEditando) {
                     movimientoConFecha.id = movimientoEditando.id;
                     await updateMovimientoInventarioMP(movimientoConFecha);
+                    // Actualización inmediata para edición
+                    setMovimientosMP(prev => prev.map(mov => 
+                        mov.id === movimientoEditando.id ? movimientoConFecha : mov
+                    ).sort((a, b) => new Date(b.fechaMovimiento) - new Date(a.fechaMovimiento)));
+                    showSuccess('Movimiento actualizado correctamente');
                 } else {
-                    await addMovimientoInventarioMP(movimientoConFecha);
+                    const nuevoMovimiento = await addMovimientoInventarioMP(movimientoConFecha);
+                    // Actualización inmediata para creación
+                    setMovimientosMP(prev => [nuevoMovimiento, ...prev].sort((a, b) => 
+                        new Date(b.fechaMovimiento) - new Date(a.fechaMovimiento)
+                    ));
+                    showSuccess('Movimiento creado correctamente');
                 }
-
-                const dataMP = await getMovimientosInventarioMP();
-
-                // ADAPTACIÓN: Ordena la lista antes de mostrarla en la tabla.
-                const sortedMP = (dataMP || []).sort((a, b) => new Date(b.fechaMovimiento) - new Date(a.fechaMovimiento));
-
-                setMovimientosMP(sortedMP); // Usamos la lista ya ordenada.
 
                 setNuevoMovimientoMP({
                     almacenId: '',
@@ -259,16 +262,19 @@ const MovimientoInventario = () => {
                 if (movimientoEditando) {
                     movimientoConFecha.id = movimientoEditando.id;
                     await updateMovimientoInventarioPT(movimientoConFecha);
+                    // Actualización inmediata para edición
+                    setMovimientosPT(prev => prev.map(mov => 
+                        mov.id === movimientoEditando.id ? movimientoConFecha : mov
+                    ).sort((a, b) => new Date(b.fechaMovimiento) - new Date(a.fechaMovimiento)));
+                    showSuccess('Movimiento actualizado correctamente');
                 } else {
-                    await addMovimientoInventarioPT(movimientoConFecha);
+                    const nuevoMovimiento = await addMovimientoInventarioPT(movimientoConFecha);
+                    // Actualización inmediata para creación
+                    setMovimientosPT(prev => [nuevoMovimiento, ...prev].sort((a, b) => 
+                        new Date(b.fechaMovimiento) - new Date(a.fechaMovimiento)
+                    ));
+                    showSuccess('Movimiento creado correctamente');
                 }
-
-                const dataPT = await getMovimientosInventarioPT();
-
-                // ADAPTACIÓN: Ordena la lista antes de mostrarla en la tabla.
-                const sortedPT = (dataPT || []).sort((a, b) => new Date(b.fechaMovimiento) - new Date(a.fechaMovimiento));
-
-                setMovimientosPT(sortedPT); // Usamos la lista ya ordenada.
 
                 setNuevoMovimientoPT({
                     almacenId: '',
@@ -337,18 +343,20 @@ const MovimientoInventario = () => {
             try {
                 if (tipo === 'materiasPrimas') {
                     await deleteMovimientoInventarioMP(id);
-                    const nuevosMovimientosMP = movimientosMP.filter(m => m.id !== id);
-                    setMovimientosMP(nuevosMovimientosMP);
+                    setMovimientosMP(prev => prev.filter(m => m.id !== id));
                 } else {
                     await deleteMovimientoInventarioPT(id);
-                    const nuevosMovimientosPT = movimientosPT.filter(m => m.id !== id);
-                    setMovimientosPT(nuevosMovimientosPT);
+                    setMovimientosPT(prev => prev.filter(m => m.id !== id));
                 }
+                
+                // Ajustar paginación si es necesario
                 const movimientosActuales = tipo === 'materiasPrimas' ? movimientosMP : movimientosPT;
-                const totalPages = Math.ceil(movimientosActuales.length / movimientosPorPagina);
-                if (paginaActual > totalPages) {
-                    setPaginaActual(totalPages > 0 ? totalPages : 1);
+                const totalPages = Math.ceil((movimientosActuales.length - 1) / movimientosPorPagina);
+                if (paginaActual > totalPages && totalPages > 0) {
+                    setPaginaActual(totalPages);
                 }
+                
+                showSuccess('Movimiento eliminado correctamente');
             } catch (error) {
                 console.error('Error al eliminar movimiento de inventario', error);
                 showError('Error al eliminar el movimiento: ' + error.message);

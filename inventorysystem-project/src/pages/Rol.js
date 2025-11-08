@@ -20,7 +20,7 @@ const Rol = () => {
     const [rolesPorPagina, setRolesPorPagina] = useState(5);
     
     // Hook para modals
-    const { modalConfig, showAlert, hideModal } = useModal();
+    const { modalConfig, showAlert, showConfirm, showError, showSuccess, hideModal } = useModal();
 
     // Obtener roles y usuarios cuando se monta el componente
     useEffect(() => {
@@ -56,24 +56,25 @@ const Rol = () => {
 
     const handleAgregarRol = async () => {
         if (!nuevoRol.rol) {
-            showAlert('Por favor complete los campos obligatorios', 'Validación', 'warning');
+            showAlert('Por favor complete los campos obligatorios');
             return;
         }
 
         try {
             if (rolEditando) {
                 // Si estamos editando un rol, lo actualizamos
-                await updateRol(rolEditando.id, nuevoRol);
+                const rolActualizado = await updateRol(rolEditando.id, nuevoRol);
                 setRoles((prev) =>
                     prev.map((r) =>
-                        r.id === rolEditando.id ? { ...nuevoRol, id: rolEditando.id } : r
+                        r.id === rolEditando.id ? (rolActualizado || { ...nuevoRol, id: rolEditando.id }) : r
                     )
                 );
+                showSuccess('Rol actualizado correctamente');
             } else {
                 // Si es un nuevo rol, lo agregamos
-                const rol = { ...nuevoRol, id: Date.now() }; // Usamos una id temporal
-                setRoles((prev) => [rol, ...prev]); // Actualizamos inmediatamente el estado
-                await addRol(nuevoRol); // Ahora sincronizamos con el backend
+                const rolCreado = await addRol(nuevoRol);
+                setRoles((prev) => [rolCreado, ...prev]);
+                showSuccess('Rol creado correctamente');
             }
 
             setNuevoRol({
@@ -84,6 +85,7 @@ const Rol = () => {
             setMostrarFormulario(false);  // Cerrar el formulario
         } catch (error) {
             console.error('Error al agregar o actualizar rol', error);
+            showError('Error al guardar el rol. Por favor, intente nuevamente.');
         }
     };
 
@@ -102,12 +104,19 @@ const Rol = () => {
     };
 
     const handleEliminarRol = async (id) => {
-        try {
-            await deleteRol(id);
-            setRoles((prev) => prev.filter((r) => r.id !== id));
-        } catch (error) {
-            console.error('Error al eliminar rol', error);
-        }
+        showConfirm(
+            '¿Está seguro que desea eliminar este rol?',
+            async () => {
+                try {
+                    await deleteRol(id);
+                    setRoles((prev) => prev.filter((r) => r.id !== id));
+                    showSuccess('Rol eliminado correctamente');
+                } catch (error) {
+                    console.error('Error al eliminar rol', error);
+                    showError('Error al eliminar el rol. Por favor, intente nuevamente.');
+                }
+            }
+        );
     };
 
     const handleChangePage = (event, value) => {
