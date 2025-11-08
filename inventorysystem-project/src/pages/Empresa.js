@@ -65,6 +65,31 @@ const fetchPaises = async () => {
     const handleGuardarEmpresa = async () => {
         // Activar validación visual
         setIntentoGuardar(true);
+        
+        // Validar campos obligatorios
+        if (!nuevaEmpresa.nombre || nuevaEmpresa.nombre.trim() === '') {
+            return;
+        }
+        
+        if (!nuevaEmpresa.ruc || nuevaEmpresa.ruc.trim() === '') {
+            return;
+        }
+        
+        if (!nuevaEmpresa.direccion || nuevaEmpresa.direccion.trim() === '') {
+            return;
+        }
+        
+        if (!nuevaEmpresa.telefono || nuevaEmpresa.telefono.trim() === '') {
+            return;
+        }
+        
+        if (!nuevaEmpresa.correo || nuevaEmpresa.correo.trim() === '') {
+            return;
+        }
+        
+        if (!nuevaEmpresa.pais || nuevaEmpresa.pais.trim() === '') {
+            return;
+        }
 
         try {
             if (empresaEditando) {

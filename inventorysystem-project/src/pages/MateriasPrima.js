@@ -64,6 +64,15 @@ const MateriaPrima = () => {
         
         // Activar validación visual
         setIntentoGuardar(true);
+        
+        // Validar campos obligatorios
+        if (!nuevaMateriaPrima.nombre || nuevaMateriaPrima.nombre.trim() === '') {
+            return;
+        }
+        
+        if (!nuevaMateriaPrima.unidad || nuevaMateriaPrima.unidad.trim() === '') {
+            return;
+        }
 
         try {
             if (materiaPrimaEditando) {

@@ -60,6 +60,27 @@ const Producto = () => {
 
         // Activar validación visual
         setIntentoGuardar(true);
+        
+        // Validar campos obligatorios
+        if (!nuevoProducto.nombre || nuevoProducto.nombre.trim() === '') {
+            return;
+        }
+
+        if (!nuevoProducto.tipo || nuevoProducto.tipo.trim() === '') {
+            return;
+        }
+
+        if (!nuevoProducto.modelo || nuevoProducto.modelo.trim() === '') {
+            return;
+        }
+
+        if (!nuevoProducto.color || nuevoProducto.color.trim() === '') {
+            return;
+        }
+
+        if (!nuevoProducto.precioUnitario || nuevoProducto.precioUnitario <= 0) {
+            return;
+        }
 
         try {
             if (productoEditando) {

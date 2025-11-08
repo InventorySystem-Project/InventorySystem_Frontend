@@ -178,6 +178,19 @@ const Almacen = () => {
     // Activar validación visual
     setIntentoGuardar(true);
     
+    // Validar campos obligatorios
+    if (!formulario.nombre || formulario.nombre.trim() === '') {
+      return;
+    }
+    
+    if (!formulario.ubicacion || formulario.ubicacion.trim() === '') {
+      return;
+    }
+    
+    if (!formulario.empresaId) {
+      return;
+    }
+    
     try {
       if (formulario.id) {
         await updateAlmacen(formulario);

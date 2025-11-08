@@ -231,6 +231,35 @@ const fetchPaises = async () => {
         
         // Activar validación visual
         setIntentoGuardar(true);
+        
+        // Validar campos obligatorios
+        if (!nuevoProveedor.nombreEmpresaProveedor || nuevoProveedor.nombreEmpresaProveedor.trim() === '') {
+            return;
+        }
+        
+        if (!nuevoProveedor.ruc || nuevoProveedor.ruc.trim() === '') {
+            return;
+        }
+        
+        if (!nuevoProveedor.nombreContacto || nuevoProveedor.nombreContacto.trim() === '') {
+            return;
+        }
+        
+        if (!nuevoProveedor.telefono || nuevoProveedor.telefono.trim() === '') {
+            return;
+        }
+        
+        if (!nuevoProveedor.correo || nuevoProveedor.correo.trim() === '') {
+            return;
+        }
+        
+        if (!nuevoProveedor.pais || nuevoProveedor.pais.trim() === '') {
+            return;
+        }
+        
+        if (!nuevoProveedor.direccion || nuevoProveedor.direccion.trim() === '') {
+            return;
+        }
 
         try{
             let proveedor;
