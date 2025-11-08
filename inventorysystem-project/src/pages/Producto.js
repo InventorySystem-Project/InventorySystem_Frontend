@@ -61,32 +61,6 @@ const Producto = () => {
         // Activar validación visual
         setIntentoGuardar(true);
 
-        // Validar campos obligatorios
-        if (!nuevoProducto.nombre || nuevoProducto.nombre.trim() === '') {
-            showAlert('El campo "Nombre" es obligatorio', 'Campo Obligatorio', 'warning');
-            return;
-        }
-
-        if (!nuevoProducto.tipo || nuevoProducto.tipo.trim() === '') {
-            showAlert('El campo "Tipo" es obligatorio', 'Campo Obligatorio', 'warning');
-            return;
-        }
-
-        if (!nuevoProducto.modelo || nuevoProducto.modelo.trim() === '') {
-            showAlert('El campo "Modelo" es obligatorio', 'Campo Obligatorio', 'warning');
-            return;
-        }
-
-        if (!nuevoProducto.color || nuevoProducto.color.trim() === '') {
-            showAlert('El campo "Color" es obligatorio', 'Campo Obligatorio', 'warning');
-            return;
-        }
-
-        if (!nuevoProducto.precioUnitario || nuevoProducto.precioUnitario <= 0) {
-            showAlert('El campo "Precio Unitario" es obligatorio y debe ser mayor a 0', 'Campo Obligatorio', 'warning');
-            return;
-        }
-
         try {
             if (productoEditando) {
                 // Si estamos editando un producto, lo actualizamos

@@ -64,17 +64,6 @@ const MateriaPrima = () => {
         
         // Activar validación visual
         setIntentoGuardar(true);
-        
-        // Validar campos obligatorios
-        if (!nuevaMateriaPrima.nombre || nuevaMateriaPrima.nombre.trim() === '') {
-            showAlert('El campo "Nombre" es obligatorio', 'Campo Obligatorio', 'warning');
-            return;
-        }
-        
-        if (!nuevaMateriaPrima.unidad || nuevaMateriaPrima.unidad.trim() === '') {
-            showAlert('El campo "Unidad de Medida" es obligatorio', 'Campo Obligatorio', 'warning');
-            return;
-        }
 
         try {
             if (materiaPrimaEditando) {

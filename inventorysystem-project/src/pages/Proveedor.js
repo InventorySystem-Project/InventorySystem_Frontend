@@ -231,42 +231,6 @@ const fetchPaises = async () => {
         
         // Activar validación visual
         setIntentoGuardar(true);
-        
-        // Validar campos obligatorios
-        if (!nuevoProveedor.nombreEmpresaProveedor || nuevoProveedor.nombreEmpresaProveedor.trim() === '') {
-            showAlert('El campo "Nombre de Empresa Proveedor" es obligatorio', 'Campo Obligatorio', 'warning');
-            return;
-        }
-        
-        if (!nuevoProveedor.ruc || nuevoProveedor.ruc.trim() === '') {
-            showAlert('El campo "RUC" es obligatorio', 'Campo Obligatorio', 'warning');
-            return;
-        }
-        
-        if (!nuevoProveedor.nombreContacto || nuevoProveedor.nombreContacto.trim() === '') {
-            showAlert('El campo "Nombre de Contacto" es obligatorio', 'Campo Obligatorio', 'warning');
-            return;
-        }
-        
-        if (!nuevoProveedor.telefono || nuevoProveedor.telefono.trim() === '') {
-            showAlert('El campo "Teléfono" es obligatorio', 'Campo Obligatorio', 'warning');
-            return;
-        }
-        
-        if (!nuevoProveedor.correo || nuevoProveedor.correo.trim() === '') {
-            showAlert('El campo "Correo" es obligatorio', 'Campo Obligatorio', 'warning');
-            return;
-        }
-        
-        if (!nuevoProveedor.pais || nuevoProveedor.pais.trim() === '') {
-            showAlert('El campo "País" es obligatorio', 'Campo Obligatorio', 'warning');
-            return;
-        }
-        
-        if (!nuevoProveedor.direccion || nuevoProveedor.direccion.trim() === '') {
-            showAlert('El campo "Dirección" es obligatorio', 'Campo Obligatorio', 'warning');
-            return;
-        }
 
         try{
             let proveedor;

@@ -178,37 +178,6 @@ const Almacen = () => {
     // Activar validación visual
     setIntentoGuardar(true);
     
-    // Validar campos obligatorios
-    if (!formulario.nombre || formulario.nombre.trim() === '') {
-      showConfirm(
-        'El campo "Nombre del Almacén" es obligatorio.',
-        () => {},
-        'Campo Obligatorio',
-        false
-      );
-      return;
-    }
-    
-    if (!formulario.ubicacion || formulario.ubicacion.trim() === '') {
-      showConfirm(
-        'El campo "Ubicación" es obligatorio.',
-        () => {},
-        'Campo Obligatorio',
-        false
-      );
-      return;
-    }
-    
-    if (!formulario.empresaId) {
-      showConfirm(
-        'Debe seleccionar una Empresa.',
-        () => {},
-        'Campo Obligatorio',
-        false
-      );
-      return;
-    }
-    
     try {
       if (formulario.id) {
         await updateAlmacen(formulario);

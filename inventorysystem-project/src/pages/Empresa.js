@@ -65,37 +65,6 @@ const fetchPaises = async () => {
     const handleGuardarEmpresa = async () => {
         // Activar validación visual
         setIntentoGuardar(true);
-        
-        // Validar campos obligatorios
-        if (!nuevaEmpresa.nombre || nuevaEmpresa.nombre.trim() === '') {
-            alert('El campo "Nombre" es obligatorio');
-            return;
-        }
-        
-        if (!nuevaEmpresa.ruc || nuevaEmpresa.ruc.trim() === '') {
-            alert('El campo "RUC" es obligatorio');
-            return;
-        }
-        
-        if (!nuevaEmpresa.direccion || nuevaEmpresa.direccion.trim() === '') {
-            alert('El campo "Dirección" es obligatorio');
-            return;
-        }
-        
-        if (!nuevaEmpresa.telefono || nuevaEmpresa.telefono.trim() === '') {
-            alert('El campo "Teléfono" es obligatorio');
-            return;
-        }
-        
-        if (!nuevaEmpresa.correo || nuevaEmpresa.correo.trim() === '') {
-            alert('El campo "Correo" es obligatorio');
-            return;
-        }
-        
-        if (!nuevaEmpresa.pais || nuevaEmpresa.pais.trim() === '') {
-            alert('El campo "País" es obligatorio');
-            return;
-        }
 
         try {
             if (empresaEditando) {
