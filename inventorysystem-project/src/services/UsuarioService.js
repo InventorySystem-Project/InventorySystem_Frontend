@@ -64,7 +64,8 @@ export const updateUsuario = async (id, usuario) => {
             delete payload.empresa;
         }
 
-        const response = await axios.put(`${API_URL}`, payload, {
+        // IMPORTANTE: El backend espera el ID en la URL
+        const response = await axios.put(`${API_URL}/${id}`, payload, {
             headers: getAuthHeaders(),
         });
         return response.data;

@@ -64,7 +64,8 @@ export const getAlmacenById = async (id) => {
 // Actualizar un almacén
 export const updateAlmacen = async (almacen) => {
     try {
-        const response = await axios.put(`${API_URL}`, almacen, {
+        // IMPORTANTE: El backend espera el ID en la URL
+        const response = await axios.put(`${API_URL}/${almacen.id}`, almacen, {
             headers: getAuthHeaders(),
         });
         return response.data;

@@ -53,7 +53,8 @@ export const updateMateriaPrima = async (id, materiaPrima) => {
     try {
         // Asegurarse de incluir el ID en el objeto materiaPrima
         const materiaPrimaConId = { ...materiaPrima, id };
-        const response = await axios.put(`${API_URL}`, materiaPrimaConId, {  // Ruta PUT para actualizar la materia prima
+        // IMPORTANTE: El backend espera el ID en la URL
+        const response = await axios.put(`${API_URL}/${id}`, materiaPrimaConId, {
             headers: getAuthHeaders(),
         });
         return response.data;

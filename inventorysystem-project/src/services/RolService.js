@@ -52,7 +52,8 @@ export const updateRol = async (id, role) => {
     try {
         // Asegurarse de incluir el ID en el objeto role
         const roleConId = { ...role, id };
-        const response = await axios.put(`${API_URL}`, roleConId, {
+        // IMPORTANTE: El backend espera el ID en la URL
+        const response = await axios.put(`${API_URL}/${id}`, roleConId, {
             headers: getAuthHeaders(),
         });
         return response.data;

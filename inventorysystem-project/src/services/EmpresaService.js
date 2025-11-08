@@ -64,7 +64,8 @@ export const getEmpresaById = async (id) => {
 // Actualizar una empresa
 export const updateEmpresa = async (empresa) => {
     try {
-        const response = await axios.put(`${API_URL}`, empresa, {
+        // IMPORTANTE: El backend espera el ID en la URL
+        const response = await axios.put(`${API_URL}/${empresa.id}`, empresa, {
             headers: getAuthHeaders(),
         });
         return response.data;

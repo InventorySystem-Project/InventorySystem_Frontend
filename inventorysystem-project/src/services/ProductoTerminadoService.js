@@ -53,7 +53,8 @@ export const updateProductoTerminado = async (id, producto) => {
     try {
         // Asegurarse de incluir el ID en el objeto producto
         const productoConId = { ...producto, id };
-        const response = await axios.put(`${API_URL}`, productoConId, {  // Ruta PUT
+        // IMPORTANTE: El backend espera el ID en la URL
+        const response = await axios.put(`${API_URL}/${id}`, productoConId, {
             headers: getAuthHeaders(),
         });
         return response.data;
