@@ -314,6 +314,21 @@ const MovimientoInventario = () => {
     };
     const handleEditarMovimiento = (movimiento, tipo) => {
         if (!movimiento) return;
+        
+        // Verificar si el movimiento está confirmado
+        const estaConfirmado = tipo === 'materiasPrimas' 
+            ? movimiento.estadoRecepcion 
+            : movimiento.estadoEntrega;
+        
+        if (estaConfirmado) {
+            showAlert(
+                'No se puede editar un movimiento confirmado. Los movimientos confirmados ya han impactado el inventario y no pueden ser modificados para mantener la integridad de los datos.',
+                'Movimiento Confirmado',
+                'warning'
+            );
+            return;
+        }
+        
         console.log(`Movimiento ${tipo} a editar:`, movimiento);
         setMovimientoEditando(movimiento);
         if (tipo === 'materiasPrimas') {
@@ -339,6 +354,31 @@ const MovimientoInventario = () => {
     };
     const handleEliminarMovimiento = async (id, tipo) => {
         if (!id) return;
+        
+        // Buscar el movimiento para verificar si está confirmado
+        const movimiento = tipo === 'materiasPrimas' 
+            ? movimientosMP.find(m => m.id === id)
+            : movimientosPT.find(m => m.id === id);
+        
+        if (!movimiento) {
+            showError('Movimiento no encontrado');
+            return;
+        }
+        
+        // Verificar si el movimiento está confirmado
+        const estaConfirmado = tipo === 'materiasPrimas' 
+            ? movimiento.estadoRecepcion 
+            : movimiento.estadoEntrega;
+        
+        if (estaConfirmado) {
+            showAlert(
+                'No se puede eliminar un movimiento confirmado. Los movimientos confirmados ya han impactado el inventario y no pueden ser eliminados para mantener la integridad de los datos.',
+                'Movimiento Confirmado',
+                'warning'
+            );
+            return;
+        }
+        
         showConfirm('¿Está seguro que desea eliminar este movimiento?', async () => {
             try {
                 if (tipo === 'materiasPrimas') {
@@ -568,10 +608,36 @@ const MovimientoInventario = () => {
                                                 )}
                                             </TableCell>
                                             <TableCell>
-                                                <Button color="primary" onClick={() => isGuest ? setShowGuestAlert(true) : handleEditarMovimiento(movimiento, tipoInventario)} style={{ minWidth: 'auto', padding: '6px' }}>
+                                                <Button 
+                                                    color="primary" 
+                                                    onClick={() => isGuest ? setShowGuestAlert(true) : handleEditarMovimiento(movimiento, tipoInventario)} 
+                                                    style={{ minWidth: 'auto', padding: '6px' }}
+                                                    disabled={
+                                                        isGuest || 
+                                                        (tipoInventario === 'materiasPrimas' ? movimiento.estadoRecepcion : movimiento.estadoEntrega)
+                                                    }
+                                                    title={
+                                                        (tipoInventario === 'materiasPrimas' ? movimiento.estadoRecepcion : movimiento.estadoEntrega)
+                                                        ? 'No se puede editar un movimiento confirmado'
+                                                        : 'Editar movimiento'
+                                                    }
+                                                >
                                                     <Edit size={18} />
                                                 </Button>
-                                                <Button color="error" onClick={() => isGuest ? setShowGuestAlert(true) : handleEliminarMovimiento(movimiento.id, tipoInventario)} style={{ minWidth: 'auto', padding: '6px' }}>
+                                                <Button 
+                                                    color="error" 
+                                                    onClick={() => isGuest ? setShowGuestAlert(true) : handleEliminarMovimiento(movimiento.id, tipoInventario)} 
+                                                    style={{ minWidth: 'auto', padding: '6px' }}
+                                                    disabled={
+                                                        isGuest || 
+                                                        (tipoInventario === 'materiasPrimas' ? movimiento.estadoRecepcion : movimiento.estadoEntrega)
+                                                    }
+                                                    title={
+                                                        (tipoInventario === 'materiasPrimas' ? movimiento.estadoRecepcion : movimiento.estadoEntrega)
+                                                        ? 'No se puede eliminar un movimiento confirmado'
+                                                        : 'Eliminar movimiento'
+                                                    }
+                                                >
                                                     <Trash2 size={18} />
                                                 </Button>
                                             </TableCell>
