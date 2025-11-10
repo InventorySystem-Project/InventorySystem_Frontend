@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { TextField, Button, Modal, Box, Table, TableBody, TableCell, TableHead, TableRow, Pagination, Typography } from '@mui/material';
+import { TextField, Button, Modal, Box, Table, TableBody, TableCell, TableHead, TableRow, Pagination, Typography, TableContainer, Tooltip } from '@mui/material';
 import { Plus, Pencil, Trash2, Edit } from 'lucide-react';
 import { getProductosTerminados, addProductoTerminado, updateProductoTerminado, deleteProductoTerminado } from '../services/ProductoTerminadoService';
 import useAuth from '../hooks/useAuth';
 import { ROLES } from '../constants/roles';
 import { useModal } from '../hooks/useModal';
 import CustomModal from '../components/CustomModal';
+import * as tableStyles from '../styles/tableStyles';
 
 const Producto = () => {
     const { role } = useAuth();
@@ -186,37 +187,73 @@ const Producto = () => {
                     <p style={{ margin: 0, textAlign: 'left' }}>Administre los productos terminados</p>
                 </div>
 
-                <div style={{ padding: '0px', borderRadius: '8px' }}>
+                <TableContainer sx={tableStyles.enhancedTableContainer}>
                     <Table>
-                        <TableHead>
+                        <TableHead sx={tableStyles.enhancedTableHead}>
                             <TableRow>
-                                <TableCell style={{ fontWeight: 'bold', color: '#748091' }}>Nombre</TableCell>
-                                <TableCell style={{ fontWeight: 'bold', color: '#748091' }}>Tipo</TableCell>
-                                <TableCell style={{ fontWeight: 'bold', color: '#748091' }}>Modelo</TableCell>
-                                <TableCell style={{ fontWeight: 'bold', color: '#748091' }}>Color</TableCell>
-                                <TableCell style={{ fontWeight: 'bold', color: '#748091' }}>Precio</TableCell>
-                                <TableCell style={{ fontWeight: 'bold', color: '#748091' }}>Acciones</TableCell>
+                                <TableCell>Nombre</TableCell>
+                                <TableCell sx={tableStyles.hideColumnOnMobile}>Tipo</TableCell>
+                                <TableCell sx={tableStyles.hideColumnOnMobile}>Modelo</TableCell>
+                                <TableCell>Color</TableCell>
+                                <TableCell>Precio</TableCell>
+                                <TableCell align="center">Acciones</TableCell>
                             </TableRow>
                         </TableHead>
                         <TableBody>
-                            {productosPaginados.map((producto) => (
-                                <TableRow key={producto.id}>
-                                    <TableCell>{producto.nombre}</TableCell>
-                                    <TableCell>{producto.tipo}</TableCell>
-                                    <TableCell>{producto.modelo}</TableCell>
-                                    <TableCell>{producto.color}</TableCell>
-                                    <TableCell>{"S/. "+producto.precioUnitario}</TableCell>
-                                    <TableCell>
-                                        <Button color="primary" onClick={() => isGuest ? setShowGuestAlert(true) : handleEditarProducto(producto)} style={{ minWidth: 'auto', padding: '6px' }}><Edit size={18} /></Button>
-                                        <Button color="error" onClick={() => isGuest ? setShowGuestAlert(true) : handleEliminarProducto(producto.id)} style={{ minWidth: 'auto', padding: '6px' }}><Trash2 size={18} /></Button>
+                            {productosPaginados.length === 0 ? (
+                                <TableRow>
+                                    <TableCell colSpan={6} sx={tableStyles.emptyTableMessage}>
+                                        <Box className="empty-icon">📦</Box>
+                                        <Typography>No hay productos registrados</Typography>
                                     </TableCell>
                                 </TableRow>
-                            ))}
+                            ) : (
+                                productosPaginados.map((producto) => (
+                                    <TableRow key={producto.id} sx={tableStyles.enhancedTableRow}>
+                                        <TableCell sx={tableStyles.enhancedTableCell}>{producto.nombre}</TableCell>
+                                        <TableCell sx={{...tableStyles.enhancedTableCell, ...tableStyles.hideColumnOnMobile}}>{producto.tipo}</TableCell>
+                                        <TableCell sx={{...tableStyles.enhancedTableCell, ...tableStyles.hideColumnOnMobile}}>{producto.modelo}</TableCell>
+                                        <TableCell sx={tableStyles.enhancedTableCell}>{producto.color}</TableCell>
+                                        <TableCell sx={tableStyles.enhancedTableCell}>S/. {producto.precioUnitario}</TableCell>
+                                        <TableCell sx={tableStyles.enhancedTableCell} align="center">
+                                            <Box sx={tableStyles.enhancedTableCellActions}>
+                                                <Tooltip title="Editar producto" arrow>
+                                                    <Button 
+                                                        color="primary" 
+                                                        onClick={() => isGuest ? setShowGuestAlert(true) : handleEditarProducto(producto)} 
+                                                        sx={tableStyles.enhancedActionButton}
+                                                    >
+                                                        <Edit size={18} />
+                                                    </Button>
+                                                </Tooltip>
+                                                <Tooltip title="Eliminar producto" arrow>
+                                                    <Button 
+                                                        color="error" 
+                                                        onClick={() => isGuest ? setShowGuestAlert(true) : handleEliminarProducto(producto.id)} 
+                                                        sx={tableStyles.enhancedActionButton}
+                                                    >
+                                                        <Trash2 size={18} />
+                                                    </Button>
+                                                </Tooltip>
+                                            </Box>
+                                        </TableCell>
+                                    </TableRow>
+                                ))
+                            )}
                         </TableBody>
                     </Table>
 
-                    <Pagination count={totalPages} page={paginaActual} onChange={handleChangePage} color="primary" showFirstButton showLastButton />
-                </div>
+                    <Box sx={tableStyles.enhancedPagination}>
+                        <Pagination 
+                            count={totalPages} 
+                            page={paginaActual} 
+                            onChange={handleChangePage} 
+                            color="primary" 
+                            showFirstButton 
+                            showLastButton 
+                        />
+                    </Box>
+                </TableContainer>
             </div>
 
 <Modal open={mostrarFormulario} onClose={() => setMostrarFormulario(false)} style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>

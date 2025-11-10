@@ -35,6 +35,19 @@ export const getUsuarios = async () => {
     }
 };
 
+// Obtener un usuario por ID
+export const getUsuarioById = async (id) => {
+    try {
+        const response = await axios.get(`${API_URL}/${id}`, {
+            headers: getAuthHeaders(),
+        });
+        return response.data;
+    } catch (error) {
+        console.error('Error al obtener usuario:', error.response || error.message);
+        throw error;
+    }
+};
+
 // Agregar un nuevo usuario (Endpoint PÚBLICO)
 export const addUsuario = async (usuario) => {
     try {

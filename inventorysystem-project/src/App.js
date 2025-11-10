@@ -1,7 +1,8 @@
 import React, { useEffect } from 'react';
 import { Route, BrowserRouter as Router, Routes } from 'react-router-dom';
-import { CssBaseline, ThemeProvider, createTheme } from '@mui/material';
+import { CssBaseline, ThemeProvider } from '@mui/material';
 import setupAxiosInterceptors from './services/axiosInterceptors';
+import theme from './styles/theme';
 
 import MainLayout from './components/MainLayout';
 import ProtectedRoute from './components/ProtectedRoute';
@@ -20,8 +21,10 @@ import MovimientoInventario from './pages/MovimientoInventario';
 import Reclamo from './pages/Reclamo';
 import Login from './pages/Login';
 import SoporteCliente from './pages/SoporteCliente';
+import Perfil from './pages/Perfil';
 
 import './App.css';
+import './styles/formStyles.css';
 
 const App = () => {
   // Configurar interceptores de Axios al montar la aplicación
@@ -30,7 +33,9 @@ const App = () => {
   }, []);
 
   return (
-    <Router>
+    <ThemeProvider theme={theme}>
+      <CssBaseline />
+      <Router>
       <MainLayout>
         <Routes>
           {/* Ruta pública - Login */}
@@ -146,9 +151,18 @@ const App = () => {
               </ProtectedRoute>
             } 
           />
+          <Route 
+            path="/perfil" 
+            element={
+              <ProtectedRoute>
+                <Perfil />
+              </ProtectedRoute>
+            } 
+          />
         </Routes>
       </MainLayout>
     </Router>
+    </ThemeProvider>
   );
 };
 

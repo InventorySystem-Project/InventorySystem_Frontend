@@ -11,7 +11,9 @@ import {
     TableCell,
     TableBody,
     Pagination,
-    Typography
+    Typography,
+    TableContainer,
+    Tooltip
 } from '@mui/material'; 
 import { Plus, Pencil, Trash2, Edit } from "lucide-react";
 import { useModal } from '../hooks/useModal';
@@ -19,6 +21,7 @@ import CustomModal from '../components/CustomModal';
 import { getMateriasPrimas, addMateriaPrima, updateMateriaPrima, deleteMateriaPrima } from '../services/MateriaPrimaService';
 import useAuth from '../hooks/useAuth';
 import { ROLES } from '../constants/roles';
+import * as tableStyles from '../styles/tableStyles';
 
 const MateriaPrima = () => {
     const { role } = useAuth();
@@ -166,38 +169,67 @@ const MateriaPrima = () => {
                     <p style={{ margin: 0, textAlign: 'left' }}>Administre sus materias primas</p>
                 </div>
 
-                <div style={{ padding: '0px', borderRadius: '8px' }}>
+                <TableContainer sx={tableStyles.enhancedTableContainer}>
                     <Table>
-                        <TableHead>
+                        <TableHead sx={tableStyles.enhancedTableHead}>
                             <TableRow>
-                                <TableCell style={{ fontWeight: 'bold', color: '#748091' }}>Nombre</TableCell>
-                                <TableCell style={{ fontWeight: 'bold', color: '#748091' }}>Unidad</TableCell>
-                                <TableCell style={{ fontWeight: 'bold', color: '#748091' }}>Acciones</TableCell>
+                                <TableCell>Nombre</TableCell>
+                                <TableCell>Unidad</TableCell>
+                                <TableCell align="center">Acciones</TableCell>
                             </TableRow>
                         </TableHead>
                         <TableBody>
-                            {materiasPrimasPaginadas.map((materiaPrima) => (
-                                <TableRow key={materiaPrima.id}>
-                                    <TableCell>{materiaPrima.nombre}</TableCell>
-                                    <TableCell>{materiaPrima.unidad}</TableCell>
-                                    <TableCell>
-                                        <Button color="primary" onClick={() => isGuest ? setShowGuestAlert(true) : handleEditarMateriaPrima(materiaPrima)} style={{ minWidth: 'auto', padding: '6px' }}><Edit size={18} /></Button>
-                                        <Button color="error" onClick={() => isGuest ? setShowGuestAlert(true) : handleEliminarMateriaPrima(materiaPrima.id)} style={{ minWidth: 'auto', padding: '6px' }}><Trash2 size={18} /></Button>
+                            {materiasPrimasPaginadas.length === 0 ? (
+                                <TableRow>
+                                    <TableCell colSpan={3} sx={tableStyles.emptyTableMessage}>
+                                        <Box className="empty-icon">📦</Box>
+                                        <Typography>No hay materias primas registradas</Typography>
                                     </TableCell>
                                 </TableRow>
-                            ))}
+                            ) : (
+                                materiasPrimasPaginadas.map((materiaPrima) => (
+                                    <TableRow key={materiaPrima.id} sx={tableStyles.enhancedTableRow}>
+                                        <TableCell sx={tableStyles.enhancedTableCell}>{materiaPrima.nombre}</TableCell>
+                                        <TableCell sx={tableStyles.enhancedTableCell}>{materiaPrima.unidad}</TableCell>
+                                        <TableCell sx={tableStyles.enhancedTableCell} align="center">
+                                            <Box sx={tableStyles.enhancedTableCellActions}>
+                                                <Tooltip title="Editar materia prima" arrow>
+                                                    <Button 
+                                                        color="primary" 
+                                                        onClick={() => isGuest ? setShowGuestAlert(true) : handleEditarMateriaPrima(materiaPrima)} 
+                                                        sx={tableStyles.enhancedActionButton}
+                                                    >
+                                                        <Edit size={18} />
+                                                    </Button>
+                                                </Tooltip>
+                                                <Tooltip title="Eliminar materia prima" arrow>
+                                                    <Button 
+                                                        color="error" 
+                                                        onClick={() => isGuest ? setShowGuestAlert(true) : handleEliminarMateriaPrima(materiaPrima.id)} 
+                                                        sx={tableStyles.enhancedActionButton}
+                                                    >
+                                                        <Trash2 size={18} />
+                                                    </Button>
+                                                </Tooltip>
+                                            </Box>
+                                        </TableCell>
+                                    </TableRow>
+                                ))
+                            )}
                         </TableBody>
                     </Table>
 
-                    <Pagination
-                        count={totalPages}
-                        page={paginaActual}
-                        onChange={handleChangePage}
-                        color="primary"
-                        showFirstButton
-                        showLastButton
-                    />
-                </div>
+                    <Box sx={tableStyles.enhancedPagination}>
+                        <Pagination
+                            count={totalPages}
+                            page={paginaActual}
+                            onChange={handleChangePage}
+                            color="primary"
+                            showFirstButton
+                            showLastButton
+                        />
+                    </Box>
+                </TableContainer>
             </div>
 
             <Modal open={mostrarFormulario} onClose={() => setMostrarFormulario(false)} style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>

@@ -8,12 +8,15 @@ import {
   MenuItem,
   Table,
   TableHead,
+  TableContainer,
+  Typography,
   TableRow,
   TableCell,
   TableBody,
   Pagination
 } from '@mui/material';
 import { getReclamos, addReclamo, deleteReclamo, updateReclamo } from '../services/ReclamoService';
+import * as tableStyles from '../styles/tableStyles';
 import { getOrdenesCompra } from '../services/OrdenCompraService';
 import { getProveedores } from '../services/ProveedorService';
 
@@ -177,51 +180,55 @@ const Reclamo = () => {
           <p style={{ margin: 0, textAlign: 'left' }}>Administre los reclamos registrados sobre órdenes de compra</p>
         </div>
 
-        <div style={{ padding: '0px', borderRadius: '8px' }}>
+        <TableContainer sx={tableStyles.enhancedTableContainer}>
           <Table>
-            <TableHead>
+            <TableHead sx={tableStyles.enhancedTableHead}>
               <TableRow>
-                <TableCell style={{ fontWeight: 'bold', color: '#748091' }}>ID</TableCell>
-                <TableCell style={{ fontWeight: 'bold', color: '#748091' }}>Orden de Compra</TableCell>
-                <TableCell style={{ fontWeight: 'bold', color: '#748091' }}>Motivo</TableCell>
-                <TableCell style={{ fontWeight: 'bold', color: '#748091' }}>Acciones</TableCell>
+                <TableCell sx={tableStyles.hideColumnOnMobile}>ID</TableCell>
+                <TableCell>Orden de Compra</TableCell>
+                <TableCell>Motivo</TableCell>
+                <TableCell align="center">Acciones</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
-              {reclamosPaginados.map((reclamo) => (
-                <TableRow key={reclamo.id}>
-                  <TableCell>{reclamo.id}</TableCell>
-                  <TableCell>{getCodigoOrdenCompra(reclamo.ordenCompraId)}</TableCell>
-                  <TableCell>{reclamo.motivo}</TableCell>
-                  <TableCell>
-                    <Button color="info" onClick={() => handleEditarReclamo(reclamo)}>
-                      <Edit size={18} />
-                    </Button>
-                    <Button color="error" onClick={() => handleEliminarReclamo(reclamo.id)}>
-                      <Trash2 size={18} />
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              ))}
-              {reclamosPaginados.length === 0 && (
+              {reclamosPaginados.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={4} style={{ textAlign: 'center' }}>
-                    No hay reclamos registrados
+                  <TableCell colSpan={4} sx={tableStyles.emptyTableMessage}>
+                    <Box className="empty-icon">📢</Box>
+                    <Typography>No hay reclamos registrados</Typography>
                   </TableCell>
                 </TableRow>
+              ) : (
+                reclamosPaginados.map((reclamo) => (
+                  <TableRow key={reclamo.id} sx={tableStyles.enhancedTableRow}>
+                    <TableCell sx={{ ...tableStyles.enhancedTableCell, ...tableStyles.hideColumnOnMobile }}>{reclamo.id}</TableCell>
+                    <TableCell sx={tableStyles.enhancedTableCell}>{getCodigoOrdenCompra(reclamo.ordenCompraId)}</TableCell>
+                    <TableCell sx={tableStyles.enhancedTableCell}>{reclamo.motivo}</TableCell>
+                    <TableCell sx={tableStyles.enhancedTableCell} align="center">
+                      <Box sx={tableStyles.enhancedTableCellActions}>
+                        <Button color="info" onClick={() => handleEditarReclamo(reclamo)} sx={tableStyles.enhancedActionButton} startIcon={<Edit size={18} />}>
+                        </Button>
+                        <Button color="error" onClick={() => handleEliminarReclamo(reclamo.id)} sx={tableStyles.enhancedActionButton} startIcon={<Trash2 size={18} />}>
+                        </Button>
+                      </Box>
+                    </TableCell>
+                  </TableRow>
+                ))
               )}
             </TableBody>
           </Table>
 
-          <Pagination
-            count={totalPages}
-            page={paginaActual}
-            onChange={(event, value) => setPaginaActual(value)}
-            color="primary"
-            showFirstButton
-            showLastButton
-          />
-        </div>
+          <Box sx={tableStyles.enhancedPagination}>
+            <Pagination
+              count={totalPages}
+              page={paginaActual}
+              onChange={(event, value) => setPaginaActual(value)}
+              color="primary"
+              showFirstButton
+              showLastButton
+            />
+          </Box>
+        </TableContainer>
       </div>
 
       {/* MODAL PARA CREAR/EDITAR RECLAMO */}

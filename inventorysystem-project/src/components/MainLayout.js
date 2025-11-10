@@ -14,7 +14,7 @@ const MainLayout = ({ children }) => {
     const toggleMenuCollapse = () => setIsMenuCollapsed(!isMenuCollapsed);
 
     return (
-        <div style={{ display: 'flex', height: '100vh', overflow: 'hidden' /* Previene el scroll en el body */ }}>
+        <div style={{ display: 'flex', height: '100vh', overflow: 'hidden' }}>
             {/* Menú lateral */}
             {!isLogin && (
                 <SideMenu 
@@ -26,7 +26,14 @@ const MainLayout = ({ children }) => {
             )}
 
             {/* Contenedor para Topbar y Contenido de página */}
-            <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+            <div style={{ 
+                flex: 1, 
+                display: 'flex', 
+                flexDirection: 'column',
+                overflow: 'hidden',
+                marginLeft: !isLogin ? (isMenuCollapsed ? '75px' : '235px') : 0,
+                transition: 'margin-left 0.3s ease-in-out',
+            }}>
                 {/* Topbar */}
                 {!isLogin && (
                     <TopBar 
@@ -38,14 +45,12 @@ const MainLayout = ({ children }) => {
                 
                 {/* Contenido de las páginas (con scroll interno) */}
                 <div
+                    className="main-content-wrapper"
                     style={{
-                        marginLeft: isLogin ? '0' : (isMenuCollapsed ? '95px' : '255px'),
-                        // --- INICIO DE LA CORRECCIÓN ---
-                        //padding: '20px', // Añadimos el padding aquí para consistencia
-                        //backgroundColor: 'rgb(117, 73, 48)', // Un color de fondo más suave
-                        flex: 1, // Permite que este div ocupe todo el espacio vertical restante
-                        overflowY: 'none', // Habilita el scroll vertical SOLO para esta área
-                        transition: 'margin-left 0.3s ease-in-out',
+                        backgroundColor: '#f8f9fa',
+                        flex: 1,
+                        overflowY: 'auto',
+                        overflowX: 'hidden',
                     }}
                 >
                     {children}

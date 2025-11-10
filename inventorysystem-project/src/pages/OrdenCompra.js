@@ -4,9 +4,9 @@ import autoTable from 'jspdf-autotable';
 import {
     Button, Modal, Box, TextField, MenuItem, Table, TableHead, TableRow, TableCell, TableBody,
     Pagination, List, ListItem, ListItemText, Paper, ListSubheader, Tabs, Tab,
-    Typography, // <-- Añadido
-    IconButton // <-- Añadido
+    Typography, IconButton, TableContainer, CircularProgress
 } from '@mui/material';
+import * as tableStyles from '../styles/tableStyles';
 import {
     FileText, Trash2, Plus, Clock, CheckCircle2, Loader2, XCircle, Edit, MessageSquareMore, AlertTriangle
 } from "lucide-react";
@@ -73,6 +73,7 @@ const OrdenCompra = () => {
     const [alertasStockMP, setAlertasStockMP] = useState([]);
     const [movimientosPT, setMovimientosPT] = useState([]);
     const [alertasStockPT, setAlertasStockPT] = useState([]);
+    const [loading, setLoading] = useState(true);
 
     const ordenesPorPagina = 5;
     const { role } = useAuth();
@@ -86,6 +87,7 @@ const OrdenCompra = () => {
     useEffect(() => {
         const fetchData = async () => {
              try {
+                setLoading(true);
                 const [
                     ordenesData, empresasData, proveedoresData, materiasPrimasData,
                     productosTerminadosData, movimientosMPData, movimientosPTData
@@ -102,6 +104,8 @@ const OrdenCompra = () => {
                 setMovimientosPT(movimientosPTData || []);
             } catch (error) {
                  console.error("Error cargando datos iniciales:", error);
+            } finally {
+                setLoading(false);
             }
         };
         fetchData();
@@ -344,55 +348,89 @@ const OrdenCompra = () => {
             </div>
 
             <div className="table-container">
+                <div className="table-header" style={{ paddingTop: '0px', width: '100%' }}>
+                    <h3 style={{ marginTop: '10px', textAlign: 'left' }}>Lista de Órdenes de Compra</h3>
+                    <p style={{ margin: 0, textAlign: 'left' }}>Administre sus órdenes de compra a proveedores</p>
+                </div>
+
+            {loading ? (
+                <Box
+                    sx={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        minHeight: '400px',
+                        backgroundColor: '#ffffff',
+                        borderRadius: '12px',
+                        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
+                        padding: '60px'
+                    }}
+                >
+                    <CircularProgress size={40} style={{ color: '#8b5cf6' }} />
+                    <Typography variant="body1" sx={{ marginTop: 2, color: '#666' }}>
+                        Cargando órdenes de compra...
+                    </Typography>
+                </Box>
+            ) : (
+                <TableContainer sx={tableStyles.enhancedTableContainer}>
                 <Table>
-                    <TableHead>
+                    <TableHead sx={tableStyles.enhancedTableHead}>
                         <TableRow>
-                            <TableCell><strong>Código</strong></TableCell>
-                            {/*<TableCell><strong>Tipo</strong></TableCell>*/}
-                            <TableCell><strong>Proveedor</strong></TableCell>
-                            <TableCell><strong>Fecha</strong></TableCell>
-                            <TableCell><strong>Estado</strong></TableCell>
-                            <TableCell align="right"><strong>Acciones</strong></TableCell>
+                            <TableCell>Código</TableCell>
+                            <TableCell>Proveedor</TableCell>
+                            <TableCell sx={tableStyles.hideColumnOnMobile}>Fecha</TableCell>
+                            <TableCell>Estado</TableCell>
+                            <TableCell align="center">Acciones</TableCell>
                         </TableRow>
                     </TableHead>
                     <TableBody>
-                        {ordenesPaginadas.length > 0 ? ordenesPaginadas.map((orden) => (
-                            <TableRow key={orden.id} hover>
-                                <TableCell><strong>{orden.codigoOrden}</strong></TableCell>
-                                {/* <TableCell sx={{ textTransform: 'capitalize' }}>{orden.tipo?.replace('Primas', ' primas').replace('Terminados', ' terminados') || 'N/A'}</TableCell> */}
-                                <TableCell>{proveedores.find(p => p.id === orden.proveedorId)?.nombreEmpresaProveedor || "-"}</TableCell>
-                                <TableCell>{orden.fechaEmision ? new Date(orden.fechaEmision).toLocaleDateString('es-ES') : '-'}</TableCell>
-                                <TableCell>{renderEstado(orden.estado)}</TableCell>
-                                <TableCell align="right">
-                                    <Button color="primary" onClick={() => isGuest ? setShowGuestAlert(true) : handleAbrirPdfPreview(orden)} style={{ minWidth: 'auto', padding: '6px' }}>
-                                        <FileText size={18} />
-                                    </Button>
-                                    <Button color="info" onClick={() => isGuest ? setShowGuestAlert(true) : handleEditarOrden(orden)} style={{ minWidth: 'auto', padding: '6px' }}>
-                                        <Edit size={18} />
-                                    </Button>
-                                    <Button color="error" onClick={() => isGuest ? setShowGuestAlert(true) : handleEliminarOrden(orden.id)} style={{ minWidth: 'auto', padding: '6px' }}>
-                                        <Trash2 size={18} />
-                                    </Button>
+                        {ordenesPaginadas.length === 0 ? (
+                            <TableRow>
+                                <TableCell colSpan={5} sx={tableStyles.emptyTableMessage}>
+                                    <Box className="empty-icon">📋</Box>
+                                    <Typography>No hay órdenes de compra registradas</Typography>
                                 </TableCell>
                             </TableRow>
-                        )) : (
-                             <TableRow>
-                                <TableCell colSpan={5} align="center">No hay órdenes de compra registradas.</TableCell> {/* Ajustado colSpan */}
-                             </TableRow>
+                        ) : (
+                            ordenesPaginadas.map((orden) => (
+                                <TableRow key={orden.id} sx={tableStyles.enhancedTableRow}>
+                                    <TableCell sx={tableStyles.enhancedTableCell}><strong>{orden.codigoOrden}</strong></TableCell>
+                                    <TableCell sx={tableStyles.enhancedTableCell}>{proveedores.find(p => p.id === orden.proveedorId)?.nombreEmpresaProveedor || "-"}</TableCell>
+                                    <TableCell sx={{ ...tableStyles.enhancedTableCell, ...tableStyles.hideColumnOnMobile }}>
+                                        {orden.fechaEmision ? new Date(orden.fechaEmision).toLocaleDateString('es-ES') : '-'}
+                                    </TableCell>
+                                    <TableCell sx={tableStyles.enhancedTableCell}>{renderEstado(orden.estado)}</TableCell>
+                                    <TableCell sx={tableStyles.enhancedTableCell} align="center">
+                                        <Box sx={tableStyles.enhancedTableCellActions}>
+                                            <Button color="primary" onClick={() => isGuest ? setShowGuestAlert(true) : handleAbrirPdfPreview(orden)} sx={tableStyles.enhancedActionButton} startIcon={<FileText size={18} />}>
+                                            </Button>
+                                            <Button color="info" onClick={() => isGuest ? setShowGuestAlert(true) : handleEditarOrden(orden)} sx={tableStyles.enhancedActionButton} startIcon={<Edit size={18} />}>
+                                            </Button>
+                                            <Button color="error" onClick={() => isGuest ? setShowGuestAlert(true) : handleEliminarOrden(orden.id)} sx={tableStyles.enhancedActionButton} startIcon={<Trash2 size={18} />}>
+                                            </Button>
+                                        </Box>
+                                    </TableCell>
+                                </TableRow>
+                            ))
                         )}
                     </TableBody>
                 </Table>
-                 {totalPaginas > 1 && (
-                     <Pagination
-                        count={totalPaginas}
-                        page={paginaActual}
-                        onChange={(e, value) => setPaginaActual(value)}
-                        color="primary"
-                        showFirstButton
-                        showLastButton
-                        sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}
-                    />
-                 )}
+
+                {totalPaginas > 1 && (
+                    <Box sx={tableStyles.enhancedPagination}>
+                        <Pagination
+                            count={totalPaginas}
+                            page={paginaActual}
+                            onChange={(e, value) => setPaginaActual(value)}
+                            color="primary"
+                            showFirstButton
+                            showLastButton
+                        />
+                    </Box>
+                )}
+            </TableContainer>
+            )}
             </div>
 
             {/* --- MODAL PARA CREAR/EDITAR ORDEN --- */}
@@ -570,7 +608,7 @@ const OrdenCompra = () => {
                 onClose={hideModal}
             />
 
-        </div> // Cierre container-general
+        </div>
     );
 };
 

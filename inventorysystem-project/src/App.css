@@ -2,8 +2,7 @@ html, body, #root, .App {
   height: 100%;
   margin: 0;
   padding: 0;
-  /* --- CAMBIO AQUÍ --- */
-  background-color: #18181B; /* Cambiado de #754930 a negro */
+  background-color: #f8f9fa;
   overflow: hidden;
 }
 * {
@@ -75,13 +74,12 @@ iframe#webpack-dev-server-client-overlay{display:none!important}
   flex-direction: column;
   /*align-items: center;*/
   background-color: white;
-  padding: 50px;
-  border-bottom-left-radius: 16px;
-  border-bottom-right-radius: 16px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  padding: 40px;
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
   color: black;
   /*transition: transform 0.2s ease-in-out;*/
-  min-height: 90vh; /* para que no se vea en blanco al hacer zoom */
+  min-height: calc(100vh - 140px); /* Altura dinámica considerando topbar y padding */
   
 }
 
@@ -786,28 +784,23 @@ textarea {
 /* =================================*/
 
 
+/* TopBar styles - base inline, responsivo en CSS */
 .top-bar {
-  display: flex;
-  justify-content: flex-end; 
-  align-items: center;
-  /*margin-top: 20px;*/
-  background-color: #ebedff;
-  box-shadow: 0px 2px 10px rgba(0, 0, 0, 0.1);
-  margin-left: 235px;
-  /*margin-right: 20px;*/
-  transition: margin-left 0.3s ease-in-out;  /* Transición suave para el margen */
+  padding: 0 50px !important;
+}
 
-  z-index: 1;
-  padding: 10px;
-  
-  /*
-  border-top-right-radius: 16px;
-  border-top-left-radius: 16px;
-  */
+@media screen and (max-width: 1024px) {
+  .top-bar {
+    padding: 0 30px !important;
+  }
 }
-.top-bar.collapsed {
-  margin-left: 75px; /* Ajusta según el tamaño del menú lateral colapsado */
+
+@media screen and (max-width: 768px) {
+  .top-bar {
+    padding: 0 20px !important;
+  }
 }
+
 .user-profile {
   display: flex;
   align-items: center;
@@ -976,14 +969,45 @@ textarea {
 
 
 
-/* Media query para dispositivos pequeños */
+/* Main content wrapper - padding responsivo */
+.main-content-wrapper {
+  padding: 30px 50px;
+}
+
+/* Media query para dispositivos medianos (tablets) */
+@media screen and (max-width: 1024px) {
+  .main-content-wrapper {
+    padding: 25px 30px;
+  }
+  
+  .container-general {
+    padding: 30px;
+  }
+}
+
+/* Media query para dispositivos pequeños (móviles) */
 @media screen and (max-width: 768px) {
-  .top-bar {
-    left: 0;
-    width: 100%; /* El TopBar ocupará toda la pantalla */
+  .main-content-wrapper {
+    padding: 20px;
+  }
+  
+  .container-general {
+    padding: 20px;
+    min-height: calc(100vh - 120px);
   }
 
   .search-container input {
-    width: 200px; /* Ajustar tamaño de búsqueda en pantallas pequeñas */
+    width: 200px;
+  }
+}
+
+/* Responsive para TopBar - manejo en JavaScript pero backup CSS */
+@media screen and (max-width: 768px) {
+  .breadcrumbs-container {
+    font-size: 12px !important;
+  }
+  
+  .breadcrumb-item {
+    padding: 2px 6px !important;
   }
 }

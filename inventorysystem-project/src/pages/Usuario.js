@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { TextField, Button, Modal, Box, Table, TableBody, TableCell, TableHead, TableRow, Pagination, MenuItem, Alert } from '@mui/material';
+import { TextField, Button, Modal, Box, Table, TableBody, TableCell, TableHead, TableRow, Pagination, MenuItem, Alert, TableContainer, Typography } from '@mui/material';
 import { Plus, Trash2, Edit, Key } from 'lucide-react';
 import { getUsuarios, addUsuario, updateUsuario, deleteUsuario, updatePassword } from '../services/UsuarioService';
 import { getEmpresas } from '../services/EmpresaService';
 import { getRoles } from '../services/RolService';
 import { useModal } from '../hooks/useModal';
 import CustomModal from '../components/CustomModal';
+import * as tableStyles from '../styles/tableStyles';
 
 const Usuario = () => {
     const [usuarios, setUsuarios] = useState([]);
@@ -449,57 +450,58 @@ const Usuario = () => {
                     <p style={{ margin: 0, textAlign: 'left' }}>Administre los usuarios de la plataforma</p>
                 </div>
 
-                <div style={{ padding: '0px', borderRadius: '8px' }}>
+                <TableContainer sx={tableStyles.enhancedTableContainer}>
                     <Table>
-                        <TableHead>
+                        <TableHead sx={tableStyles.enhancedTableHead}>
                             <TableRow>
-                                <TableCell style={{ fontWeight: 'bold', color: '#748091' }}>Nombre</TableCell>
-                                <TableCell style={{ fontWeight: 'bold', color: '#748091' }}>Correo</TableCell>
-                                <TableCell style={{ fontWeight: 'bold', color: '#748091' }}>Username</TableCell>
-                                <TableCell style={{ fontWeight: 'bold', color: '#748091' }}>Genero</TableCell>
-                                <TableCell style={{ fontWeight: 'bold', color: '#748091' }}>Teléfono</TableCell>
-                                <TableCell style={{ fontWeight: 'bold', color: '#748091' }}>Estado</TableCell>
-                                <TableCell style={{ fontWeight: 'bold', color: '#748091' }}>Rol</TableCell>
-                                <TableCell style={{ fontWeight: 'bold', color: '#748091' }}>Acciones</TableCell>
+                                <TableCell>Nombre</TableCell>
+                                <TableCell sx={tableStyles.hideColumnOnTablet}>Correo</TableCell>
+                                <TableCell>Username</TableCell>
+                                <TableCell sx={tableStyles.hideColumnOnMobile}>Genero</TableCell>
+                                <TableCell sx={tableStyles.hideColumnOnTablet}>Teléfono</TableCell>
+                                <TableCell sx={tableStyles.hideColumnOnMobile}>Estado</TableCell>
+                                <TableCell>Rol</TableCell>
+                                <TableCell align="center">Acciones</TableCell>
                             </TableRow>
                         </TableHead>
                         <TableBody>
-                            {usuariosPaginados.length > 0 ? (
+                            {usuariosPaginados.length === 0 ? (
+                                <TableRow>
+                                    <TableCell colSpan={8} sx={tableStyles.emptyTableMessage}>
+                                        <Box className="empty-icon">👥</Box>
+                                        <Typography>No hay usuarios registrados</Typography>
+                                    </TableCell>
+                                </TableRow>
+                            ) : (
                                 usuariosPaginados.map((usuario) => (
-                                    <TableRow key={usuario.id}>
-                                        <TableCell>{usuario.nombre} {usuario.apellido}</TableCell>
-                                        <TableCell>{usuario.correo}</TableCell>
-                                        <TableCell>{usuario.username}</TableCell>
-                                        <TableCell>{
-                                            usuario.genero === 'M' ? 'Masculino' :
-                                                usuario.genero === 'F' ? 'Femenino' :
-                                                    usuario.genero === 'O' ? 'Otro' : usuario.genero
-                                        }</TableCell>
-                                        <TableCell>{usuario.telefono}</TableCell>
-                                        <TableCell>{usuario.enabled ? 'Activo' : 'Inactivo'}</TableCell>
-                                        <TableCell>{renderBackgroundRol(usuario)}</TableCell>
-                                        <TableCell>
-                                            <Button color="primary" onClick={() => handleEditarUsuario(usuario)}>
-                                                <Edit size={18} />
-                                            </Button>
-                                            <Button color="error" onClick={() => handleEliminarUsuario(usuario.id)}>
-                                                <Trash2 size={18} />
-                                            </Button>
+                                    <TableRow key={usuario.id} sx={tableStyles.enhancedTableRow}>
+                                        <TableCell sx={tableStyles.enhancedTableCell}>{usuario.nombre} {usuario.apellido}</TableCell>
+                                        <TableCell sx={{ ...tableStyles.enhancedTableCell, ...tableStyles.hideColumnOnTablet }}>{usuario.correo}</TableCell>
+                                        <TableCell sx={tableStyles.enhancedTableCell}>{usuario.username}</TableCell>
+                                        <TableCell sx={{ ...tableStyles.enhancedTableCell, ...tableStyles.hideColumnOnMobile }}>
+                                            {usuario.genero === 'M' ? 'Masculino' : usuario.genero === 'F' ? 'Femenino' : usuario.genero === 'O' ? 'Otro' : usuario.genero}
+                                        </TableCell>
+                                        <TableCell sx={{ ...tableStyles.enhancedTableCell, ...tableStyles.hideColumnOnTablet }}>{usuario.telefono}</TableCell>
+                                        <TableCell sx={{ ...tableStyles.enhancedTableCell, ...tableStyles.hideColumnOnMobile }}>{usuario.enabled ? 'Activo' : 'Inactivo'}</TableCell>
+                                        <TableCell sx={tableStyles.enhancedTableCell}>{renderBackgroundRol(usuario)}</TableCell>
+                                        <TableCell sx={tableStyles.enhancedTableCell} align="center">
+                                            <Box sx={tableStyles.enhancedTableCellActions}>
+                                                <Button color="primary" onClick={() => handleEditarUsuario(usuario)} sx={tableStyles.enhancedActionButton} startIcon={<Edit size={18} />}>
+                                                </Button>
+                                                <Button color="error" onClick={() => handleEliminarUsuario(usuario.id)} sx={tableStyles.enhancedActionButton} startIcon={<Trash2 size={18} />}>
+                                                </Button>
+                                            </Box>
                                         </TableCell>
                                     </TableRow>
                                 ))
-                            ) : (
-                                <TableRow>
-                                    <TableCell colSpan={8} style={{ textAlign: 'center' }}>No hay usuarios registrados</TableCell>
-                                </TableRow>
                             )}
                         </TableBody>
                     </Table>
 
-                    <div style={{ marginTop: '20px', display: 'flex', justifyContent: 'center' }}>
+                    <Box sx={tableStyles.enhancedPagination}>
                         <Pagination count={totalPages} page={paginaActual} onChange={handleChangePage} color="primary" showFirstButton showLastButton />
-                    </div>
-                </div>
+                    </Box>
+                </TableContainer>
             </div>
 
             <Modal

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Button, Modal, Box, TextField, Table, TableBody, TableCell, TableHead, TableRow, Pagination, Select, MenuItem, InputLabel, FormControl, Typography, CircularProgress, Alert, Chip, IconButton, Tooltip as MuiTooltip, Divider, Card, CardContent } from '@mui/material';
+import { Button, Modal, Box, TextField, Table, TableBody, TableCell, TableHead, TableRow, Pagination, Select, MenuItem, InputLabel, FormControl, Typography, CircularProgress, Alert, Chip, IconButton, Tooltip as MuiTooltip, Divider, Card, CardContent, TableContainer } from '@mui/material';
 import { Plus, Edit, Trash2, UserPlus, MessageSquare, X, Send, User, Clock, AlertCircle } from 'lucide-react';
 import { getTickets, addTicket, updateTicket, deleteTicket, asignarTicket, cambiarEstadoTicket, addComentario, getComentariosPorTicket, calificarTicket } from '../../services/SoporteService';
 import { getRoles } from '../../services/RolService';
@@ -8,6 +8,7 @@ import es from 'date-fns/locale/es';
 import TicketPanelUnificado from './TicketPanelUnificado';
 import { useModal } from '../../hooks/useModal';
 import CustomModal from '../../components/CustomModal';
+import * as tableStyles from '../../styles/tableStyles';
 
 // Componente de estrellas para calificación
 const StarRating = ({ value, onChange, selectedTicket, currentUser }) => {
@@ -512,82 +513,112 @@ const GestionIncidentes = ({ usuarios = [], currentUserId }) => {
             </div>
 
             {loading && (
-                <div style={{ display: 'flex', justifyContent: 'center', margin: '30px 0' }}>
-                    <CircularProgress size={32} style={{ color: '#3b82f6' }} />
-                </div>
+                <Box sx={{ 
+                    display: 'flex', 
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    padding: '60px 20px',
+                    backgroundColor: '#ffffff',
+                    borderRadius: '12px',
+                    boxShadow: '0 1px 3px rgba(0,0,0,0.05)'
+                }}>
+                    <CircularProgress size={40} style={{ color: '#3b82f6' }} />
+                    <Typography sx={{ mt: 2, color: '#64748b', fontSize: '0.95rem' }}>
+                        Cargando tickets...
+                    </Typography>
+                </Box>
             )}
             
             {error && <Alert severity="error" style={{ marginBottom: '20px', borderRadius: '8px' }}>{error}</Alert>}
 
             {!loading && !error && (
-                <div className="table-container">
-                    <div className="table-header" style={{ paddingTop: '0px' }}>
-                        <h3 style={{ marginTop: '10px', textAlign: 'left' }}>Lista de Tickets</h3>
-                        <p style={{ margin: 0, textAlign: 'left' }}>
+                <Box>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 2 }}>
+                        <Typography variant="h5" sx={{ fontWeight: 600, color: '#1f2937' }}>
+                            Lista de Tickets
+                        </Typography>
+                        <Typography variant="body2" sx={{ color: '#6b7280' }}>
                             Administre los incidentes reportados y su resolución
-                        </p>
-                    </div>
-                    <div style={{ padding: '0px', borderRadius: '8px' }}>
+                        </Typography>
+                    </Box>
+                    
+                    <TableContainer sx={tableStyles.enhancedTableContainer}>
                         <Table>
-                            <TableHead>
+                            <TableHead sx={tableStyles.enhancedTableHead}>
                                 <TableRow>
-                                    <TableCell style={{ fontWeight: 'bold', color: '#748091', width: '80px' }}>ID</TableCell>
-                                    <TableCell style={{ fontWeight: 'bold', color: '#748091' }}>Descripción</TableCell>
-                                    <TableCell style={{ fontWeight: 'bold', color: '#748091', width: '120px' }}>Prioridad</TableCell>
-                                    <TableCell style={{ fontWeight: 'bold', color: '#748091', width: '120px' }}>Estado</TableCell>
-                                    <TableCell style={{ fontWeight: 'bold', color: '#748091', width: '150px' }}>Reportado por</TableCell>
-                                    <TableCell style={{ fontWeight: 'bold', color: '#748091', width: '150px' }}>Responsable</TableCell>
-                                    <TableCell style={{ fontWeight: 'bold', color: '#748091', width: '150px' }}>Fecha Reporte</TableCell>
-                                    <TableCell style={{ fontWeight: 'bold', color: '#748091', width: '160px' }} align="center">Acciones</TableCell>
+                                    <TableCell sx={tableStyles.enhancedTableCell}>ID</TableCell>
+                                    <TableCell sx={tableStyles.enhancedTableCell}>Descripción</TableCell>
+                                    <TableCell sx={tableStyles.enhancedTableCell}>Prioridad</TableCell>
+                                    <TableCell sx={tableStyles.enhancedTableCell}>Estado</TableCell>
+                                    <TableCell sx={tableStyles.enhancedTableCell}>Reportado por</TableCell>
+                                    <TableCell sx={tableStyles.enhancedTableCell}>Responsable</TableCell>
+                                    <TableCell sx={tableStyles.enhancedTableCell}>Fecha Reporte</TableCell>
+                                    <TableCell sx={tableStyles.enhancedTableCell} align="center">Acciones</TableCell>
                                 </TableRow>
                             </TableHead>
                             <TableBody>
                                 {ticketsPaginados.length > 0 ? ticketsPaginados.map((ticket) => (
-                                    <TableRow key={ticket.id} hover>
-                                        <TableCell>{ticket.formattedId || ticket.id}</TableCell>
-                                        <TableCell style={{ maxWidth: 300, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                    <TableRow key={ticket.id} sx={tableStyles.enhancedTableRow}>
+                                        <TableCell sx={tableStyles.enhancedTableCell}>{ticket.formattedId || ticket.id}</TableCell>
+                                        <TableCell sx={{ ...tableStyles.enhancedTableCell, maxWidth: 300, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                                             <MuiTooltip title={ticket.descripcion} arrow>
                                                 <span>{ticket.descripcion}</span>
                                             </MuiTooltip>
                                         </TableCell>
-                                        <TableCell>{renderChipPrioridad(ticket.prioridad)}</TableCell>
-                                        <TableCell>
+                                        <TableCell sx={tableStyles.enhancedTableCell}>{renderChipPrioridad(ticket.prioridad)}</TableCell>
+                                        <TableCell sx={tableStyles.enhancedTableCell}>
                                             <MuiTooltip title="Clic para cambiar estado" arrow>
                                                 <span style={{ cursor: 'pointer' }} onClick={() => handleCambiarEstado(ticket.id, ticket.estado)}>
                                                     {renderChipEstado(ticket.estado)}
                                                 </span>
                                             </MuiTooltip>
                                         </TableCell>
-                                        <TableCell>{ticket.usuarioReportaNombre || '-'}</TableCell>
-                                        <TableCell>{ticket.responsableAsignadoNombre || '-'}</TableCell>
-                                        <TableCell>{formatTicketDate(ticket.fechaReporte)}</TableCell>
-                                        <TableCell>
-                                            <div style={{ display: 'flex', gap: '4px' }}>
-                                                <MuiTooltip title="Ver/Editar Ticket" arrow>
-                                                    <IconButton size="small" color="primary" onClick={() => handleOpenModal(ticket)}>
-                                                        <Edit size={18} />
-                                                    </IconButton>
-                                                </MuiTooltip>
-                                                <MuiTooltip title="Eliminar Ticket" arrow>
-                                                    <IconButton size="small" color="error" onClick={() => handleDeleteTicket(ticket.id)}>
-                                                        <Trash2 size={18} />
-                                                    </IconButton>
-                                                </MuiTooltip>
-                                            </div>
+                                        <TableCell sx={tableStyles.enhancedTableCell}>{ticket.usuarioReportaNombre || '-'}</TableCell>
+                                        <TableCell sx={tableStyles.enhancedTableCell}>{ticket.responsableAsignadoNombre || '-'}</TableCell>
+                                        <TableCell sx={tableStyles.enhancedTableCell}>{formatTicketDate(ticket.fechaReporte)}</TableCell>
+                                        <TableCell sx={tableStyles.enhancedTableCell} align="center">
+                                            <Box sx={tableStyles.enhancedTableCellActions}>
+                                                <Button 
+                                                    color="primary" 
+                                                    onClick={() => handleOpenModal(ticket)}
+                                                    sx={tableStyles.enhancedActionButton}
+                                                    startIcon={<Edit size={18} />}
+                                                >
+                                                </Button>
+                                                <Button 
+                                                    color="error" 
+                                                    onClick={() => handleDeleteTicket(ticket.id)}
+                                                    sx={tableStyles.enhancedActionButton}
+                                                    startIcon={<Trash2 size={18} />}
+                                                >
+                                                </Button>
+                                            </Box>
                                         </TableCell>
                                     </TableRow>
                                 )) : (
                                     <TableRow>
-                                        <TableCell colSpan={8} align="center">No hay tickets para mostrar.</TableCell>
+                                        <TableCell colSpan={8} sx={tableStyles.emptyTableMessage}>
+                                            <Box className="empty-icon">🎫</Box>
+                                            <Typography>No hay tickets para mostrar</Typography>
+                                        </TableCell>
                                     </TableRow>
                                 )}
                             </TableBody>
                         </Table>
-                        {tickets.length > itemsPorPagina && (
-                            <Pagination count={totalPaginas} page={paginaActual} onChange={(e, value) => setPaginaActual(value)} color="primary" showFirstButton showLastButton />
-                        )}
-                    </div>
-                </div>
+                    </TableContainer>
+                    
+                    <Box sx={tableStyles.enhancedPagination}>
+                        <Pagination 
+                            count={totalPaginas} 
+                            page={paginaActual} 
+                            onChange={(e, value) => setPaginaActual(value)} 
+                            color="primary" 
+                            showFirstButton 
+                            showLastButton 
+                        />
+                    </Box>
+                </Box>
             )}
 
             <TicketPanelUnificado 

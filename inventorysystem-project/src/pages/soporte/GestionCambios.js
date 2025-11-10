@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { Button, Modal, Box, TextField, Table, TableBody, TableCell, TableHead, TableRow, Pagination, Select, MenuItem, InputLabel, FormControl, Typography, CircularProgress, Alert, Chip, IconButton, Tooltip as MuiTooltip } from '@mui/material';
+import { Button, Modal, Box, TextField, Table, TableBody, TableCell, TableHead, TableRow, Pagination, Select, MenuItem, InputLabel, FormControl, Typography, CircularProgress, Alert, Chip, IconButton, Tooltip as MuiTooltip, TableContainer } from '@mui/material';
 import { Plus, Edit, Clock, CheckCircle, XCircle, PlayCircle } from 'lucide-react';
 import { getRFCs, addRFC, updateRFC, cambiarEstadoRFC, aprobarRFC } from '../../services/SoporteService';
 import { format } from 'date-fns';
 import es from 'date-fns/locale/es';
 import { useModal } from '../../hooks/useModal';
 import CustomModal from '../../components/CustomModal';
+import * as tableStyles from '../../styles/tableStyles';
 
 // Modal de Formulario para RFCs
 const RFCFormModal = ({ open, onClose, onSave, rfcData, setRfcData, isEditing }) => {
@@ -264,93 +265,129 @@ const GestionCambios = ({ usuarios }) => {
             </div>
 
             {loading && (
-                <div style={{ display: 'flex', justifyContent: 'center', margin: '30px 0' }}>
-                    <CircularProgress />
-                </div>
+                <Box sx={{ 
+                    display: 'flex', 
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    padding: '60px 20px',
+                    backgroundColor: '#ffffff',
+                    borderRadius: '12px',
+                    boxShadow: '0 1px 3px rgba(0,0,0,0.05)'
+                }}>
+                    <CircularProgress size={40} style={{ color: '#10b981' }} />
+                    <Typography sx={{ mt: 2, color: '#64748b', fontSize: '0.95rem' }}>
+                        Cargando solicitudes de cambio...
+                    </Typography>
+                </Box>
             )}
             
             {error && <Alert severity="error" style={{ marginBottom: '20px' }}>{error}</Alert>}
 
             {!loading && !error && (
-                <div className="table-container">
-                    <div className="table-header" style={{ paddingTop: '0px' }}>
-                        <h3 style={{ marginTop: '10px', textAlign: 'left' }}>Lista de Solicitudes de Cambio</h3>
-                        <p style={{ margin: 0, textAlign: 'left' }}>
+                <Box>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 2 }}>
+                        <Typography variant="h5" sx={{ fontWeight: 600, color: '#1f2937' }}>
+                            Lista de Solicitudes de Cambio
+                        </Typography>
+                        <Typography variant="body2" sx={{ color: '#6b7280' }}>
                             Administre las solicitudes de cambio y su proceso de aprobación
-                        </p>
-                    </div>
-                    <div style={{ padding: '0px', borderRadius: '8px' }}>
+                        </Typography>
+                    </Box>
+                    
+                    <TableContainer sx={tableStyles.enhancedTableContainer}>
                         <Table>
-                            <TableHead>
+                            <TableHead sx={tableStyles.enhancedTableHead}>
                                 <TableRow>
-                                    <TableCell style={{ fontWeight: 'bold', color: '#748091' }}>ID</TableCell>
-                                    <TableCell style={{ fontWeight: 'bold', color: '#748091' }}>Título</TableCell>
-                                    <TableCell style={{ fontWeight: 'bold', color: '#748091' }}>Tipo</TableCell>
-                                    <TableCell style={{ fontWeight: 'bold', color: '#748091' }}>Estado</TableCell>
-                                    <TableCell style={{ fontWeight: 'bold', color: '#748091' }}>Solicitante</TableCell>
-                                    <TableCell style={{ fontWeight: 'bold', color: '#748091' }}>Acciones</TableCell>
+                                    <TableCell sx={tableStyles.enhancedTableCell}>ID</TableCell>
+                                    <TableCell sx={tableStyles.enhancedTableCell}>Título</TableCell>
+                                    <TableCell sx={tableStyles.enhancedTableCell}>Tipo</TableCell>
+                                    <TableCell sx={tableStyles.enhancedTableCell}>Estado</TableCell>
+                                    <TableCell sx={tableStyles.enhancedTableCell}>Solicitante</TableCell>
+                                    <TableCell sx={tableStyles.enhancedTableCell} align="center">Acciones</TableCell>
                                 </TableRow>
                             </TableHead>
                             <TableBody>
                                 {rfcsPaginados.length > 0 ? rfcsPaginados.map((rfc) => (
-                                    <TableRow key={rfc.id} hover>
-                                        <TableCell>{rfc.formattedId || rfc.id}</TableCell>
-                                        <TableCell style={{ maxWidth: 350, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                    <TableRow key={rfc.id} sx={tableStyles.enhancedTableRow}>
+                                        <TableCell sx={tableStyles.enhancedTableCell}>{rfc.formattedId || rfc.id}</TableCell>
+                                        <TableCell sx={{ ...tableStyles.enhancedTableCell, maxWidth: 350, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                                             <MuiTooltip title={rfc.titulo} arrow><span>{rfc.titulo}</span></MuiTooltip>
                                         </TableCell>
-                                        <TableCell>{renderChipTipoCambio(rfc.tipoCambio)}</TableCell>
-                                        <TableCell>{renderChipEstadoCambio(rfc.estado)}</TableCell>
-                                        <TableCell>{rfc.solicitanteNombre || '-'}</TableCell>
-                                        <TableCell>
-                                            <div style={{ display: 'flex', gap: '4px' }}>
+                                        <TableCell sx={tableStyles.enhancedTableCell}>{renderChipTipoCambio(rfc.tipoCambio)}</TableCell>
+                                        <TableCell sx={tableStyles.enhancedTableCell}>{renderChipEstadoCambio(rfc.estado)}</TableCell>
+                                        <TableCell sx={tableStyles.enhancedTableCell}>{rfc.solicitanteNombre || '-'}</TableCell>
+                                        <TableCell sx={tableStyles.enhancedTableCell} align="center">
+                                            <Box sx={tableStyles.enhancedTableCellActions}>
                                                 {(rfc.estado === 'REGISTRADO' || rfc.estado === 'EN_EVALUACION') && (rfc.tipoCambio === 'NORMAL' || rfc.tipoCambio === 'EMERGENCIA') && (
-                                                    <MuiTooltip title={rfc.tipoCambio === 'NORMAL' ? "Aprobar (CAB)" : "Aprobar (PM)"} arrow>
-                                                        <IconButton size="small" color="success" onClick={() => handleApprove(rfc.id, rfc.tipoCambio)}>
-                                                            <CheckCircle size={18} />
-                                                        </IconButton>
-                                                    </MuiTooltip>
+                                                    <Button 
+                                                        color="success" 
+                                                        onClick={() => handleApprove(rfc.id, rfc.tipoCambio)}
+                                                        sx={tableStyles.enhancedActionButton}
+                                                        startIcon={<CheckCircle size={18} />}
+                                                    >
+                                                    </Button>
                                                 )}
                                                 {(rfc.estado === 'APROBADO_CAB' || rfc.estado === 'APROBADO_PM_EMERGENCIA') && (
-                                                    <MuiTooltip title="Marcar como Implementado" arrow>
-                                                        <IconButton size="small" color="secondary" onClick={() => handleSetImplemented(rfc.id)}>
-                                                            <PlayCircle size={18} />
-                                                        </IconButton>
-                                                    </MuiTooltip>
+                                                    <Button 
+                                                        color="info" 
+                                                        onClick={() => handleSetImplemented(rfc.id)}
+                                                        sx={tableStyles.enhancedActionButton}
+                                                        startIcon={<PlayCircle size={18} />}
+                                                    >
+                                                    </Button>
                                                 )}
                                                 {(rfc.estado === 'REGISTRADO' || rfc.estado === 'EN_EVALUACION') && (
-                                                    <MuiTooltip title="Rechazar Solicitud" arrow>
-                                                        <IconButton size="small" color="error" onClick={() => handleReject(rfc.id)}>
-                                                            <XCircle size={18} />
-                                                        </IconButton>
-                                                    </MuiTooltip>
+                                                    <Button 
+                                                        color="error" 
+                                                        onClick={() => handleReject(rfc.id)}
+                                                        sx={tableStyles.enhancedActionButton}
+                                                        startIcon={<XCircle size={18} />}
+                                                    >
+                                                    </Button>
                                                 )}
                                                 {rfc.estado === 'IMPLEMENTADO' && (
-                                                    <MuiTooltip title="Cerrar Solicitud" arrow>
-                                                        <IconButton size="small" color="default" onClick={() => handleCloseRFC(rfc.id)}>
-                                                            <CheckCircle size={18}/>
-                                                        </IconButton>
-                                                    </MuiTooltip>
+                                                    <Button 
+                                                        color="success" 
+                                                        onClick={() => handleCloseRFC(rfc.id)}
+                                                        sx={tableStyles.enhancedActionButton}
+                                                        startIcon={<CheckCircle size={18}/>}
+                                                    >
+                                                    </Button>
                                                 )}
-                                                <MuiTooltip title="Editar Detalles RFC" arrow>
-                                                    <IconButton size="small" color="primary" onClick={() => handleOpenModal(rfc)}>
-                                                        <Edit size={18} />
-                                                    </IconButton>
-                                                </MuiTooltip>
-                                            </div>
+                                                <Button 
+                                                    color="primary" 
+                                                    onClick={() => handleOpenModal(rfc)}
+                                                    sx={tableStyles.enhancedActionButton}
+                                                    startIcon={<Edit size={18} />}
+                                                >
+                                                </Button>
+                                            </Box>
                                         </TableCell>
                                     </TableRow>
                                 )) : (
                                     <TableRow>
-                                        <TableCell colSpan={6} align="center">No hay solicitudes de cambio para mostrar.</TableCell>
+                                        <TableCell colSpan={6} sx={tableStyles.emptyTableMessage}>
+                                            <Box className="empty-icon">📋</Box>
+                                            <Typography>No hay solicitudes de cambio para mostrar</Typography>
+                                        </TableCell>
                                     </TableRow>
                                 )}
                             </TableBody>
                         </Table>
-                        {rfcs.length > itemsPorPagina && (
-                            <Pagination count={totalPaginas} page={paginaActual} onChange={(e, value) => setPaginaActual(value)} color="primary" showFirstButton showLastButton />
-                        )}
-                    </div>
-                </div>
+                    </TableContainer>
+                    
+                    <Box sx={tableStyles.enhancedPagination}>
+                        <Pagination 
+                            count={totalPaginas} 
+                            page={paginaActual} 
+                            onChange={(e, value) => setPaginaActual(value)} 
+                            color="primary" 
+                            showFirstButton 
+                            showLastButton 
+                        />
+                    </Box>
+                </Box>
             )}
 
             <RFCFormModal open={modalOpen} onClose={handleCloseModal} onSave={handleSaveRfc} rfcData={nuevoRfcData} setRfcData={setNuevoRfcData} isEditing={!!rfcEditando} />

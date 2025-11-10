@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { TextField, Button, Modal, Box, Pagination, Table, TableBody, TableCell, TableHead, TableRow,MenuItem, Typography } from '@mui/material';
+import { TextField, Button, Modal, Box, Pagination, Table, TableBody, TableCell, TableHead, TableRow, MenuItem, Typography, TableContainer, CircularProgress } from '@mui/material';
 import { Plus, Pencil, Trash2, Edit } from "lucide-react";
 import { getProveedores, addProveedor, updateProveedor, deleteProveedor, getProveedorById, getPaises } from '../services/ProveedorService';
 import useAuth from '../hooks/useAuth';
 import { ROLES } from '../constants/roles';
 import { useModal } from '../hooks/useModal';
 import CustomModal from '../components/CustomModal';
+import * as tableStyles from '../styles/tableStyles';
 
 const Proveedores = () => {
     const { role } = useAuth();
@@ -31,6 +32,7 @@ const Proveedores = () => {
     const [paises, setPaises] = useState([]);  // Nuevo estado para los países
     const [paisesNombreCompleto, setPaisesNombreCompleto] = useState({});  // Mapa de códigos ISO a nombres completos de países
     const [intentoGuardar, setIntentoGuardar] = useState(false);
+    const [loading, setLoading] = useState(true);
     
     // Hook para modals
     const { modalConfig, showAlert, showConfirm, showError, showSuccess, hideModal } = useModal();
@@ -38,11 +40,14 @@ const Proveedores = () => {
     useEffect(() => {
         const initializeData = async () => {
             try {
+                setLoading(true);
                 await fetchProveedores();
                 await fetchPaises();
             } catch (error) {
                 console.error('Error al inicializar datos:', error);
                 showError('Error al cargar datos iniciales');
+            } finally {
+                setLoading(false);
             }
         };
         
@@ -417,58 +422,91 @@ const fetchPaises = async () => {
                     <p style={{ margin: 0, textAlign: 'left' }}>Administre sus proveedores de materias primas</p>
                 </div>
 
-                <div style={{ padding: '0px', borderRadius: '8px' }}>
+                {loading ? (
+                    <Box
+                        sx={{
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            minHeight: '400px',
+                            backgroundColor: '#ffffff',
+                            borderRadius: '12px',
+                            boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
+                            padding: '60px'
+                        }}
+                    >
+                        <CircularProgress size={40} style={{ color: '#6366f1' }} />
+                        <Typography variant="body1" sx={{ marginTop: 2, color: '#666' }}>
+                            Cargando proveedores...
+                        </Typography>
+                    </Box>
+                ) : (
+                    <TableContainer sx={tableStyles.enhancedTableContainer}>
                     <Table>
-                        <TableHead>
+                        <TableHead sx={tableStyles.enhancedTableHead}>
                             <TableRow>
-                                <TableCell style={{ fontWeight: 'bold', color: '#748091' }}>Nombre Empresa</TableCell>
-                                <TableCell style={{ fontWeight: 'bold', color: '#748091' }}>RUC</TableCell>
-                                <TableCell style={{ fontWeight: 'bold', color: '#748091' }}>Contacto</TableCell>
-                                <TableCell style={{ fontWeight: 'bold', color: '#748091' }}>País</TableCell>
-                                <TableCell style={{ fontWeight: 'bold', color: '#748091' }}>Teléfono</TableCell>
-                                <TableCell style={{ fontWeight: 'bold', color: '#748091' }}>Correo</TableCell>
-                                <TableCell style={{ fontWeight: 'bold', color: '#748091' }}>Acciones</TableCell>
+                                <TableCell>Nombre Empresa</TableCell>
+                                <TableCell sx={tableStyles.hideColumnOnMobile}>RUC</TableCell>
+                                <TableCell>Contacto</TableCell>
+                                <TableCell sx={tableStyles.hideColumnOnTablet}>País</TableCell>
+                                <TableCell sx={tableStyles.hideColumnOnMobile}>Teléfono</TableCell>
+                                <TableCell sx={tableStyles.hideColumnOnTablet}>Correo</TableCell>
+                                <TableCell align="center">Acciones</TableCell>
                             </TableRow>
                         </TableHead>
                         <TableBody>
-                            {proveedoresPaginados.map((proveedor) => (
-                                <TableRow key={proveedor.id}>
-                                    <TableCell>{proveedor.nombreEmpresaProveedor}</TableCell>
-                                    <TableCell>{proveedor.ruc}</TableCell>
-                                    <TableCell>{proveedor.nombreContacto}</TableCell>
-                                    <TableCell>
-                                        {/* Contenedor para la bandera y el nombre del país */}
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                                            {proveedor.pais ? (
-                                                <img
-                                                    src={`https://flagcdn.com/w320/${proveedor.pais.toLowerCase()}.png`}
-                                                    alt={proveedor.pais}
-                                                    style={{
-                                                        width: '24px',
-                                                        height: '16px',
-                                                        borderRadius: '2px',
-                                                    }}
-                                                    onError={(e) => {
-                                                        e.target.style.display = 'none';
-                                                    }}
-                                                />
-                                            ) : null}
-                                            <span>{paisesNombreCompleto[proveedor.pais] || proveedor.pais || 'Sin país'}</span>
-                                        </div>
-                                    </TableCell>
-                                    <TableCell>{proveedor.telefono}</TableCell>
-                                    <TableCell>{proveedor.correo}</TableCell>
-                                    <TableCell>
-                                        <Button color="primary" onClick={() => isGuest ? setShowGuestAlert(true) : handleEditarProveedor(proveedor)} style={{ minWidth: 'auto', padding: '6px' }}><Edit size={18} /></Button>
-                                        <Button color="error" onClick={() => isGuest ? setShowGuestAlert(true) : handleEliminarProveedor(proveedor.id)} style={{ minWidth: 'auto', padding: '6px' }}><Trash2 size={18} /></Button>
+                            {proveedoresPaginados.length === 0 ? (
+                                <TableRow>
+                                    <TableCell colSpan={7} sx={tableStyles.emptyTableMessage}>
+                                        <Box className="empty-icon">🏭</Box>
+                                        <Typography>No hay proveedores registrados</Typography>
                                     </TableCell>
                                 </TableRow>
-                            ))}
+                            ) : (
+                                proveedoresPaginados.map((proveedor) => (
+                                    <TableRow key={proveedor.id} sx={tableStyles.enhancedTableRow}>
+                                        <TableCell sx={tableStyles.enhancedTableCell}>{proveedor.nombreEmpresaProveedor}</TableCell>
+                                        <TableCell sx={{ ...tableStyles.enhancedTableCell, ...tableStyles.hideColumnOnMobile }}>{proveedor.ruc}</TableCell>
+                                        <TableCell sx={tableStyles.enhancedTableCell}>{proveedor.nombreContacto}</TableCell>
+                                        <TableCell sx={{ ...tableStyles.enhancedTableCell, ...tableStyles.hideColumnOnTablet }}>
+                                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                                {proveedor.pais && (
+                                                    <img
+                                                        src={`https://flagcdn.com/w320/${proveedor.pais.toLowerCase()}.png`}
+                                                        alt={proveedor.pais}
+                                                        style={{
+                                                            width: '24px',
+                                                            height: '16px',
+                                                            borderRadius: '2px',
+                                                        }}
+                                                        onError={(e) => { e.target.style.display = 'none'; }}
+                                                    />
+                                                )}
+                                                <span>{paisesNombreCompleto[proveedor.pais] || proveedor.pais || 'Sin país'}</span>
+                                            </Box>
+                                        </TableCell>
+                                        <TableCell sx={{ ...tableStyles.enhancedTableCell, ...tableStyles.hideColumnOnMobile }}>{proveedor.telefono}</TableCell>
+                                        <TableCell sx={{ ...tableStyles.enhancedTableCell, ...tableStyles.hideColumnOnTablet }}>{proveedor.correo}</TableCell>
+                                        <TableCell sx={tableStyles.enhancedTableCell} align="center">
+                                            <Box sx={tableStyles.enhancedTableCellActions}>
+                                                <Button color="primary" onClick={() => isGuest ? setShowGuestAlert(true) : handleEditarProveedor(proveedor)} sx={tableStyles.enhancedActionButton} startIcon={<Edit size={18} />}>
+                                                </Button>
+                                                <Button color="error" onClick={() => isGuest ? setShowGuestAlert(true) : handleEliminarProveedor(proveedor.id)} sx={tableStyles.enhancedActionButton} startIcon={<Trash2 size={18} />}>
+                                                </Button>
+                                            </Box>
+                                        </TableCell>
+                                    </TableRow>
+                                ))
+                            )}
                         </TableBody>
                     </Table>
 
-                    <Pagination count={totalPages} page={paginaActual} onChange={handleChangePage} color="primary" showFirstButton showLastButton />
-                </div>
+                    <Box sx={tableStyles.enhancedPagination}>
+                        <Pagination count={totalPages} page={paginaActual} onChange={handleChangePage} color="primary" showFirstButton showLastButton />
+                    </Box>
+                </TableContainer>
+                )}
             </div>
 
             <Modal

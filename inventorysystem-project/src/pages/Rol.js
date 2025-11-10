@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { TextField, Button, Modal, Box, Table, TableBody, TableCell, TableHead, TableRow, Pagination, MenuItem } from '@mui/material';
+import { TextField, Button, Modal, Box, Table, TableBody, TableCell, TableHead, TableRow, Pagination, MenuItem, TableContainer, Typography } from '@mui/material';
 import { Plus, Pencil, Trash2, Edit } from 'lucide-react';
 import { getRoles, addRol, updateRol, deleteRol } from '../services/RolService';
 import { getUsuarios } from '../services/UsuarioService';  // Asumí que tienes un servicio para obtener usuarios
 import { useModal } from '../hooks/useModal';
 import CustomModal from '../components/CustomModal';
+import * as tableStyles from '../styles/tableStyles';
 
 const Rol = () => {
     const [roles, setRoles] = useState([]);
@@ -145,33 +146,46 @@ const Rol = () => {
                     <p style={{ margin: 0, textAlign: 'left' }}>Administre los roles de usuarios</p>
                 </div>
 
-                <div style={{ padding: '0px', borderRadius: '8px' }}>
+                <TableContainer sx={tableStyles.enhancedTableContainer}>
                     <Table>
-                        <TableHead>
+                        <TableHead sx={tableStyles.enhancedTableHead}>
                             <TableRow>
-                                <TableCell style={{ fontWeight: 'bold', color: '#748091' }}>ID</TableCell>
-                                <TableCell style={{ fontWeight: 'bold', color: '#748091' }}>Rol</TableCell>
-                                <TableCell style={{ fontWeight: 'bold', color: '#748091' }}>Acciones</TableCell>
+                                <TableCell sx={tableStyles.hideColumnOnMobile}>ID</TableCell>
+                                <TableCell>Rol</TableCell>
+                                <TableCell align="center">Acciones</TableCell>
                             </TableRow>
                         </TableHead>
                         <TableBody>
-                            {rolesPaginados.map((rol) => (
-                                <TableRow key={rol.id}>
-                                    <TableCell>{rol.id}</TableCell>
-                                    <TableCell>{rol.rol}</TableCell>
-                                    {/* Muestra el nombre del usuario asociado al rol 
-                                    <TableCell>{rol.user ? `${rol.user.nombre} ${rol.user.apellido}` : 'No asignado'}</TableCell>*/}
-                                    <TableCell>
-                                        <Button color="primary" onClick={() => handleEditarRol(rol)}><Edit size={18} /></Button>
-                                        <Button color="error" onClick={() => handleEliminarRol(rol.id)}><Trash2 size={18} /></Button>
+                            {rolesPaginados.length === 0 ? (
+                                <TableRow>
+                                    <TableCell colSpan={3} sx={tableStyles.emptyTableMessage}>
+                                        <Box className="empty-icon">🔐</Box>
+                                        <Typography>No hay roles registrados</Typography>
                                     </TableCell>
                                 </TableRow>
-                            ))}
+                            ) : (
+                                rolesPaginados.map((rol) => (
+                                    <TableRow key={rol.id} sx={tableStyles.enhancedTableRow}>
+                                        <TableCell sx={{ ...tableStyles.enhancedTableCell, ...tableStyles.hideColumnOnMobile }}>{rol.id}</TableCell>
+                                        <TableCell sx={tableStyles.enhancedTableCell}>{rol.rol}</TableCell>
+                                        <TableCell sx={tableStyles.enhancedTableCell} align="center">
+                                            <Box sx={tableStyles.enhancedTableCellActions}>
+                                                <Button color="primary" onClick={() => handleEditarRol(rol)} sx={tableStyles.enhancedActionButton} startIcon={<Edit size={18} />}>
+                                                </Button>
+                                                <Button color="error" onClick={() => handleEliminarRol(rol.id)} sx={tableStyles.enhancedActionButton} startIcon={<Trash2 size={18} />}>
+                                                </Button>
+                                            </Box>
+                                        </TableCell>
+                                    </TableRow>
+                                ))
+                            )}
                         </TableBody>
                     </Table>
 
-                    <Pagination count={totalPages} page={paginaActual} onChange={handleChangePage} color="primary" showFirstButton showLastButton />
-                </div>
+                    <Box sx={tableStyles.enhancedPagination}>
+                        <Pagination count={totalPages} page={paginaActual} onChange={handleChangePage} color="primary" showFirstButton showLastButton />
+                    </Box>
+                </TableContainer>
             </div>
 
             <Modal open={mostrarFormulario} onClose={() => setMostrarFormulario(false)} style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>

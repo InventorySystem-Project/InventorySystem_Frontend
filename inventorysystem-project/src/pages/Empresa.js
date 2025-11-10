@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { TextField, Button, Modal, Box, Pagination, Table, TableBody, TableCell, TableHead, TableRow } from '@mui/material';
+import { TextField, Button, Modal, Box, Pagination, Table, TableBody, TableCell, TableHead, TableRow, TableContainer, Typography } from '@mui/material';
 import { Plus, Pencil, Trash2, Edit } from "lucide-react";
 import Flag from 'react-world-flags'; // Para mostrar banderas
 import { getEmpresas, addEmpresa, updateEmpresa, deleteEmpresa } from '../services/EmpresaService';
+import * as tableStyles from '../styles/tableStyles';
 
 const Empresa = () => {
     const [empresas, setEmpresas] = useState([]);
@@ -155,56 +156,67 @@ const fetchPaises = async () => {
                     <p style={{ margin: 0, textAlign: 'left' }}>Administre sus empresas registradas</p>
                 </div>
 
-                <div style={{ padding: '0px', borderRadius: '8px' }}>
+                <TableContainer sx={tableStyles.enhancedTableContainer}>
                     <Table>
-                        <TableHead>
+                        <TableHead sx={tableStyles.enhancedTableHead}>
                             <TableRow>
-                                <TableCell style={{ fontWeight: 'bold', color: '#748091' }}>Nombre</TableCell>
-                                <TableCell style={{ fontWeight: 'bold', color: '#748091' }}>RUC</TableCell>
-                                <TableCell style={{ fontWeight: 'bold', color: '#748091' }}>Dirección</TableCell>
-                                <TableCell style={{ fontWeight: 'bold', color: '#748091' }}>Teléfono</TableCell>
-                                <TableCell style={{ fontWeight: 'bold', color: '#748091' }}>Correo</TableCell>
-                                <TableCell style={{ fontWeight: 'bold', color: '#748091' }}>País</TableCell>
-                                <TableCell style={{ fontWeight: 'bold', color: '#748091' }}>Acciones</TableCell>
+                                <TableCell>Nombre</TableCell>
+                                <TableCell sx={tableStyles.hideColumnOnMobile}>RUC</TableCell>
+                                <TableCell sx={tableStyles.hideColumnOnTablet}>Dirección</TableCell>
+                                <TableCell sx={tableStyles.hideColumnOnMobile}>Teléfono</TableCell>
+                                <TableCell sx={tableStyles.hideColumnOnTablet}>Correo</TableCell>
+                                <TableCell>País</TableCell>
+                                <TableCell align="center">Acciones</TableCell>
                             </TableRow>
                         </TableHead>
                         <TableBody>
-                            {empresasPaginadas.map((empresa) => (
-                                <TableRow key={empresa.id}>
-                                    <TableCell>{empresa.nombre}</TableCell>
-                                    <TableCell>{empresa.ruc}</TableCell>
-                                    <TableCell>{empresa.direccion}</TableCell>
-                                    <TableCell>{empresa.telefono}</TableCell>
-                                    <TableCell>{empresa.correo}</TableCell>
-                                    {/* Mostrar la bandera del país con el código ISO */}
-                                    <TableCell>
-                                        {/* Contenedor para la bandera y el nombre del país */}
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                                            <img
-                                                src={`https://flagcdn.com/w320/${empresa.pais.toLowerCase()}.png`}
-                                                alt={empresa.pais}
-                                                style={{
-                                                    width: '24px',
-                                                    height: '16px',
-                                                    borderRadius: '2px',  // Borde redondeado solo en la imagen
-                                                }}
-                                            />
-                                            <span>{paisesNombreCompleto[empresa.pais] || empresa.pais}</span> {/* Aquí mostramos el nombre completo del país */}
-                                        </div>
-                                    </TableCell>
-
-
-                                    <TableCell>
-                                        <Button color="primary" onClick={() => handleEditarEmpresa(empresa)}><Edit size={18} /></Button>
-                                        <Button color="error" onClick={() => handleEliminarEmpresa(empresa.id)}><Trash2 size={18} /></Button>
+                            {empresasPaginadas.length === 0 ? (
+                                <TableRow>
+                                    <TableCell colSpan={7} sx={tableStyles.emptyTableMessage}>
+                                        <Box className="empty-icon">🏢</Box>
+                                        <Typography>No hay empresas registradas</Typography>
                                     </TableCell>
                                 </TableRow>
-                            ))}
+                            ) : (
+                                empresasPaginadas.map((empresa) => (
+                                    <TableRow key={empresa.id} sx={tableStyles.enhancedTableRow}>
+                                        <TableCell sx={tableStyles.enhancedTableCell}>{empresa.nombre}</TableCell>
+                                        <TableCell sx={{ ...tableStyles.enhancedTableCell, ...tableStyles.hideColumnOnMobile }}>{empresa.ruc}</TableCell>
+                                        <TableCell sx={{ ...tableStyles.enhancedTableCell, ...tableStyles.hideColumnOnTablet }}>{empresa.direccion}</TableCell>
+                                        <TableCell sx={{ ...tableStyles.enhancedTableCell, ...tableStyles.hideColumnOnMobile }}>{empresa.telefono}</TableCell>
+                                        <TableCell sx={{ ...tableStyles.enhancedTableCell, ...tableStyles.hideColumnOnTablet }}>{empresa.correo}</TableCell>
+                                        <TableCell sx={tableStyles.enhancedTableCell}>
+                                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                                <img
+                                                    src={`https://flagcdn.com/w320/${empresa.pais.toLowerCase()}.png`}
+                                                    alt={empresa.pais}
+                                                    style={{
+                                                        width: '24px',
+                                                        height: '16px',
+                                                        borderRadius: '2px',
+                                                    }}
+                                                />
+                                                <span>{paisesNombreCompleto[empresa.pais] || empresa.pais}</span>
+                                            </Box>
+                                        </TableCell>
+                                        <TableCell sx={tableStyles.enhancedTableCell} align="center">
+                                            <Box sx={tableStyles.enhancedTableCellActions}>
+                                                <Button color="primary" onClick={() => handleEditarEmpresa(empresa)} sx={tableStyles.enhancedActionButton} startIcon={<Edit size={18} />}>
+                                                </Button>
+                                                <Button color="error" onClick={() => handleEliminarEmpresa(empresa.id)} sx={tableStyles.enhancedActionButton} startIcon={<Trash2 size={18} />}>
+                                                </Button>
+                                            </Box>
+                                        </TableCell>
+                                    </TableRow>
+                                ))
+                            )}
                         </TableBody>
                     </Table>
 
-                    <Pagination count={totalPages} page={paginaActual} onChange={handleChangePage} color="primary" showFirstButton showLastButton />
-                </div>
+                    <Box sx={tableStyles.enhancedPagination}>
+                        <Pagination count={totalPages} page={paginaActual} onChange={handleChangePage} color="primary" showFirstButton showLastButton />
+                    </Box>
+                </TableContainer>
             </div>
 
             <Modal open={mostrarFormulario} onClose={() => setMostrarFormulario(false)} style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>

@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import {
   Button, Modal, Box, TextField, MenuItem, Table, TableHead, TableRow, TableCell, TableBody, Pagination,
-  Grid, Typography, Divider, Alert, CircularProgress
+  Grid, Typography, Divider, Alert, CircularProgress, TableContainer
 } from '@mui/material';
 import { Trash2, Plus, Edit, Eye } from "lucide-react";
 import useAuth from '../hooks/useAuth';
 import { ROLES } from '../constants/roles';
+import * as tableStyles from '../styles/tableStyles';
 
 // SERVICIOS
 import { getAlmacenes, addAlmacen, updateAlmacen, deleteAlmacen } from '../services/AlmacenService';
@@ -66,7 +67,23 @@ const AlmacenStockDetalle = ({ almacen }) => {
     fetchStock();
   }, [almacen]);
 
-  if (loading) return <Box sx={{ display: 'flex', justifyContent: 'center', my: 4 }}><CircularProgress /> <Typography sx={{ ml: 2 }}>Cargando...</Typography></Box>;
+  if (loading) return (
+    <Box sx={{ 
+      display: 'flex', 
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: '60px 20px',
+      backgroundColor: '#ffffff',
+      borderRadius: '12px',
+      boxShadow: '0 1px 3px rgba(0,0,0,0.05)'
+    }}>
+      <CircularProgress size={40} style={{ color: '#3b82f6' }} />
+      <Typography sx={{ mt: 2, color: '#64748b', fontSize: '0.95rem' }}>
+        Cargando almacenes...
+      </Typography>
+    </Box>
+  );
   if (error) return <Alert severity="error">{error}</Alert>;
 
   return (
@@ -150,13 +167,24 @@ const Almacen = () => {
   const [paginaActual, setPaginaActual] = useState(1);
   const almacenesPorPagina = 5;
   const [intentoGuardar, setIntentoGuardar] = useState(false);
+  const [loading, setLoading] = useState(true);
   
   // Hook para modals
   const { modalConfig, showConfirm, showSuccess, showError, hideModal } = useModal();
 
   useEffect(() => {
-    fetchAlmacenes();
-    fetchEmpresas();
+    const initializeData = async () => {
+      try {
+        setLoading(true);
+        await fetchAlmacenes();
+        await fetchEmpresas();
+      } catch (error) {
+        console.error('Error al inicializar datos:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    initializeData();
   }, []);
 
   const fetchAlmacenes = async () => {
@@ -280,45 +308,78 @@ const Almacen = () => {
           <p style={{ margin: 0, textAlign: 'left' }}>Administre sus almacenes</p>
         </div>
 
-        <Table>
-          <TableHead>
-            <TableRow>
-              <TableCell style={{ fontWeight: 'bold', color: '#748091' }}>Nombre</TableCell>
-              <TableCell style={{ fontWeight: 'bold', color: '#748091' }}>Ubicación</TableCell>
-              <TableCell style={{ fontWeight: 'bold', color: '#748091' }}>Empresa</TableCell>
-              <TableCell style={{ fontWeight: 'bold', color: '#748091', textAlign: 'center' }}>Acciones</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {almacenesPaginados.map((almacen) => (
-              <TableRow key={almacen.id}>
-                <TableCell>{almacen.nombre}</TableCell>
-                <TableCell>{almacen.ubicacion}</TableCell>
-                <TableCell>{empresas.find(e => e.id === almacen.empresaId)?.nombre || '-'}</TableCell>
-                <TableCell style={{ textAlign: 'center' }}>
-                  <Button color="info" onClick={() => handleOpenStockModal(almacen)} style={{ minWidth: 'auto', padding: '6px' }}>
-                    <Eye size={18} />
-                  </Button>
-                  <Button color="primary" onClick={() => isGuest ? setShowGuestAlert(true) : handleEditAlmacen(almacen)} style={{ minWidth: 'auto', padding: '6px' }}>
-                    <Edit size={18} />
-                  </Button>
-                  <Button color="error" onClick={() => isGuest ? setShowGuestAlert(true) : handleEliminarAlmacen(almacen.id)} style={{ minWidth: 'auto', padding: '6px' }}>
-                    <Trash2 size={18} />
-                  </Button>
-                </TableCell>
+        {loading ? (
+          <Box
+            sx={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              minHeight: '400px',
+              backgroundColor: '#ffffff',
+              borderRadius: '12px',
+              boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
+              padding: '60px'
+            }}
+          >
+            <CircularProgress size={40} style={{ color: '#3b82f6' }} />
+            <Typography variant="body1" sx={{ marginTop: 2, color: '#666' }}>
+              Cargando almacenes...
+            </Typography>
+          </Box>
+        ) : (
+          <TableContainer sx={tableStyles.enhancedTableContainer}>
+          <Table>
+            <TableHead sx={tableStyles.enhancedTableHead}>
+              <TableRow>
+                <TableCell>Nombre</TableCell>
+                <TableCell sx={tableStyles.hideColumnOnMobile}>Ubicación</TableCell>
+                <TableCell>Empresa</TableCell>
+                <TableCell align="center">Acciones</TableCell>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+            </TableHead>
+            <TableBody>
+              {almacenesPaginados.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={4} sx={tableStyles.emptyTableMessage}>
+                    <Box className="empty-icon">🏢</Box>
+                    <Typography>No hay almacenes registrados</Typography>
+                  </TableCell>
+                </TableRow>
+              ) : (
+                almacenesPaginados.map((almacen) => (
+                  <TableRow key={almacen.id} sx={tableStyles.enhancedTableRow}>
+                    <TableCell sx={tableStyles.enhancedTableCell}>{almacen.nombre}</TableCell>
+                    <TableCell sx={{ ...tableStyles.enhancedTableCell, ...tableStyles.hideColumnOnMobile }}>{almacen.ubicacion}</TableCell>
+                    <TableCell sx={tableStyles.enhancedTableCell}>{empresas.find(e => e.id === almacen.empresaId)?.nombre || '-'}</TableCell>
+                    <TableCell sx={tableStyles.enhancedTableCell} align="center">
+                      <Box sx={tableStyles.enhancedTableCellActions}>
+                        <Button color="info" onClick={() => handleOpenStockModal(almacen)} sx={tableStyles.enhancedActionButton} startIcon={<Eye size={18} />}>
+                        </Button>
+                        <Button color="primary" onClick={() => isGuest ? setShowGuestAlert(true) : handleEditAlmacen(almacen)} sx={tableStyles.enhancedActionButton} startIcon={<Edit size={18} />}>
+                        </Button>
+                        <Button color="error" onClick={() => isGuest ? setShowGuestAlert(true) : handleEliminarAlmacen(almacen.id)} sx={tableStyles.enhancedActionButton} startIcon={<Trash2 size={18} />}>
+                        </Button>
+                      </Box>
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
+            </TableBody>
+          </Table>
 
-        <Pagination
-          count={totalPages}
-          page={paginaActual}
-          onChange={(event, value) => setPaginaActual(value)}
-          color="primary"
-          showFirstButton
-          showLastButton
-        />
+          <Box sx={tableStyles.enhancedPagination}>
+            <Pagination
+              count={totalPages}
+              page={paginaActual}
+              onChange={(event, value) => setPaginaActual(value)}
+              color="primary"
+              showFirstButton
+              showLastButton
+            />
+          </Box>
+        </TableContainer>
+        )}
       </div>
 
       {/* Modal de registro/edición (tu código existente) */}

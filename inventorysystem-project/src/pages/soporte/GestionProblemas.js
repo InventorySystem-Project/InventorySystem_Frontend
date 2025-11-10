@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Button, Modal, Box, TextField, Table, TableBody, TableCell, TableHead, TableRow, Pagination, Select, MenuItem, InputLabel, FormControl, Typography, CircularProgress, Alert, Chip, IconButton, Tooltip as MuiTooltip } from '@mui/material';
+import { Button, Modal, Box, TextField, Table, TableBody, TableCell, TableHead, TableRow, Pagination, Select, MenuItem, InputLabel, FormControl, Typography, CircularProgress, Alert, Chip, IconButton, Tooltip as MuiTooltip, TableContainer } from '@mui/material';
 import { Plus, Edit } from 'lucide-react';
 import { getErroresConocidos, addErrorConocido, updateErrorConocido } from '../../services/SoporteService';
 import { useModal } from '../../hooks/useModal';
 import CustomModal from '../../components/CustomModal';
+import * as tableStyles from '../../styles/tableStyles';
 
 // Modal de Formulario para Errores Conocidos
 const ErrorConocidoFormModal = ({ open, onClose, onSave, errorData, setErrorData, isEditing }) => {
@@ -154,69 +155,97 @@ const GestionProblemas = ({ usuarios }) => {
             </div>
 
             {loading && (
-                <div style={{ display: 'flex', justifyContent: 'center', margin: '30px 0' }}>
-                    <CircularProgress />
-                </div>
+                <Box sx={{ 
+                    display: 'flex', 
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    padding: '60px 20px',
+                    backgroundColor: '#ffffff',
+                    borderRadius: '12px',
+                    boxShadow: '0 1px 3px rgba(0,0,0,0.05)'
+                }}>
+                    <CircularProgress size={40} style={{ color: '#f59e0b' }} />
+                    <Typography sx={{ mt: 2, color: '#64748b', fontSize: '0.95rem' }}>
+                        Cargando errores conocidos...
+                    </Typography>
+                </Box>
             )}
             
             {error && <Alert severity="error" style={{ marginBottom: '20px' }}>{error}</Alert>}
 
             {!loading && !error && (
-                <div className="table-container">
-                    <div className="table-header" style={{ paddingTop: '0px' }}>
-                        <h3 style={{ marginTop: '10px', textAlign: 'left' }}>Lista de Errores Conocidos</h3>
-                        <p style={{ margin: 0, textAlign: 'left' }}>
+                <Box>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 2 }}>
+                        <Typography variant="h5" sx={{ fontWeight: 600, color: '#1f2937' }}>
+                            Lista de Errores Conocidos
+                        </Typography>
+                        <Typography variant="body2" sx={{ color: '#6b7280' }}>
                             Base de conocimiento de problemas identificados y sus soluciones
-                        </p>
-                    </div>
-                    <div style={{ padding: '0px', borderRadius: '8px' }}>
+                        </Typography>
+                    </Box>
+                    
+                    <TableContainer sx={tableStyles.enhancedTableContainer}>
                         <Table>
-                            <TableHead>
+                            <TableHead sx={tableStyles.enhancedTableHead}>
                                 <TableRow>
-                                    <TableCell style={{ fontWeight: 'bold', color: '#748091' }}>ID</TableCell>
-                                    <TableCell style={{ fontWeight: 'bold', color: '#748091' }}>Descripción del Error</TableCell>
-                                    <TableCell style={{ fontWeight: 'bold', color: '#748091' }}>Estado</TableCell>
-                                    <TableCell style={{ fontWeight: 'bold', color: '#748091' }}>Solución Temporal</TableCell>
-                                    <TableCell style={{ fontWeight: 'bold', color: '#748091' }}>Acciones</TableCell>
+                                    <TableCell sx={tableStyles.enhancedTableCell}>ID</TableCell>
+                                    <TableCell sx={tableStyles.enhancedTableCell}>Descripción del Error</TableCell>
+                                    <TableCell sx={tableStyles.enhancedTableCell}>Estado</TableCell>
+                                    <TableCell sx={tableStyles.enhancedTableCell}>Solución Temporal</TableCell>
+                                    <TableCell sx={tableStyles.enhancedTableCell} align="center">Acciones</TableCell>
                                 </TableRow>
                             </TableHead>
                             <TableBody>
                                 {erroresPaginados.length > 0 ? erroresPaginados.map((err) => (
-                                    <TableRow key={err.id} hover>
-                                        <TableCell>{err.formattedId || err.id}</TableCell>
-                                        <TableCell style={{ maxWidth: 400, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                    <TableRow key={err.id} sx={tableStyles.enhancedTableRow}>
+                                        <TableCell sx={tableStyles.enhancedTableCell}>{err.formattedId || err.id}</TableCell>
+                                        <TableCell sx={{ ...tableStyles.enhancedTableCell, maxWidth: 400, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                                             <MuiTooltip title={err.descripcionError} arrow>
                                                 <span>{err.descripcionError}</span>
                                             </MuiTooltip>
                                         </TableCell>
-                                        <TableCell>{renderChipEstadoProblema(err.estado)}</TableCell>
-                                        <TableCell style={{ maxWidth: 300, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                        <TableCell sx={tableStyles.enhancedTableCell}>{renderChipEstadoProblema(err.estado)}</TableCell>
+                                        <TableCell sx={{ ...tableStyles.enhancedTableCell, maxWidth: 300, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                                             <MuiTooltip title={err.solucionTemporal || '-'} arrow>
                                                 <span>{err.solucionTemporal || '-'}</span>
                                             </MuiTooltip>
                                         </TableCell>
-                                        <TableCell>
-                                            <div style={{ display: 'flex', gap: '4px' }}>
-                                                <MuiTooltip title="Editar Error Conocido" arrow>
-                                                    <IconButton size="small" color="primary" onClick={() => handleOpenModal(err)}>
-                                                        <Edit size={18} />
-                                                    </IconButton>
-                                                </MuiTooltip>
-                                            </div>
+                                        <TableCell sx={tableStyles.enhancedTableCell} align="center">
+                                            <Box sx={tableStyles.enhancedTableCellActions}>
+                                                <Button 
+                                                    color="primary" 
+                                                    onClick={() => handleOpenModal(err)}
+                                                    sx={tableStyles.enhancedActionButton}
+                                                    startIcon={<Edit size={18} />}
+                                                >
+                                                </Button>
+                                            </Box>
                                         </TableCell>
                                     </TableRow>
                                 )) : (
                                     <TableRow>
-                                        <TableCell colSpan={5} align="center">No hay errores conocidos registrados.</TableCell>
+                                        <TableCell colSpan={5} sx={tableStyles.emptyTableMessage}>
+                                            <Box className="empty-icon">⚠️</Box>
+                                            <Typography>No hay errores conocidos registrados</Typography>
+                                        </TableCell>
                                     </TableRow>
                                 )}
                             </TableBody>
                         </Table>
-                        {errores.length > itemsPorPagina && (
-                            <Pagination count={totalPaginas} page={paginaActual} onChange={(e, value) => setPaginaActual(value)} color="primary" showFirstButton showLastButton />
-                        )}
-                    </div>
-                </div>
+                    </TableContainer>
+                    
+                    <Box sx={tableStyles.enhancedPagination}>
+                        <Pagination 
+                            count={totalPaginas} 
+                            page={paginaActual} 
+                            onChange={(e, value) => setPaginaActual(value)} 
+                            color="primary" 
+                            showFirstButton 
+                            showLastButton 
+                        />
+                    </Box>
+                </Box>
             )}
 
             <ErrorConocidoFormModal open={modalOpen} onClose={handleCloseModal} onSave={handleSaveError} errorData={nuevoErrorData} setErrorData={setNuevoErrorData} isEditing={!!errorEditando} />

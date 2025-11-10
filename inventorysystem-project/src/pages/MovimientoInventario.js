@@ -13,12 +13,15 @@ import {
     Pagination,
     Tabs,
     Container,
+    TableContainer,
+    Typography,
     FormControlLabel,
     Checkbox,
     Tab,
-    Typography
+    CircularProgress
 } from '@mui/material';
 import { Plus, Edit, Trash2 } from "lucide-react";
+import * as tableStyles from '../styles/tableStyles';
 import { getMovimientosInventarioMP, addMovimientoInventarioMP, updateMovimientoInventarioMP, deleteMovimientoInventarioMP } from '../services/MovimientoInventarioMPService';
 import { getMovimientosInventarioPT, addMovimientoInventarioPT, updateMovimientoInventarioPT, deleteMovimientoInventarioPT } from '../services/MovimientoInventarioPTService';
 import { getAlmacenes } from '../services/AlmacenService';
@@ -65,6 +68,7 @@ const MovimientoInventario = () => {
         motivo: '',
         estadoEntrega: false
     });
+    const [loading, setLoading] = useState(true);
 
     // Estados comunes
     const [mostrarFormulario, setMostrarFormulario] = useState(false);
@@ -91,10 +95,20 @@ const MovimientoInventario = () => {
 
 
     useEffect(() => {
-        fetchMovimientos();
-        fetchAlmacenes();
-        fetchMateriasPrimas();
-        fetchProductosTerminados();
+        const initializeData = async () => {
+            try {
+                setLoading(true);
+                await fetchMovimientos();
+                await fetchAlmacenes();
+                await fetchMateriasPrimas();
+                await fetchProductosTerminados();
+            } catch (error) {
+                console.error('Error al inicializar datos:', error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        initializeData();
     }, []);
 
     // ... (El resto del código de tus funciones no necesita cambios)
@@ -555,44 +569,73 @@ const MovimientoInventario = () => {
                         Administre los movimientos de entrada y salida de {tipoInventario === 'materiasPrimas' ? 'materias primas' : 'productos terminados'}
                     </p>
                 </div>
-                <div style={{ padding: '0px', borderRadius: '8px' }}>
+                {loading ? (
+                    <Box
+                        sx={{
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            minHeight: '400px',
+                            backgroundColor: '#ffffff',
+                            borderRadius: '12px',
+                            boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
+                            padding: '60px'
+                        }}
+                    >
+                        <CircularProgress size={40} style={{ color: '#f59e0b' }} />
+                        <Typography variant="body1" sx={{ marginTop: 2, color: '#666' }}>
+                            Cargando movimientos de inventario...
+                        </Typography>
+                    </Box>
+                ) : (
+                    <TableContainer sx={tableStyles.enhancedTableContainer}>
                     <Table>
-                        <TableHead>
+                        <TableHead sx={tableStyles.enhancedTableHead}>
                             <TableRow>
-                                <TableCell style={{ fontWeight: 'bold', color: '#748091' }}>Fecha</TableCell>
-                                <TableCell style={{ fontWeight: 'bold', color: '#748091' }}>Almacén</TableCell>
-                                <TableCell style={{ fontWeight: 'bold', color: '#748091' }}>
+                                <TableCell sx={tableStyles.hideColumnOnMobile}>Fecha</TableCell>
+                                <TableCell>Almacén</TableCell>
+                                <TableCell>
                                     {tipoInventario === 'materiasPrimas' ? 'Materia Prima' : 'Producto Terminado'}
                                 </TableCell>
-                                <TableCell style={{ fontWeight: 'bold', color: '#748091' }}>Tipo</TableCell>
-                                <TableCell style={{ fontWeight: 'bold', color: '#748091' }}>Cantidad</TableCell>
-                                <TableCell style={{ fontWeight: 'bold', color: '#748091' }}>Motivo</TableCell>
-                                <TableCell style={{ fontWeight: 'bold', color: '#748091' }}>¿Movimiento confirmado?</TableCell>
-                                <TableCell style={{ fontWeight: 'bold', color: '#748091' }}>Acciones</TableCell>
+                                <TableCell>Tipo</TableCell>
+                                <TableCell sx={tableStyles.hideColumnOnMobile}>Cantidad</TableCell>
+                                <TableCell sx={tableStyles.hideColumnOnTablet}>Motivo</TableCell>
+                                <TableCell sx={tableStyles.hideColumnOnTablet} align="center">¿Confirmado?</TableCell>
+                                <TableCell align="center">Acciones</TableCell>
                             </TableRow>
                         </TableHead>
                         <TableBody>
-                            {movimientosPaginados.length > 0 ? (
+                            {movimientosPaginados.length === 0 ? (
+                                <TableRow>
+                                    <TableCell colSpan={8} sx={tableStyles.emptyTableMessage}>
+                                        <Box className="empty-icon">📦</Box>
+                                        <Typography>No hay movimientos registrados</Typography>
+                                    </TableCell>
+                                </TableRow>
+                            ) : (
                                 movimientosPaginados.map((movimiento) => (
                                     movimiento && movimiento.id ? (
-                                        <TableRow key={movimiento.id}>
-                                            <TableCell>{formatDate(movimiento.fechaMovimiento)}</TableCell>
-                                            <TableCell>{getAlmacenNombre(movimiento.almacenId)}</TableCell>
-                                            <TableCell>
+                                        <TableRow key={movimiento.id} sx={tableStyles.enhancedTableRow}>
+                                            <TableCell sx={{ ...tableStyles.enhancedTableCell, ...tableStyles.hideColumnOnMobile }}>
+                                                {formatDate(movimiento.fechaMovimiento)}
+                                            </TableCell>
+                                            <TableCell sx={tableStyles.enhancedTableCell}>{getAlmacenNombre(movimiento.almacenId)}</TableCell>
+                                            <TableCell sx={tableStyles.enhancedTableCell}>
                                                 {tipoInventario === 'materiasPrimas'
                                                     ? getMateriaPrimaNombre(movimiento.materiaPrimaId)
                                                     : getProductoTerminadoNombre(movimiento.productoTerminadoId)
                                                 }
                                             </TableCell>
-                                            <TableCell>{renderBackgroundTipoMovimiento(movimiento.tipoMovimiento)}</TableCell>
-                                            <TableCell>
+                                            <TableCell sx={tableStyles.enhancedTableCell}>{renderBackgroundTipoMovimiento(movimiento.tipoMovimiento)}</TableCell>
+                                            <TableCell sx={{ ...tableStyles.enhancedTableCell, ...tableStyles.hideColumnOnMobile }}>
                                                 {movimiento.cantidad || '0'} {tipoInventario === 'materiasPrimas'
                                                     ? getMateriaPrimaUnidad(movimiento.materiaPrimaId)
                                                     : getProductoTerminadoUnidad(movimiento.productoTerminadoId)
                                                 }
                                             </TableCell>
-                                            <TableCell>{movimiento.motivo || '-'}</TableCell>
-                                            <TableCell style={{ fontWeight: 'bold', color: '#748091', textAlign: 'center' }}>
+                                            <TableCell sx={{ ...tableStyles.enhancedTableCell, ...tableStyles.hideColumnOnTablet }}>{movimiento.motivo || '-'}</TableCell>
+                                            <TableCell sx={{ ...tableStyles.enhancedTableCell, ...tableStyles.hideColumnOnTablet }} align="center">
                                                 {tipoInventario === 'materiasPrimas' ? (
                                                     <Checkbox
                                                         checked={movimiento.estadoRecepcion || false}
@@ -607,63 +650,62 @@ const MovimientoInventario = () => {
                                                     />
                                                 )}
                                             </TableCell>
-                                            <TableCell>
-                                                <Button 
-                                                    color="primary" 
-                                                    onClick={() => isGuest ? setShowGuestAlert(true) : handleEditarMovimiento(movimiento, tipoInventario)} 
-                                                    style={{ minWidth: 'auto', padding: '6px' }}
-                                                    disabled={
-                                                        isGuest || 
-                                                        (tipoInventario === 'materiasPrimas' ? movimiento.estadoRecepcion : movimiento.estadoEntrega)
-                                                    }
-                                                    title={
-                                                        (tipoInventario === 'materiasPrimas' ? movimiento.estadoRecepcion : movimiento.estadoEntrega)
-                                                        ? 'No se puede editar un movimiento confirmado'
-                                                        : 'Editar movimiento'
-                                                    }
-                                                >
-                                                    <Edit size={18} />
-                                                </Button>
-                                                <Button 
-                                                    color="error" 
-                                                    onClick={() => isGuest ? setShowGuestAlert(true) : handleEliminarMovimiento(movimiento.id, tipoInventario)} 
-                                                    style={{ minWidth: 'auto', padding: '6px' }}
-                                                    disabled={
-                                                        isGuest || 
-                                                        (tipoInventario === 'materiasPrimas' ? movimiento.estadoRecepcion : movimiento.estadoEntrega)
-                                                    }
-                                                    title={
-                                                        (tipoInventario === 'materiasPrimas' ? movimiento.estadoRecepcion : movimiento.estadoEntrega)
-                                                        ? 'No se puede eliminar un movimiento confirmado'
-                                                        : 'Eliminar movimiento'
-                                                    }
-                                                >
-                                                    <Trash2 size={18} />
-                                                </Button>
+                                            <TableCell sx={tableStyles.enhancedTableCell} align="center">
+                                                <Box sx={tableStyles.enhancedTableCellActions}>
+                                                    <Button 
+                                                        color="primary" 
+                                                        onClick={() => isGuest ? setShowGuestAlert(true) : handleEditarMovimiento(movimiento, tipoInventario)} 
+                                                        sx={tableStyles.enhancedActionButton}
+                                                        disabled={
+                                                            isGuest || 
+                                                            (tipoInventario === 'materiasPrimas' ? movimiento.estadoRecepcion : movimiento.estadoEntrega)
+                                                        }
+                                                        title={
+                                                            (tipoInventario === 'materiasPrimas' ? movimiento.estadoRecepcion : movimiento.estadoEntrega)
+                                                            ? 'No se puede editar un movimiento confirmado'
+                                                            : 'Editar movimiento'
+                                                        }
+                                                    >
+                                                        <Edit size={18} />
+                                                    </Button>
+                                                    <Button 
+                                                        color="error" 
+                                                        onClick={() => isGuest ? setShowGuestAlert(true) : handleEliminarMovimiento(movimiento.id, tipoInventario)} 
+                                                        sx={tableStyles.enhancedActionButton}
+                                                        disabled={
+                                                            isGuest || 
+                                                            (tipoInventario === 'materiasPrimas' ? movimiento.estadoRecepcion : movimiento.estadoEntrega)
+                                                        }
+                                                        title={
+                                                            (tipoInventario === 'materiasPrimas' ? movimiento.estadoRecepcion : movimiento.estadoEntrega)
+                                                            ? 'No se puede eliminar un movimiento confirmado'
+                                                            : 'Eliminar movimiento'
+                                                        }
+                                                    >
+                                                        <Trash2 size={18} />
+                                                    </Button>
+                                                </Box>
                                             </TableCell>
                                         </TableRow>
                                     ) : null
                                 ))
-                            ) : (
-                                <TableRow>
-                                    <TableCell colSpan={8} align="center">
-                                        No hay movimientos registrados
-                                    </TableCell>
-                                </TableRow>
                             )}
                         </TableBody>
                     </Table>
                     {movimientosActuales.length > movimientosPorPagina && (
-                        <Pagination
-                            count={totalPages}
-                            page={paginaActual}
-                            onChange={handleChangePage}
-                            color="primary"
-                            showFirstButton
-                            showLastButton
-                        />
+                        <Box sx={tableStyles.enhancedPagination}>
+                            <Pagination
+                                count={totalPages}
+                                page={paginaActual}
+                                onChange={handleChangePage}
+                                color="primary"
+                                showFirstButton
+                                showLastButton
+                            />
+                        </Box>
                     )}
-                </div>
+                </TableContainer>
+                )}
             </div>
 
             <Modal open={mostrarFormulario} onClose={() => setMostrarFormulario(false)} style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>

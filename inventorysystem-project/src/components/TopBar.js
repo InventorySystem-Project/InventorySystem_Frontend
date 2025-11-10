@@ -114,7 +114,10 @@ const TopBar = ({ isCollapsed, toggleCollapse }) => {
         <div 
           className="profile-container" 
           style={styles.profileContainer}
-          onClick={() => setOpenUserMenu(!openUserMenu)}
+          onClick={() => {
+            console.log('Click en perfil, openUserMenu actual:', openUserMenu);
+            setOpenUserMenu(!openUserMenu);
+          }}
         >
           <div className="profile-circle" style={styles.profileCircle}>
             <FaUserCircle style={styles.userIcon} />
@@ -145,16 +148,28 @@ const TopBar = ({ isCollapsed, toggleCollapse }) => {
               <div 
                 className="menu-option" 
                 style={styles.menuOption}
-                onClick={() => navigate('/perfil')}
+                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f3f4f6'}
+                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                onClick={() => {
+                  console.log('Navegando a /perfil');
+                  navigate('/perfil');
+                  setOpenUserMenu(false);
+                }}
               >
-                <span>Mi Perfil</span>
+                <span>👤 Mi Perfil</span>
               </div>
               <div 
                 className="menu-option" 
                 style={styles.menuOption}
-                onClick={() => navigate('/configuracion')}
+                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f3f4f6'}
+                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                onClick={() => {
+                  console.log('Navegando a /configuracion');
+                  navigate('/configuracion');
+                  setOpenUserMenu(false);
+                }}
               >
-                <span>Configuración</span>
+                <span>⚙️ Configuración</span>
               </div>
             </div>
             
@@ -177,19 +192,19 @@ const TopBar = ({ isCollapsed, toggleCollapse }) => {
 
 // Estilos en línea para el componente
 const styles = {
-  // Estilos para la barra superior
+  // Estilos para la barra superior - alineado correctamente
   topBar: {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'space-between',
-    padding: '0 1.5rem',
+    padding: '0 50px',
     height: '70px',
     backgroundColor: '#ffffff',
-    boxShadow: '0 2px 10px rgba(0, 0, 0, 0.08)',
+    boxShadow: '0 2px 4px rgba(0, 0, 0, 0.08)',
     transition: 'all 0.3s ease',
-    position: 'sticky',
-    top: 0,
-    zIndex: 100,
+    position: 'relative',
+    zIndex: 50,
+    borderBottom: '1px solid #e5e7eb',
   },
   
   // Estilos para las migas de pan
@@ -358,15 +373,16 @@ const styles = {
   // Estilos para el menú de usuario
   userMenu: {
     position: 'absolute',
-    top: '70px',
-    right: '0',
+    top: '60px',
+    right: '10px',
     width: '250px',
     backgroundColor: '#fff',
-    borderRadius: '8px',
-    boxShadow: '0 5px 15px rgba(0, 0, 0, 0.1)',
+    borderRadius: '12px',
+    boxShadow: '0 8px 24px rgba(0, 0, 0, 0.15)',
     overflow: 'hidden',
-    zIndex: 1000,
+    zIndex: 9999,
     animation: 'fadeIn 0.2s ease-in-out',
+    border: '1px solid #e5e7eb',
   },
   userMenuHeader: {
     display: 'flex',
@@ -403,11 +419,14 @@ const styles = {
     padding: '10px 0',
   },
   menuOption: {
-    padding: '10px 15px',
+    padding: '12px 20px',
     fontSize: '14px',
     color: '#333',
     cursor: 'pointer',
-    transition: 'background-color 0.2s ease',
+    transition: 'all 0.2s ease',
+    display: 'flex',
+    alignItems: 'center',
+    fontWeight: '500',
   },
   logoutButton: {
     display: 'flex',
