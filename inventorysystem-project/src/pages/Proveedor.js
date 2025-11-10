@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { TextField, Button, Modal, Box, Pagination, Table, TableBody, TableCell, TableHead, TableRow, MenuItem, Typography, TableContainer, CircularProgress } from '@mui/material';
+import { TextField, Button, Modal, Box, Pagination, Table, TableBody, TableCell, TableHead, TableRow, MenuItem, Typography, TableContainer, CircularProgress, Autocomplete } from '@mui/material';
 import { Plus, Pencil, Trash2, Edit } from "lucide-react";
 import { getProveedores, addProveedor, updateProveedor, deleteProveedor, getProveedorById, getPaises } from '../services/ProveedorService';
 import useAuth from '../hooks/useAuth';
@@ -29,7 +29,7 @@ const Proveedores = () => {
     const [proveedorEditando, setProveedorEditando] = useState(null);
     const [paginaActual, setPaginaActual] = useState(1);
     const [proveedoresPorPagina, setProveedoresPorPagina] = useState(5);
-    const [paises, setPaises] = useState([]);  // Nuevo estado para los países
+    const [paises, setPaises] = useState([]);  // Lista de países [{ code, name, flag }]
     const [paisesNombreCompleto, setPaisesNombreCompleto] = useState({});  // Mapa de códigos ISO a nombres completos de países
     const [intentoGuardar, setIntentoGuardar] = useState(false);
     const [loading, setLoading] = useState(true);
@@ -180,28 +180,21 @@ const fetchPaises = async () => {
             const data = await response.json();
             
             if (Array.isArray(data)) {
-                // ✅ Filtrar y validar países de API externa
-                const paisesValidos = data.filter(pais => 
-                    pais && pais.name && pais.name.common && pais.cca2
-                );
-                
-                const paisesOrdenados = paisesValidos.sort((a, b) => {
-                    const nombreA = a.name?.common || '';
-                    const nombreB = b.name?.common || '';
-                    return nombreA.localeCompare(nombreB);
-                });
-                
+                const paisesOrdenados = data
+                    .filter(pais => pais && pais.name && pais.name.common && pais.cca2)
+                    .map(pais => ({
+                        code: pais.cca2,
+                        name: pais.name.common,
+                        flag: `https://flagcdn.com/w40/${pais.cca2.toLowerCase()}.png`
+                    }))
+                    .sort((a, b) => a.name.localeCompare(b.name));
                 setPaises(paisesOrdenados);
-                
-                // ✅ Crear mapa de códigos a nombres para API externa también
+                // Mapa de códigos a nombres
                 const mapaCodigosNombres = {};
                 paisesOrdenados.forEach(pais => {
-                    if (pais.cca2 && pais.name?.common) {
-                        mapaCodigosNombres[pais.cca2] = pais.name.common;
-                    }
+                    mapaCodigosNombres[pais.code] = pais.name;
                 });
                 setPaisesNombreCompleto(mapaCodigosNombres);
-                
                 console.log('Países cargados desde API externa:', paisesOrdenados.length);
             }
         } catch (error) {
@@ -587,46 +580,34 @@ const fetchPaises = async () => {
                         helperText={intentoGuardar && (!nuevoProveedor.correo || nuevoProveedor.correo.trim() === '') ? 'Este campo es obligatorio' : ''}
                     />
                     <TextField
+                        sx={{ marginBottom: 2 }}
                         fullWidth
-                        select
-                        label="País"
-                        name="pais"
-                        value={nuevoProveedor.pais || ""}
-                        onChange={(e) => {
-                            console.log('País seleccionado:', e.target.value);
-                            console.log('Opciones disponibles:', paises.map(p => p.code || p.cca2));
-                            handleInputChange(e);
-                        }}
-                        disabled={paises.length === 0}
                         margin="normal"
                         required
                         error={intentoGuardar && (!nuevoProveedor.pais || nuevoProveedor.pais.trim() === '')}
                         helperText={intentoGuardar && (!nuevoProveedor.pais || nuevoProveedor.pais.trim() === '') ? 'Este campo es obligatorio' : ''}
-                    >
-                        {paises.length === 0 ? (
-                            <MenuItem disabled value=""><em>Cargando países...</em></MenuItem>
-                        ) : (
-                            paises.map((pais, index) => {
-                                // ✅ Validaciones de seguridad para evitar crashes
-                                if (!pais) return null;
-                                
-                                const codigo = pais.code || pais.cca2 || `pais-${index}`;
-                                const nombre = (typeof pais.name === 'string' ? pais.name : pais.name?.common) || 'País sin nombre';
-                                
-                                // Validar que tenemos datos válidos antes de renderizar
-                                if (!codigo || !nombre) {
-                                    console.warn('País con datos inválidos:', pais);
-                                    return null;
-                                }
-                                
-                                return (
-                                    <MenuItem key={codigo} value={codigo}>
-                                        {nombre}
-                                    </MenuItem>
-                                );
-                            }).filter(Boolean) // Filtrar elementos nulos
+                    />
+                    <Autocomplete
+                        options={paises}
+                        getOptionLabel={option => option.name}
+                        value={paises.find(p => p.code === nuevoProveedor.pais) || null}
+                        onChange={(event, newValue) => {
+                            setNuevoProveedor(prev => ({ ...prev, pais: newValue ? newValue.code : '' }));
+                        }}
+                        renderOption={(props, option) => (
+                            <Box component="li" {...props} sx={{ display: 'flex', alignItems: 'center', backgroundColor: '#fff', color: '#222' }}>
+                                <img src={option.flag} alt={option.code} style={{ width: 24, height: 16, marginRight: 8, borderRadius: 2 }} />
+                                {option.name}
+                            </Box>
                         )}
-                    </TextField>
+                        renderInput={params => (
+                            <TextField {...params} label="País" margin="normal" fullWidth variant="outlined"
+                                InputProps={{ ...params.InputProps, style: { background: '#f9fafb', color: '#222' } }}
+                            />
+                        )}
+                        sx={{ marginBottom: 2 }}
+                        isOptionEqualToValue={(option, value) => option.code === value.code}
+                    />
 
                     <TextField 
                         label="Dirección" 

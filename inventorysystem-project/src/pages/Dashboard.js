@@ -1083,11 +1083,17 @@ const Dashboard = () => {
                 <div style={styles.chartSubtitle}>Movimientos por producto</div>
               </div>
               <div style={{ width: '150px' }}>
-                <select value={periodoSalidas} onChange={handlePeriodoSalidasChange} style={styles.almacenSelect}>
-                  <option value="semanal">Semanal</option>
-                  <option value="mensual">Mensual</option>
-                  <option value="trimestral">Trimestral</option>
-                </select>
+                <TextField
+                  select
+                  value={periodoSalidas}
+                  onChange={handlePeriodoSalidasChange}
+                  variant="outlined"
+                  sx={{ background: '#fff', minWidth: 120 }}
+                >
+                  <MenuItem value="semanal">Semanal</MenuItem>
+                  <MenuItem value="mensual">Mensual</MenuItem>
+                  <MenuItem value="trimestral">Trimestral</MenuItem>
+                </TextField>
               </div>
             </div>
             <div style={{ height: '240px' }}>
@@ -1113,11 +1119,17 @@ const Dashboard = () => {
                 <div style={styles.chartSubtitle}>Movimientos por material</div>
               </div>
               <div style={{ width: '150px' }}>
-                <select value={periodoEntradas} onChange={handlePeriodoEntradasChange} style={styles.almacenSelect}>
-                  <option value="semanal">Semanal</option>
-                  <option value="mensual">Mensual</option>
-                  <option value="trimestral">Trimestral</option>
-                </select>
+                <TextField
+                  select
+                  value={periodoEntradas}
+                  onChange={handlePeriodoEntradasChange}
+                  variant="outlined"
+                  sx={{ background: '#fff', minWidth: 120 }}
+                >
+                  <MenuItem value="semanal">Semanal</MenuItem>
+                  <MenuItem value="mensual">Mensual</MenuItem>
+                  <MenuItem value="trimestral">Trimestral</MenuItem>
+                </TextField>
               </div>
             </div>
             <div style={{ height: '240px' }}>

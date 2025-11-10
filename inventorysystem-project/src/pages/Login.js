@@ -702,22 +702,19 @@ const handleRegisterSubmit = async (e) => {
 
           <div style={{ ...styles.inputGroup, ...styles.inputHalf }}>
             <label style={styles.inputLabel}>Género</label>
-            <div style={styles.selectWrapper}>
-              <select
-                style={styles.select}
-                name="genero"
-                value={registerData.genero}
-                onChange={handleRegisterChange}
-                required
-              >
-                <option value="M">Masculino</option>
-                <option value="F">Femenino</option>
-                <option value="O">Otro</option>
-              </select>
-              <div style={styles.selectArrow}>
-                <ArrowRight size={16} style={{ transform: 'rotate(90deg)' }} />
-              </div>
-            </div>
+            <TextField
+              select
+              name="genero"
+              value={registerData.genero}
+              onChange={handleRegisterChange}
+              required
+              variant="outlined"
+              sx={{ background: '#fff', minWidth: 120 }}
+            >
+              <MenuItem value="M">Masculino</MenuItem>
+              <MenuItem value="F">Femenino</MenuItem>
+              <MenuItem value="O">Otro</MenuItem>
+            </TextField>
           </div>
         </div>
         <div style={styles.inputGroup}>

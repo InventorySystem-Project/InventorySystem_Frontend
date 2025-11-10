@@ -40,9 +40,9 @@ const theme = createTheme({
       dark: '#059669',
     },
     background: {
-      default: '#18181B',
-      paper: '#27272A',
-      card: '#3F3F46',
+  default: '#f3f4f6',
+  paper: '#ffffff',
+  card: '#f3f4f6',
     },
     text: {
       primary: '#F4F4F5',

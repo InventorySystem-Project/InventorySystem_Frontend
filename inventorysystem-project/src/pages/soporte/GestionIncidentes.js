@@ -80,19 +80,39 @@ const TicketFormModal = ({ open, onClose, onSave, ticketData, setTicketData, usu
                 </Typography>
                 <TextField label="Descripción del Incidente" name="descripcion" value={ticketData.descripcion} onChange={handleInputChange} fullWidth required multiline rows={4} margin="normal" />
                 <FormControl fullWidth margin="normal">
-                    <InputLabel id="prioridad-label">Prioridad</InputLabel>
-                    <Select labelId="prioridad-label" label="Prioridad" name="prioridad" value={ticketData.prioridad} onChange={handleInputChange} required>
+                    <TextField
+                        select
+                        label="Prioridad"
+                        name="prioridad"
+                        value={ticketData.prioridad}
+                        onChange={handleInputChange}
+                        required
+                        variant="outlined"
+                        sx={{ background: '#fff' }}
+                        margin="normal"
+                        fullWidth
+                    >
                         <MenuItem value="CRITICA">Crítica</MenuItem>
                         <MenuItem value="ALTA">Alta</MenuItem>
                         <MenuItem value="MEDIA">Media</MenuItem>
                         <MenuItem value="BAJA">Baja</MenuItem>
-                    </Select>
+                    </TextField>
                 </FormControl>
                 <FormControl fullWidth margin="normal">
-                    <InputLabel id="tipo-label">Tipo</InputLabel>
-                    <Select labelId="tipo-label" label="Tipo" name="tipo" value={ticketData.tipo} onChange={handleInputChange} required>
+                    <TextField
+                        select
+                        label="Tipo"
+                        name="tipo"
+                        value={ticketData.tipo}
+                        onChange={handleInputChange}
+                        required
+                        variant="outlined"
+                        sx={{ background: '#fff' }}
+                        margin="normal"
+                        fullWidth
+                    >
                         <MenuItem value="INCIDENTE">Incidente</MenuItem>
-                    </Select>
+                    </TextField>
                 </FormControl>
                 <TextField label="Solución Aplicada (Opcional)" name="solucion" value={ticketData.solucion || ''} onChange={handleInputChange} fullWidth multiline rows={3} margin="normal" />
 

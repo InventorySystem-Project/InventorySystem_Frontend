@@ -4,7 +4,7 @@ import autoTable from 'jspdf-autotable';
 import {
     Button, Modal, Box, TextField, MenuItem, Table, TableHead, TableRow, TableCell, TableBody,
     Pagination, List, ListItem, ListItemText, Paper, ListSubheader, Tabs, Tab,
-    Typography, IconButton, TableContainer, CircularProgress
+    Typography, IconButton, TableContainer, CircularProgress, Autocomplete
 } from '@mui/material';
 import * as tableStyles from '../styles/tableStyles';
 import {
@@ -456,19 +456,33 @@ const OrdenCompra = () => {
 
                      {/* --- FORMULARIO CON TUS CLASES ORIGINALES --- */}
                      <div className="formulario-fila">
-                         <TextField fullWidth select label="Empresa" value={formulario.empresaId} onChange={e => setFormulario({ ...formulario, empresaId: e.target.value })} margin="normal" required>
-                             {empresas.map(e => <MenuItem key={e.id} value={e.id}>{e.nombre}</MenuItem>)}
-                         </TextField>
-                         <TextField fullWidth label="Código de Orden" value={codigoGenerado} disabled margin="normal" />
+                         <Autocomplete
+                             fullWidth
+                             options={empresas}
+                             getOptionLabel={option => option.nombre}
+                             value={empresas.find(e => e.id === formulario.empresaId) || null}
+                             onChange={(event, newValue) => setFormulario({ ...formulario, empresaId: newValue ? newValue.id : '' })}
+                             renderInput={params => (
+                                 <TextField {...params} label="Empresa" margin="normal" required variant="outlined" sx={{ background: '#fff' }} />
+                             )}
+                         />
+                         <TextField fullWidth label="Código de Orden" value={codigoGenerado} disabled margin="normal" sx={{ background: '#fff' }} />
                      </div>
                      
-                     <TextField fullWidth select label="Proveedor" value={formulario.proveedorId} onChange={e => setFormulario({ ...formulario, proveedorId: e.target.value })} margin="normal" required>
-                         {proveedores.map(p => <MenuItem key={p.id} value={p.id}>{p.nombreEmpresaProveedor}</MenuItem>)}
-                     </TextField>
+                     <Autocomplete
+                         fullWidth
+                         options={proveedores}
+                         getOptionLabel={option => option.nombreEmpresaProveedor}
+                         value={proveedores.find(p => p.id === formulario.proveedorId) || null}
+                         onChange={(event, newValue) => setFormulario({ ...formulario, proveedorId: newValue ? newValue.id : '' })}
+                         renderInput={params => (
+                             <TextField {...params} label="Proveedor" margin="normal" required variant="outlined" sx={{ background: '#fff' }} />
+                         )}
+                     />
 
                      <div className="formulario-fila">
-                         <TextField fullWidth type="date" label="Fecha de Emisión" InputLabelProps={{ shrink: true }} value={formulario.fechaEmision} onChange={e => setFormulario({ ...formulario, fechaEmision: e.target.value })} size="medium" required/>
-                         <TextField fullWidth select label="Estado" value={formulario.estado} onChange={e => setFormulario({ ...formulario, estado: e.target.value })} size="medium" required>
+                         <TextField fullWidth type="date" label="Fecha de Emisión" InputLabelProps={{ shrink: true }} value={formulario.fechaEmision} onChange={e => setFormulario({ ...formulario, fechaEmision: e.target.value })} size="medium" required sx={{ background: '#fff' }} />
+                         <TextField fullWidth select label="Estado" value={formulario.estado} onChange={e => setFormulario({ ...formulario, estado: e.target.value })} size="medium" required sx={{ background: '#fff' }}>
                              <MenuItem value="En proceso">En proceso</MenuItem>
                              <MenuItem value="Aprobada">Aprobada</MenuItem>
                              <MenuItem value="Recibida">Recibida</MenuItem>
@@ -483,7 +497,7 @@ const OrdenCompra = () => {
                              <div className="label-item">Cantidad</div>
                          </div>
                          <div className="producto-formulario-inputs">
-                             <TextField select label="Producto" value={productoActual.productoId} onChange={e => setProductoActual({ ...productoActual, productoId: e.target.value })} size="small" className="input-producto">
+                             <TextField select label="Producto" value={productoActual.productoId} onChange={e => setProductoActual({ ...productoActual, productoId: e.target.value })} size="small" className="input-producto" sx={{ background: '#fff' }}>
                                  {tipoOrden === 'materiasPrimas' ?
                                      materiasPrimas.map(mp => <MenuItem key={mp.id} value={mp.id}>{mp.nombre}</MenuItem>) :
                                      productosTerminados.map(pt => <MenuItem key={pt.id} value={pt.id}>{pt.nombre}</MenuItem>)

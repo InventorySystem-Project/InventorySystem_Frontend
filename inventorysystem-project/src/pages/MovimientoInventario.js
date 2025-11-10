@@ -563,7 +563,7 @@ const MovimientoInventario = () => {
             <div className="table-container">
                 <div className="table-header" style={{ paddingTop: '0px', width: '100%' }}>
                     <h3 style={{ marginTop: '10px', textAlign: 'left' }}>
-                        Lista de Movimientos - {tipoInventario === 'materiasPrimas' ? 'Materias Primas' : 'Productos Terminados'}
+                        Lista de Movimientoss - {tipoInventario === 'materiasPrimas' ? 'Materias Primas' : 'Productos Terminados'}
                     </h3>
                     <p style={{ margin: 0, textAlign: 'left' }}>
                         Administre los movimientos de entrada y salida de {tipoInventario === 'materiasPrimas' ? 'materias primas' : 'productos terminados'}
@@ -766,7 +766,7 @@ const MovimientoInventario = () => {
                                 <MenuItem value="Entrada">Entrada</MenuItem>
                                 <MenuItem value="Salida">Salida</MenuItem>
                             </TextField>
-                            <TextField select label="Almacén" name="almacenId" value={nuevoMovimientoMP.almacenId} onChange={handleInputChangeMP} fullWidth style={{ marginBottom: '15px' }} error={!nuevoMovimientoMP.almacenId && nuevoMovimientoMP.almacenId !== ''} helperText={!nuevoMovimientoMP.almacenId && nuevoMovimientoMP.almacenId !== '' ? 'Seleccione un almacén' : ''} >
+                            <TextField select label="Almacén" name="almacenId" value={nuevoMovimientoMP.almacenId} onChange={handleInputChangeMP} fullWidth style={{ marginBottom: '15px', background: '#fff' }} error={!nuevoMovimientoMP.almacenId && nuevoMovimientoMP.almacenId !== ''} helperText={!nuevoMovimientoMP.almacenId && nuevoMovimientoMP.almacenId !== '' ? 'Seleccione un almacén' : ''} >
                                 {almacenes.length > 0 ? (
                                     almacenes.map((almacen) => (
                                         almacen && almacen.id ? (<MenuItem key={almacen.id} value={almacen.id}> {almacen.nombre} </MenuItem>) : null
@@ -804,7 +804,7 @@ const MovimientoInventario = () => {
                                 <MenuItem value="Entrada">Entrada</MenuItem>
                                 <MenuItem value="Salida">Salida</MenuItem>
                             </TextField>
-                            <TextField select label="Almacén" name="almacenId" value={nuevoMovimientoPT.almacenId} onChange={handleInputChangePT} fullWidth style={{ marginBottom: '15px' }} error={!nuevoMovimientoPT.almacenId && nuevoMovimientoPT.almacenId !== ''} helperText={!nuevoMovimientoPT.almacenId && nuevoMovimientoPT.almacenId !== '' ? 'Seleccione un almacén' : ''} >
+                            <TextField select label="Almacén" name="almacenId" value={nuevoMovimientoPT.almacenId} onChange={handleInputChangePT} fullWidth style={{ marginBottom: '15px', background: '#fff' }} error={!nuevoMovimientoPT.almacenId && nuevoMovimientoPT.almacenId !== ''} helperText={!nuevoMovimientoPT.almacenId && nuevoMovimientoPT.almacenId !== '' ? 'Seleccione un almacén' : ''} >
                                 {almacenes.length > 0 ? (
                                     almacenes.map((almacen) => (
                                         almacen && almacen.id ? (<MenuItem key={almacen.id} value={almacen.id}> {almacen.nombre} </MenuItem>) : null

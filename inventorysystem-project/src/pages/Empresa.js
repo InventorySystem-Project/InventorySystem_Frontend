@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { TextField, Button, Modal, Box, Pagination, Table, TableBody, TableCell, TableHead, TableRow, TableContainer, Typography } from '@mui/material';
+import { TextField, Button, Modal, Box, Pagination, Table, TableBody, TableCell, TableHead, TableRow, TableContainer, Typography, Autocomplete } from '@mui/material';
 import { Plus, Pencil, Trash2, Edit } from "lucide-react";
 import Flag from 'react-world-flags'; // Para mostrar banderas
 import { getEmpresas, addEmpresa, updateEmpresa, deleteEmpresa } from '../services/EmpresaService';
@@ -14,7 +14,7 @@ const Empresa = () => {
     const [empresaEditando, setEmpresaEditando] = useState(null);
     const [paginaActual, setPaginaActual] = useState(1);
     const [empresasPorPagina, setEmpresasPorPagina] = useState(5);
-    const [paises, setPaises] = useState([]);  // Nuevo estado para los países
+    const [paises, setPaises] = useState([]);  // Lista de países [{ code, name, flag }]
     const [paisesNombreCompleto, setPaisesNombreCompleto] = useState({});  // Mapa de códigos ISO a nombres completos de países
     const [intentoGuardar, setIntentoGuardar] = useState(false);
 
@@ -31,23 +31,30 @@ const Empresa = () => {
     // Obtener la lista de países
 const fetchPaises = async () => {
         try {
-            // URL corregida para pedir solo los campos necesarios y evitar el error 400
             const response = await fetch('https://restcountries.com/v3.1/all?fields=name,cca2');
-            
             if (!response.ok) {
                 const errorData = await response.json();
                 throw new Error(`Error ${response.status}: ${errorData.message}`);
             }
-            
             const data = await response.json();
-            
             if (Array.isArray(data)) {
-                const paisesOrdenados = data.sort((a, b) => 
-                    a.name.common.localeCompare(b.name.common)
-                );
+                const paisesOrdenados = data
+                    .filter(pais => pais && pais.name && pais.name.common && pais.cca2)
+                    .map(pais => ({
+                        code: pais.cca2,
+                        name: pais.name.common,
+                        flag: `https://flagcdn.com/w40/${pais.cca2.toLowerCase()}.png`
+                    }))
+                    .sort((a, b) => a.name.localeCompare(b.name));
                 setPaises(paisesOrdenados);
+                // Mapa de códigos a nombres
+                const mapaCodigosNombres = {};
+                paisesOrdenados.forEach(pais => {
+                    mapaCodigosNombres[pais.code] = pais.name;
+                });
+                setPaisesNombreCompleto(mapaCodigosNombres);
             } else {
-                 console.error('La respuesta de la API de países no es un array:', data);
+                console.error('La respuesta de la API de países no es un array:', data);
             }
         } catch (error) {
             console.error('Error al obtener los países:', error);
@@ -250,23 +257,28 @@ const fetchPaises = async () => {
                     />
                     <TextField label="Correo" name="correo" value={nuevaEmpresa.correo} onChange={handleInputChange} fullWidth margin="normal" />
 
-                    {/* Desplegable de países */}
-                    <TextField
-                        label="País"
-                        name="pais"
-                        value={nuevaEmpresa.pais}
-                        onChange={handleInputChange}
-                        select
-                        fullWidth
-                        margin="normal"
-                        SelectProps={{ native: true }}
-                    >
-                        {paises.map((pais) => (
-                            <option key={pais.cca2} value={pais.cca2}> {/* Usamos el código ISO del país aquí */}
-                                {pais.name.common}
-                            </option>
-                        ))}
-                    </TextField>
+                    {/* Selector de país mejorado con Autocomplete y banderas */}
+                    <Autocomplete
+                        options={paises}
+                        getOptionLabel={option => option.name}
+                        value={paises.find(p => p.code === nuevaEmpresa.pais) || null}
+                        onChange={(event, newValue) => {
+                            setNuevaEmpresa(prev => ({ ...prev, pais: newValue ? newValue.code : '' }));
+                        }}
+                        renderOption={(props, option) => (
+                            <Box component="li" {...props} sx={{ display: 'flex', alignItems: 'center', backgroundColor: '#fff', color: '#222' }}>
+                                <img src={option.flag} alt={option.code} style={{ width: 24, height: 16, marginRight: 8, borderRadius: 2 }} />
+                                {option.name}
+                            </Box>
+                        )}
+                        renderInput={params => (
+                            <TextField {...params} label="País" margin="normal" fullWidth variant="outlined"
+                                InputProps={{ ...params.InputProps, style: { background: '#f9fafb', color: '#222' } }}
+                            />
+                        )}
+                        sx={{ marginBottom: 2 }}
+                        isOptionEqualToValue={(option, value) => option.code === value.code}
+                    />
 
                     <div style={{ display: 'flex', justifyContent: 'center', gap: '10px', marginTop: '20px' }}>
                         <Button variant="outlined" color="primary" onClick={handleCancelar}>Cancelar</Button>

@@ -26,12 +26,22 @@ const RFCFormModal = ({ open, onClose, onSave, rfcData, setRfcData, isEditing })
                 <TextField label="Justificación del Negocio" name="justificacion" value={rfcData.justificacion} onChange={handleInputChange} fullWidth required multiline rows={3} margin="normal" />
 
                 <FormControl fullWidth margin="normal">
-                    <InputLabel id="tipo-cambio-label">Tipo de Cambio</InputLabel>
-                    <Select labelId="tipo-cambio-label" label="Tipo de Cambio" name="tipoCambio" value={rfcData.tipoCambio} onChange={handleInputChange} required>
+                    <TextField
+                        select
+                        label="Tipo de Cambio"
+                        name="tipoCambio"
+                        value={rfcData.tipoCambio}
+                        onChange={handleInputChange}
+                        required
+                        variant="outlined"
+                        sx={{ background: '#fff' }}
+                        margin="normal"
+                        fullWidth
+                    >
                         <MenuItem value="ESTANDAR">Estándar (Pre-aprobado)</MenuItem>
                         <MenuItem value="NORMAL">Normal (Requiere CAB)</MenuItem>
                         <MenuItem value="EMERGENCIA">Emergencia (Requiere PM)</MenuItem>
-                    </Select>
+                    </TextField>
                 </FormControl>
 
                 <TextField label="Análisis de Impacto" name="impacto" value={rfcData.impacto || ''} onChange={handleInputChange} fullWidth multiline rows={3} margin="normal" helperText="Consecuencias potenciales del cambio." />
