@@ -353,8 +353,59 @@ const handleRegisterSubmit = async (e) => {
       alignItems: 'center',
       justifyContent: 'center',
       minHeight: '100vh',
-      padding: '20px',
-      //background: 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)',
+      width: '100vw',
+      padding: 0,
+      margin: 0,
+      position: 'fixed',
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      background: '#0a0a0a',
+      overflow: 'hidden',
+    },
+    backgroundLayer1: {
+      position: 'absolute',
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      background: 'linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #16213e 100%)',
+      zIndex: 0,
+    },
+    backgroundLayer2: {
+      position: 'absolute',
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      background: 'radial-gradient(circle at 20% 50%, rgba(59, 130, 246, 0.08) 0%, transparent 50%), radial-gradient(circle at 80% 80%, rgba(139, 92, 246, 0.08) 0%, transparent 50%)',
+      animation: 'pulse 6s ease-in-out infinite',
+      zIndex: 0,
+    },
+    floatingOrb1: {
+      position: 'absolute',
+      width: '400px',
+      height: '400px',
+      borderRadius: '50%',
+      background: 'radial-gradient(circle, rgba(59, 130, 246, 0.12) 0%, transparent 70%)',
+      top: '-10%',
+      left: '-10%',
+      animation: 'float 15s ease-in-out infinite',
+      filter: 'blur(60px)',
+      zIndex: 0,
+    },
+    floatingOrb2: {
+      position: 'absolute',
+      width: '350px',
+      height: '350px',
+      borderRadius: '50%',
+      background: 'radial-gradient(circle, rgba(139, 92, 246, 0.12) 0%, transparent 70%)',
+      bottom: '-10%',
+      right: '-10%',
+      animation: 'float 18s ease-in-out infinite reverse',
+      filter: 'blur(60px)',
+      zIndex: 0,
     },
     card: {
       backgroundColor: '#ffffff',
@@ -364,6 +415,8 @@ const handleRegisterSubmit = async (e) => {
       maxWidth: '450px',
       padding: '30px',
       overflow: 'hidden',
+      position: 'relative',
+      zIndex: 1,
     },
     heading: {
       textAlign: 'center',
@@ -1082,23 +1135,66 @@ const handleRegisterSubmit = async (e) => {
   };
 
   return (
-    <div style={styles.container}>
-      <motion.div
-        style={styles.card}
-        initial="hidden"
-        animate="visible"
-        exit="exit"
-        variants={cardVariants}
-        key={`${activeView}-${recoveryStep}`}
-      >
-        <h2 style={styles.heading}>{getHeadingText()}</h2>
+    <>
+      <style>{`
+        body {
+          background-color: #0a0a0a !important;
+          margin: 0 !important;
+          padding: 0 !important;
+        }
+        html {
+          background-color: #0a0a0a !important;
+          margin: 0 !important;
+          padding: 0 !important;
+        }
+        #root {
+          background-color: #0a0a0a !important;
+        }
+        @keyframes pulse {
+          0%, 100% {
+            opacity: 0.4;
+          }
+          50% {
+            opacity: 0.7;
+          }
+        }
+        @keyframes float {
+          0%, 100% {
+            transform: translate(0, 0) scale(1);
+            opacity: 0.5;
+          }
+          33% {
+            transform: translate(50px, -50px) scale(1.15);
+            opacity: 0.7;
+          }
+          66% {
+            transform: translate(-40px, 40px) scale(0.85);
+            opacity: 0.6;
+          }
+        }
+      `}</style>
+      <div style={styles.container}>
+        <div style={styles.backgroundLayer1}></div>
+        <div style={styles.backgroundLayer2}></div>
+        <div style={styles.floatingOrb1}></div>
+        <div style={styles.floatingOrb2}></div>
+        <motion.div
+          style={styles.card}
+          initial="hidden"
+          animate="visible"
+          exit="exit"
+          variants={cardVariants}
+          key={`${activeView}-${recoveryStep}`}
+        >
+          <h2 style={styles.heading}>{getHeadingText()}</h2>
 
-        {errorMsg && <div style={styles.error}>{errorMsg}</div>}
-        {successMsg && <div style={styles.success}>{successMsg}</div>}
+          {errorMsg && <div style={styles.error}>{errorMsg}</div>}
+          {successMsg && <div style={styles.success}>{successMsg}</div>}
 
-        {renderActiveView()}
-      </motion.div>
-    </div>
+          {renderActiveView()}
+        </motion.div>
+      </div>
+    </>
   );
 }
 

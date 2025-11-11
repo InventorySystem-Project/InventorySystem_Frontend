@@ -31,23 +31,28 @@ const AlertasStockBajo = ({ titulo, alertas, onAnadirProducto }) => {
      if (!alertas || alertas.length === 0) {
         return null;
     }
-    return (
-        <Paper elevation={2} sx={{ my: 2, p: 2, backgroundColor: '#FFFBEB' }}>
-            <List dense subheader={
-                <ListSubheader sx={{ bgcolor: 'transparent', color: '#B7791F', display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <AlertTriangle size={20} /> {titulo}
-                </ListSubheader>
-            }>
-                {alertas.map(alerta => (
-                    <ListItem key={alerta.id} divider secondaryAction={
-                        <Button variant="outlined" size="small" startIcon={<Plus size={16} />} onClick={() => onAnadirProducto(alerta.id)}>Añadir</Button>
-                    }>
-                        <ListItemText primary={alerta.nombre} secondary={`Stock actual: ${alerta.stockActual} (Mínimo: 5)`} />
-                    </ListItem>
-                ))}
-            </List>
-        </Paper>
-    );
+    return (
+        <Paper elevation={2} sx={{ my: 2, p: 2, backgroundColor: '#FFFBEB' }}>
+            <List dense subheader={
+                <ListSubheader sx={{ bgcolor: 'transparent', color: '#92400E', display: 'flex', alignItems: 'center', gap: 1, fontWeight: 600 }}>
+                    <AlertTriangle size={20} /> {titulo}
+                </ListSubheader>
+            }>
+                {alertas.map(alerta => (
+                    <ListItem key={alerta.id} divider secondaryAction={
+                        <Button variant="outlined" size="small" startIcon={<Plus size={16} />} onClick={() => onAnadirProducto(alerta.id)}>Añadir</Button>
+                    }>
+                        <ListItemText 
+                            primary={alerta.nombre} 
+                            secondary={`Stock actual: ${alerta.stockActual} (Mínimo: 5)`}
+                            primaryTypographyProps={{ style: { color: '#1f2937', fontWeight: 500 } }}
+                            secondaryTypographyProps={{ style: { color: '#6b7280' } }}
+                        />
+                    </ListItem>
+                ))}
+            </List>
+        </Paper>
+    );
 };
 // --- Fin AlertasStockBajo ---
 
@@ -434,136 +439,439 @@ const OrdenCompra = () => {
             </div>
 
             {/* --- MODAL PARA CREAR/EDITAR ORDEN --- */}
-            {/* ---- MANTENEMOS TU ESTRUCTURA Y CLASES CSS ORIGINALES ---- */}
-            <Modal open={mostrarModal} onClose={() => setMostrarModal(false)} style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-                 <Box style={{ background: '#fff', padding: '20px', borderRadius: '10px', minWidth: '700px', maxHeight: '90vh', overflowY: 'auto' }}>
-                     <h3>{ordenEditando ? 'Editar Orden de Compra' : 'Nueva Orden de Compra'}</h3>
+            <Modal 
+                open={mostrarModal} 
+                onClose={() => setMostrarModal(false)} 
+                sx={{ 
+                    display: 'flex', 
+                    justifyContent: 'center', 
+                    alignItems: 'center',
+                    padding: '20px'
+                }}
+            >
+                <Box sx={{ 
+                    background: '#fff', 
+                    borderRadius: '16px', 
+                    width: '90%',
+                    maxWidth: '900px', 
+                    maxHeight: '95vh', 
+                    overflowY: 'auto',
+                    boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
+                    display: 'flex',
+                    flexDirection: 'column'
+                }}>
+                    {/* Header */}
+                    <Box sx={{ 
+                        padding: '24px 30px', 
+                        borderBottom: '1px solid #e5e7eb',
+                        backgroundColor: '#f9fafb'
+                    }}>
+                        <Typography variant="h5" sx={{ 
+                            color: '#1f2937', 
+                            fontWeight: 700,
+                            marginBottom: '8px'
+                        }}>
+                            {ordenEditando ? 'Editar Orden de Compra' : 'Nueva Orden de Compra'}
+                        </Typography>
+                        <Typography variant="body2" sx={{ color: '#6b7280' }}>
+                            Complete la información de la orden y agregue los productos necesarios
+                        </Typography>
+                    </Box>
 
-                     <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 2 }}>
-                         <Tabs value={tipoOrden} onChange={(e, newValue) => setTipoOrden(newValue)} centered>
-                             <Tab label="Materias Primas" value="materiasPrimas" />
-                             <Tab label="Productos Terminados" value="productosTerminados" />
-                         </Tabs>
-                     </Box>
+                    {/* Tabs */}
+                    <Box sx={{ 
+                        borderBottom: 1, 
+                        borderColor: 'divider',
+                        px: 3,
+                        pt: 2
+                    }}>
+                        <Tabs 
+                            value={tipoOrden} 
+                            onChange={(e, newValue) => setTipoOrden(newValue)} 
+                            sx={{
+                                '& .MuiTab-root': {
+                                    color: '#6b7280',
+                                    fontWeight: 500,
+                                    textTransform: 'none',
+                                    fontSize: '0.95rem',
+                                    '&.Mui-selected': {
+                                        color: '#3b82f6',
+                                        fontWeight: 600
+                                    }
+                                },
+                                '& .MuiTabs-indicator': {
+                                    backgroundColor: '#3b82f6',
+                                    height: 3
+                                }
+                            }}
+                        >
+                            <Tab label="Materias Primas" value="materiasPrimas" />
+                            <Tab label="Productos Terminados" value="productosTerminados" />
+                        </Tabs>
+                    </Box>
 
-                     {/* Alertas */}
-                      {tipoOrden === 'materiasPrimas' && !ordenEditando && (
-                         <AlertasStockBajo titulo="ALERTAS DE STOCK BAJO (MATERIAS PRIMAS)" alertas={alertasStockMP} onAnadirProducto={handleAnadirDesdeAlerta} />
-                     )}
-                     {tipoOrden === 'productosTerminados' && !ordenEditando && (
-                         <AlertasStockBajo titulo="ALERTAS DE STOCK BAJO (PRODUCTOS TERMINADOS)" alertas={alertasStockPT} onAnadirProducto={handleAnadirDesdeAlerta} />
-                     )}
+                    {/* Content */}
+                    <Box sx={{ padding: '30px', flex: 1 }}>
+                        {/* Alertas */}
+                        {tipoOrden === 'materiasPrimas' && !ordenEditando && (
+                            <AlertasStockBajo titulo="ALERTAS DE STOCK BAJO (MATERIAS PRIMAS)" alertas={alertasStockMP} onAnadirProducto={handleAnadirDesdeAlerta} />
+                        )}
+                        {tipoOrden === 'productosTerminados' && !ordenEditando && (
+                            <AlertasStockBajo titulo="ALERTAS DE STOCK BAJO (PRODUCTOS TERMINADOS)" alertas={alertasStockPT} onAnadirProducto={handleAnadirDesdeAlerta} />
+                        )}
 
-                     {/* --- FORMULARIO CON TUS CLASES ORIGINALES --- */}
-                     <div className="formulario-fila">
-                         <Autocomplete
-                             fullWidth
-                             options={empresas}
-                             getOptionLabel={option => option.nombre}
-                             value={empresas.find(e => e.id === formulario.empresaId) || null}
-                             onChange={(event, newValue) => setFormulario({ ...formulario, empresaId: newValue ? newValue.id : '' })}
-                             renderInput={params => (
-                                 <TextField {...params} label="Empresa" margin="normal" required variant="outlined" sx={{ background: '#fff' }} />
-                             )}
-                         />
-                         <TextField fullWidth label="Código de Orden" value={codigoGenerado} disabled margin="normal" sx={{ background: '#fff' }} />
-                     </div>
-                     
-                     <Autocomplete
-                         fullWidth
-                         options={proveedores}
-                         getOptionLabel={option => option.nombreEmpresaProveedor}
-                         value={proveedores.find(p => p.id === formulario.proveedorId) || null}
-                         onChange={(event, newValue) => setFormulario({ ...formulario, proveedorId: newValue ? newValue.id : '' })}
-                         renderInput={params => (
-                             <TextField {...params} label="Proveedor" margin="normal" required variant="outlined" sx={{ background: '#fff' }} />
-                         )}
-                     />
+                        {/* Sección: Información General */}
+                        <Box sx={{ mb: 4 }}>
+                            <Typography variant="h6" sx={{ 
+                                color: '#1f2937', 
+                                fontWeight: 600,
+                                marginBottom: '20px',
+                                fontSize: '1.1rem',
+                                borderBottom: '2px solid #e5e7eb',
+                                paddingBottom: '8px'
+                            }}>
+                                Información General
+                            </Typography>
+                            
+                            <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
+                                <Autocomplete
+                                    fullWidth
+                                    options={empresas}
+                                    getOptionLabel={option => option.nombre}
+                                    value={empresas.find(e => e.id === formulario.empresaId) || null}
+                                    onChange={(event, newValue) => setFormulario({ ...formulario, empresaId: newValue ? newValue.id : '' })}
+                                    renderInput={params => (
+                                        <TextField 
+                                            {...params} 
+                                            label="Empresa" 
+                                            required 
+                                            variant="outlined"
+                                            sx={{ 
+                                                '& .MuiInputLabel-root': { color: '#6b7280' }, 
+                                                '& .MuiInputBase-input': { color: '#1f2937' },
+                                                '& .MuiOutlinedInput-root': {
+                                                    '&:hover fieldset': { borderColor: '#9ca3af' },
+                                                    '&.Mui-focused fieldset': { borderColor: '#3b82f6' }
+                                                }
+                                            }} 
+                                        />
+                                    )}
+                                />
+                                <TextField 
+                                    fullWidth 
+                                    label="Código de Orden" 
+                                    value={codigoGenerado} 
+                                    disabled 
+                                    sx={{ 
+                                        '& .MuiInputLabel-root': { color: '#6b7280' }, 
+                                        '& .MuiInputBase-input': { color: '#6b7280' },
+                                        backgroundColor: '#f3f4f6'
+                                    }} 
+                                />
+                            </Box>
+                            
+                            <Autocomplete
+                                fullWidth
+                                options={proveedores}
+                                getOptionLabel={option => option.nombreEmpresaProveedor}
+                                value={proveedores.find(p => p.id === formulario.proveedorId) || null}
+                                onChange={(event, newValue) => setFormulario({ ...formulario, proveedorId: newValue ? newValue.id : '' })}
+                                renderInput={params => (
+                                    <TextField 
+                                        {...params} 
+                                        label="Proveedor" 
+                                        required 
+                                        variant="outlined"
+                                        sx={{ 
+                                            mb: 2,
+                                            '& .MuiInputLabel-root': { color: '#6b7280' }, 
+                                            '& .MuiInputBase-input': { color: '#1f2937' },
+                                            '& .MuiOutlinedInput-root': {
+                                                '&:hover fieldset': { borderColor: '#9ca3af' },
+                                                '&.Mui-focused fieldset': { borderColor: '#3b82f6' }
+                                            }
+                                        }} 
+                                    />
+                                )}
+                            />
 
-                     <div className="formulario-fila">
-                         <TextField fullWidth type="date" label="Fecha de Emisión" InputLabelProps={{ shrink: true }} value={formulario.fechaEmision} onChange={e => setFormulario({ ...formulario, fechaEmision: e.target.value })} size="medium" required sx={{ background: '#fff' }} />
-                         <TextField fullWidth select label="Estado" value={formulario.estado} onChange={e => setFormulario({ ...formulario, estado: e.target.value })} size="medium" required sx={{ background: '#fff' }}>
-                             <MenuItem value="En proceso">En proceso</MenuItem>
-                             <MenuItem value="Aprobada">Aprobada</MenuItem>
-                             <MenuItem value="Recibida">Recibida</MenuItem>
-                             <MenuItem value="Rechazada">Rechazada</MenuItem>
-                         </TextField>
-                     </div>
+                            <Box sx={{ display: 'flex', gap: 2 }}>
+                                <TextField 
+                                    fullWidth 
+                                    type="date" 
+                                    label="Fecha de Emisión" 
+                                    InputLabelProps={{ shrink: true }} 
+                                    value={formulario.fechaEmision} 
+                                    onChange={e => setFormulario({ ...formulario, fechaEmision: e.target.value })} 
+                                    required 
+                                    sx={{ 
+                                        '& .MuiInputLabel-root': { color: '#6b7280' }, 
+                                        '& .MuiInputBase-input': { color: '#1f2937' },
+                                        '& .MuiOutlinedInput-root': {
+                                            '&:hover fieldset': { borderColor: '#9ca3af' },
+                                            '&.Mui-focused fieldset': { borderColor: '#3b82f6' }
+                                        }
+                                    }} 
+                                />
+                                <TextField 
+                                    fullWidth 
+                                    select 
+                                    label="Estado" 
+                                    value={formulario.estado} 
+                                    onChange={e => setFormulario({ ...formulario, estado: e.target.value })} 
+                                    required 
+                                    sx={{ 
+                                        '& .MuiInputLabel-root': { color: '#6b7280' }, 
+                                        '& .MuiInputBase-input': { color: '#1f2937' },
+                                        '& .MuiOutlinedInput-root': {
+                                            '&:hover fieldset': { borderColor: '#9ca3af' },
+                                            '&.Mui-focused fieldset': { borderColor: '#3b82f6' }
+                                        }
+                                    }}
+                                    MenuProps={{ 
+                                        PaperProps: { 
+                                            sx: { 
+                                                '& .MuiMenuItem-root': { 
+                                                    color: '#1f2937',
+                                                    '&:hover': { backgroundColor: '#f3f4f6' },
+                                                    '&.Mui-selected': { backgroundColor: '#dbeafe' }
+                                                } 
+                                            } 
+                                        } 
+                                    }}
+                                >
+                                    <MenuItem value="En proceso">En proceso</MenuItem>
+                                    <MenuItem value="Aprobada">Aprobada</MenuItem>
+                                    <MenuItem value="Recibida">Recibida</MenuItem>
+                                    <MenuItem value="Rechazada">Rechazada</MenuItem>
+                                </TextField>
+                            </Box>
+                        </Box>
 
-                     <h4>Productos de la Orden</h4>
-                     <div className="producto-formulario-contenedor">
-                         <div className="producto-formulario-labels">
-                             <div className="label-item">Producto</div>
-                             <div className="label-item">Cantidad</div>
-                         </div>
-                         <div className="producto-formulario-inputs">
-                             <TextField select label="Producto" value={productoActual.productoId} onChange={e => setProductoActual({ ...productoActual, productoId: e.target.value })} size="small" className="input-producto" sx={{ background: '#fff' }}>
-                                 {tipoOrden === 'materiasPrimas' ?
-                                     materiasPrimas.map(mp => <MenuItem key={mp.id} value={mp.id}>{mp.nombre}</MenuItem>) :
-                                     productosTerminados.map(pt => <MenuItem key={pt.id} value={pt.id}>{pt.nombre}</MenuItem>)
-                                 }
-                             </TextField>
-                             <TextField type="number" value={productoActual.cantidad} onChange={e => setProductoActual({ ...productoActual, cantidad: e.target.value === '' ? '' : Number(e.target.value) })} onFocus={e => e.target.select()} size="small" className="input-cantidad" InputProps={{ inputProps: { min: 1 } }} />
-                         </div>
-                         <div className="producto-formulario-boton">
-                             <Button variant="outlined" onClick={() => {
-                                 if (!productoActual.productoId || !productoActual.cantidad || productoActual.cantidad < 1) {
-                                     showAlert('Seleccione un producto y una cantidad válida (mayor a 0).', 'Validación', 'warning'); return;
-                                 }
-                                 if (productosSeleccionados.some(p => p.productoId === productoActual.productoId)) {
-                                     showAlert('Este producto ya está en la lista.', 'Producto Duplicado', 'warning'); return;
-                                 }
-                                 setProductosSeleccionados([...productosSeleccionados, productoActual]);
-                                 setProductoActual({ productoId: '', cantidad: '' });
-                             }} className="boton-agregar">
-                                 + Agregar Producto
-                             </Button>
-                         </div>
-                     </div>
+                        {/* Sección: Productos */}
+                        <Box>
+                            <Typography variant="h6" sx={{ 
+                                color: '#1f2937', 
+                                fontWeight: 600,
+                                marginBottom: '20px',
+                                fontSize: '1.1rem',
+                                borderBottom: '2px solid #e5e7eb',
+                                paddingBottom: '8px'
+                            }}>
+                                Productos de la Orden
+                            </Typography>
 
-                     {/* Tabla de productos en el modal */}
-                     <Table size="small">
-                         <TableHead>
-                             <TableRow>
-                                 <TableCell><strong>Producto</strong></TableCell>
-                                 <TableCell align="right"><strong>Cantidad</strong></TableCell> {/* Alineado a la derecha */}
-                                 <TableCell align="center"><strong>Eliminar</strong></TableCell> {/* Centrado */}
-                             </TableRow>
-                         </TableHead>
-                         <TableBody>
-                             {productosSeleccionados.map((item, index) => {
-                                 const lista = tipoOrden === 'materiasPrimas' ? materiasPrimas : productosTerminados;
-                                 const producto = lista.find(p => p.id === item.productoId);
-                                 return (
-                                     <TableRow key={index}>
-                                         <TableCell>{producto?.nombre || '-'}</TableCell>
-                                         <TableCell align="right">{item.cantidad}</TableCell>
-                                         {/* Usar IconButton para el botón de eliminar */}
-                                         <TableCell align="center">
-                                             <IconButton color="error" size="small" onClick={() => handleEliminarProducto(index)}>
-                                                 <Trash2 size={16}/>
-                                             </IconButton>
-                                         </TableCell>
-                                     </TableRow>
-                                 );
-                             })}
-                             {productosSeleccionados.length === 0 && (
-                                <TableRow>
-                                    <TableCell colSpan={3} align="center">Aún no hay productos añadidos.</TableCell>
-                                </TableRow>
-                             )}
-                         </TableBody>
-                     </Table>
+                            {/* Formulario para agregar productos */}
+                            <Paper elevation={0} sx={{ 
+                                p: 3, 
+                                mb: 3, 
+                                backgroundColor: '#f9fafb',
+                                border: '1px solid #e5e7eb',
+                                borderRadius: '12px'
+                            }}>
+                                <Box sx={{ display: 'flex', gap: 2, alignItems: 'flex-start' }}>
+                                    <TextField 
+                                        select 
+                                        label="Producto" 
+                                        value={productoActual.productoId} 
+                                        onChange={e => setProductoActual({ ...productoActual, productoId: e.target.value })} 
+                                        fullWidth
+                                        sx={{ 
+                                            flex: 2,
+                                            '& .MuiInputLabel-root': { color: '#6b7280' }, 
+                                            '& .MuiInputBase-input': { color: '#1f2937' },
+                                            '& .MuiOutlinedInput-root': {
+                                                '&:hover fieldset': { borderColor: '#9ca3af' },
+                                                '&.Mui-focused fieldset': { borderColor: '#3b82f6' }
+                                            }
+                                        }}
+                                        MenuProps={{ 
+                                            PaperProps: { 
+                                                sx: { 
+                                                    '& .MuiMenuItem-root': { 
+                                                        color: '#1f2937',
+                                                        '&:hover': { backgroundColor: '#f3f4f6' },
+                                                        '&.Mui-selected': { backgroundColor: '#dbeafe' }
+                                                    } 
+                                                } 
+                                            } 
+                                        }}
+                                    >
+                                        {tipoOrden === 'materiasPrimas' ?
+                                            materiasPrimas.map(mp => <MenuItem key={mp.id} value={mp.id}>{mp.nombre}</MenuItem>) :
+                                            productosTerminados.map(pt => <MenuItem key={pt.id} value={pt.id}>{pt.nombre}</MenuItem>)
+                                        }
+                                    </TextField>
+                                    <TextField 
+                                        type="number" 
+                                        label="Cantidad"
+                                        value={productoActual.cantidad} 
+                                        onChange={e => setProductoActual({ ...productoActual, cantidad: e.target.value === '' ? '' : Number(e.target.value) })} 
+                                        onFocus={e => e.target.select()} 
+                                        InputProps={{ inputProps: { min: 1 } }} 
+                                        sx={{ 
+                                            width: '150px',
+                                            '& .MuiInputLabel-root': { color: '#6b7280' }, 
+                                            '& .MuiInputBase-input': { color: '#1f2937' },
+                                            '& .MuiOutlinedInput-root': {
+                                                '&:hover fieldset': { borderColor: '#9ca3af' },
+                                                '&.Mui-focused fieldset': { borderColor: '#3b82f6' }
+                                            }
+                                        }} 
+                                    />
+                                    <Button 
+                                        variant="contained" 
+                                        onClick={() => {
+                                            if (!productoActual.productoId || !productoActual.cantidad || productoActual.cantidad < 1) {
+                                                showAlert('Seleccione un producto y una cantidad válida (mayor a 0).', 'Validación', 'warning'); 
+                                                return;
+                                            }
+                                            if (productosSeleccionados.some(p => p.productoId === productoActual.productoId)) {
+                                                showAlert('Este producto ya está en la lista.', 'Producto Duplicado', 'warning'); 
+                                                return;
+                                            }
+                                            setProductosSeleccionados([...productosSeleccionados, productoActual]);
+                                            setProductoActual({ productoId: '', cantidad: '' });
+                                        }}
+                                        startIcon={<Plus size={18} />}
+                                        sx={{
+                                            height: '56px',
+                                            minWidth: '160px',
+                                            textTransform: 'none',
+                                            fontWeight: 600,
+                                            boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+                                            '&:hover': {
+                                                boxShadow: '0 6px 8px -1px rgba(0, 0, 0, 0.15)'
+                                            }
+                                        }}
+                                    >
+                                        Agregar
+                                    </Button>
+                                </Box>
+                            </Paper>
 
-                    {/* Botones de acción del modal */}
-                     <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '20px' }}> {/* Cambiado a flex-end */}
-                         <Button variant="outlined" color="secondary" onClick={() => setMostrarModal(false)}>Cancelar</Button> {/* Usar secondary para Cancelar */}
-                         <Button variant="contained" color="primary" onClick={handleRegistrarOrden} disabled={productosSeleccionados.length === 0}>
-                             {ordenEditando ? 'Actualizar Orden' : 'Registrar Orden'}
-                         </Button>
-                     </div>
-                     {/* --- FIN FORMULARIO CON TUS CLASES --- */}
-                 </Box>
+                            {/* Tabla de productos */}
+                            {productosSeleccionados.length > 0 ? (
+                                <TableContainer component={Paper} elevation={0} sx={{ 
+                                    border: '1px solid #e5e7eb',
+                                    borderRadius: '12px',
+                                    overflow: 'hidden'
+                                }}>
+                                    <Table>
+                                        <TableHead sx={{ backgroundColor: '#f9fafb' }}>
+                                            <TableRow>
+                                                <TableCell sx={{ color: '#1f2937', fontWeight: 600, fontSize: '0.875rem' }}>
+                                                    Producto
+                                                </TableCell>
+                                                <TableCell align="right" sx={{ color: '#1f2937', fontWeight: 600, fontSize: '0.875rem' }}>
+                                                    Cantidad
+                                                </TableCell>
+                                                <TableCell align="center" sx={{ color: '#1f2937', fontWeight: 600, fontSize: '0.875rem', width: '100px' }}>
+                                                    Acción
+                                                </TableCell>
+                                            </TableRow>
+                                        </TableHead>
+                                        <TableBody>
+                                            {productosSeleccionados.map((item, index) => {
+                                                const lista = tipoOrden === 'materiasPrimas' ? materiasPrimas : productosTerminados;
+                                                const producto = lista.find(p => p.id === item.productoId);
+                                                return (
+                                                    <TableRow 
+                                                        key={index}
+                                                        sx={{
+                                                            '&:hover': { backgroundColor: '#f9fafb' },
+                                                            '&:last-child td': { borderBottom: 0 }
+                                                        }}
+                                                    >
+                                                        <TableCell sx={{ color: '#1f2937', fontWeight: 500 }}>
+                                                            {producto?.nombre || '-'}
+                                                        </TableCell>
+                                                        <TableCell align="right" sx={{ color: '#1f2937', fontWeight: 600 }}>
+                                                            {item.cantidad}
+                                                        </TableCell>
+                                                        <TableCell align="center">
+                                                            <IconButton 
+                                                                color="error" 
+                                                                size="small" 
+                                                                onClick={() => handleEliminarProducto(index)}
+                                                                sx={{
+                                                                    '&:hover': { backgroundColor: '#fee2e2' }
+                                                                }}
+                                                            >
+                                                                <Trash2 size={18}/>
+                                                            </IconButton>
+                                                        </TableCell>
+                                                    </TableRow>
+                                                );
+                                            })}
+                                        </TableBody>
+                                    </Table>
+                                </TableContainer>
+                            ) : (
+                                <Paper elevation={0} sx={{ 
+                                    p: 4, 
+                                    textAlign: 'center',
+                                    backgroundColor: '#f9fafb',
+                                    border: '1px dashed #d1d5db',
+                                    borderRadius: '12px'
+                                }}>
+                                    <Typography sx={{ color: '#6b7280', fontSize: '0.95rem' }}>
+                                        Aún no hay productos añadidos. Use el formulario arriba para agregar productos a la orden.
+                                    </Typography>
+                                </Paper>
+                            )}
+                        </Box>
+                    </Box>
+
+                    {/* Footer con botones */}
+                    <Box sx={{ 
+                        padding: '20px 30px', 
+                        borderTop: '1px solid #e5e7eb',
+                        backgroundColor: '#f9fafb',
+                        display: 'flex',
+                        justifyContent: 'flex-end',
+                        gap: 2
+                    }}>
+                        <Button 
+                            variant="outlined" 
+                            onClick={() => setMostrarModal(false)}
+                            sx={{
+                                minWidth: '120px',
+                                textTransform: 'none',
+                                fontWeight: 600,
+                                borderColor: '#d1d5db',
+                                color: '#6b7280',
+                                '&:hover': {
+                                    borderColor: '#9ca3af',
+                                    backgroundColor: '#f3f4f6'
+                                }
+                            }}
+                        >
+                            Cancelar
+                        </Button>
+                        <Button 
+                            variant="contained" 
+                            color="primary" 
+                            onClick={handleRegistrarOrden} 
+                            disabled={productosSeleccionados.length === 0}
+                            sx={{
+                                minWidth: '160px',
+                                textTransform: 'none',
+                                fontWeight: 600,
+                                boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+                                '&:hover': {
+                                    boxShadow: '0 6px 8px -1px rgba(0, 0, 0, 0.15)'
+                                },
+                                '&:disabled': {
+                                    backgroundColor: '#d1d5db',
+                                    color: '#9ca3af'
+                                }
+                            }}
+                        >
+                            {ordenEditando ? 'Actualizar Orden' : 'Registrar Orden'}
+                        </Button>
+                    </Box>
+                </Box>
             </Modal>
             {/* --- FIN MODAL CREAR/EDITAR --- */}
 

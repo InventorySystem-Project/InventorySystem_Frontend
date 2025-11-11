@@ -140,17 +140,17 @@ const StarRating = ({ value, onChange, selectedTicket, currentUser }) => {
                     readOnly={!canRate}
                     precision={1}
                 />
-                <Typography variant="body2" color="textSecondary" sx={{ ml: 1 }}>
+                <Typography variant="body2" style={{ color: '#6b7280', marginLeft: '8px' }}>
                     {value ? `${value}/5` : 'Sin calificar'}
                 </Typography>
             </Box>
             {!canRate && isTicketResolved && (
-                <Typography variant="caption" color="textSecondary" sx={{ mt: 1, display: 'block' }}>
+                <Typography variant="caption" style={{ color: '#6b7280', marginTop: '8px', display: 'block' }}>
                     Solo el solicitante puede calificar este ticket
                 </Typography>
             )}
             {!isTicketResolved && (
-                <Typography variant="caption" color="textSecondary" sx={{ mt: 1, display: 'block' }}>
+                <Typography variant="caption" style={{ color: '#6b7280', marginTop: '8px', display: 'block' }}>
                     El ticket debe estar resuelto para poder calificarlo
                 </Typography>
             )}
@@ -472,12 +472,21 @@ const TicketPanelUnificado = ({
                             {isEditing ? `Ticket ${ticketData?.formattedId || ticketData?.id || ''}` : 'Nuevo Ticket'}
                         </Typography>
                         {isEditing && ticketData?.fechaCreacion && (
-                            <Typography variant="caption" color="textSecondary">
+                            <Typography variant="caption" style={{ color: '#6b7280' }}>
                                 Creado el {formatDate(ticketData.fechaCreacion)}
                             </Typography>
                         )}
                     </div>
-                    <IconButton onClick={onClose}>
+                    <IconButton 
+                        onClick={onClose} 
+                        sx={{ 
+                            color: '#374151',
+                            '&:hover': {
+                                backgroundColor: 'rgba(0, 0, 0, 0.04)',
+                                color: '#1f2937'
+                            }
+                        }}
+                    >
                         <X />
                     </IconButton>
                 </Box>
@@ -524,7 +533,7 @@ const TicketPanelUnificado = ({
                                 marginBottom: '30px',
                                 whiteSpace: 'pre-wrap'
                             }}>
-                                <Typography variant="body1">
+                                <Typography variant="body1" style={{ color: '#1f2937' }}>
                                     {ticketData?.descripcion || 'Sin descripción'}
                                 </Typography>
                             </Box>
@@ -564,17 +573,17 @@ const TicketPanelUnificado = ({
                             }}>
                                 {loadingComentarios && <CircularProgress size={24} />}
                                 {!loadingComentarios && comentarios.length === 0 && (
-                                    <Typography color="textSecondary" style={{ textAlign: 'center', padding: '20px' }}>
+                                    <Typography style={{ textAlign: 'center', padding: '20px', color: '#6b7280' }}>
                                         No hay comentarios aún
                                     </Typography>
                                 )}
                                 {!loadingComentarios && comentarios.map(c => (
                                     <Card key={c.id} style={{ marginBottom: '12px', backgroundColor: '#fff' }} elevation={1}>
                                         <CardContent style={{ padding: '12px' }}>
-                                            <Typography variant="body2" style={{ whiteSpace: 'pre-wrap', marginBottom: '8px' }}>
+                                            <Typography variant="body2" style={{ whiteSpace: 'pre-wrap', marginBottom: '8px', color: '#1f2937' }}>
                                                 {c.texto}
                                             </Typography>
-                                            <Typography variant="caption" color="textSecondary">
+                                            <Typography variant="caption" style={{ color: '#6b7280' }}>
                                                 <User size={12} style={{ marginRight: '4px', verticalAlign: 'middle' }} />
                                                 {c.usuarioNombre} • {formatDate(c.fecha)}
                                             </Typography>
@@ -765,10 +774,10 @@ const TicketPanelUnificado = ({
 
                             {/* Creado por */}
                             <Box style={{ marginBottom: '15px' }}>
-                                <Typography variant="caption" color="textSecondary" style={{ display: 'block', marginBottom: '5px' }}>
+                                <Typography variant="caption" style={{ display: 'block', marginBottom: '5px', color: '#6b7280' }}>
                                     Creado por
                                 </Typography>
-                                <Typography variant="body2">
+                                <Typography variant="body2" style={{ color: '#1f2937' }}>
                                     {ticketData?.usuario?.nombre || 'N/A'} {ticketData?.usuario?.apellido || ''}
                                 </Typography>
                             </Box>
@@ -776,11 +785,11 @@ const TicketPanelUnificado = ({
                             {/* Duración */}
                             {ticketData?.duracionAtencionMinutos != null && (
                                 <Box style={{ marginBottom: '15px' }}>
-                                    <Typography variant="caption" color="textSecondary" style={{ display: 'block', marginBottom: '5px' }}>
+                                    <Typography variant="caption" style={{ display: 'block', marginBottom: '5px', color: '#6b7280' }}>
                                         <Clock size={14} style={{ marginRight: '5px', verticalAlign: 'middle' }} />
                                         Duración de atención
                                     </Typography>
-                                    <Typography variant="body2">
+                                    <Typography variant="body2" style={{ color: '#1f2937' }}>
                                         {ticketData.duracionAtencionMinutos} minutos
                                     </Typography>
                                 </Box>
@@ -789,10 +798,10 @@ const TicketPanelUnificado = ({
                             {/* Fechas */}
                             {ticketData?.fechaInicioAtencion && (
                                 <Box style={{ marginBottom: '15px' }}>
-                                    <Typography variant="caption" color="textSecondary" style={{ display: 'block', marginBottom: '5px' }}>
+                                    <Typography variant="caption" style={{ display: 'block', marginBottom: '5px', color: '#6b7280' }}>
                                         Inicio de atención
                                     </Typography>
-                                    <Typography variant="body2">
+                                    <Typography variant="body2" style={{ color: '#1f2937' }}>
                                         {formatDate(ticketData.fechaInicioAtencion)}
                                     </Typography>
                                 </Box>
@@ -800,10 +809,10 @@ const TicketPanelUnificado = ({
 
                             {ticketData?.fechaResolucion && (
                                 <Box style={{ marginBottom: '15px' }}>
-                                    <Typography variant="caption" color="textSecondary" style={{ display: 'block', marginBottom: '5px' }}>
+                                    <Typography variant="caption" style={{ display: 'block', marginBottom: '5px', color: '#6b7280' }}>
                                         Fecha de resolución
                                     </Typography>
-                                    <Typography variant="body2">
+                                    <Typography variant="body2" style={{ color: '#1f2937' }}>
                                         {formatDate(ticketData.fechaResolucion)}
                                     </Typography>
                                 </Box>
