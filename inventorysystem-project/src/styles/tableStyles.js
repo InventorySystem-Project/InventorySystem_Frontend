@@ -8,11 +8,8 @@ export const enhancedTableContainer = {
   width: '100%',
   overflowX: 'auto',
   backgroundColor: '#ffffff',
-  borderRadius: 2.5,
-  boxShadow: '0 1px 3px rgba(0,0,0,0.08)',
-  border: '1px solid #e5e7eb',
   marginTop: 3,
-  overflow: 'hidden', // Para que el header cubra el borde superior redondeado
+  overflow: 'hidden',
   
   '& .MuiTable-root': {
     borderCollapse: 'separate',
@@ -36,7 +33,7 @@ export const enhancedTableContainer = {
   },
 };
 
-// Header de tabla mejorado - colores claros, cubre el borde superior
+// Header de tabla mejorado - colores claros
 export const enhancedTableHead = {
   backgroundColor: '#f9fafb',
   
@@ -50,14 +47,6 @@ export const enhancedTableHead = {
     borderBottom: '2px solid #d1d5db',
     whiteSpace: 'nowrap',
     backgroundColor: '#f9fafb',
-  },
-  
-  '& .MuiTableCell-root:first-of-type': {
-    borderTopLeftRadius: '10px',
-  },
-  
-  '& .MuiTableCell-root:last-of-type': {
-    borderTopRightRadius: '10px',
   },
 };
 

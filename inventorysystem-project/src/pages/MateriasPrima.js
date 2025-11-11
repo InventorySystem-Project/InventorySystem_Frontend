@@ -125,7 +125,14 @@ const MateriaPrima = () => {
                 showSuccess('Materia prima eliminada correctamente');
                 
                 // Recargar la lista completa desde el servidor
-                await fetchMateriasPrimas();
+                const materiasPrimasActualizadas = await getMateriasPrimas();
+                setMateriasPrimas(materiasPrimasActualizadas);
+                
+                // Ajustar página si la actual queda vacía
+                const nuevaPaginaActual = Math.ceil(materiasPrimasActualizadas.length / materiasPrimasPorPagina);
+                if (paginaActual > nuevaPaginaActual && nuevaPaginaActual > 0) {
+                    setPaginaActual(nuevaPaginaActual);
+                }
             } catch (error) {
                 console.error('Error al eliminar materia prima', error);
             }

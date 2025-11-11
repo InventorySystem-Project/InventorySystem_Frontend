@@ -252,7 +252,14 @@ const Almacen = () => {
           showSuccess('Almacén eliminado correctamente');
           
           // Recargar la lista completa desde el servidor
-          await fetchAlmacenes();
+          const almacenesActualizados = await getAlmacenes();
+          setAlmacenes(almacenesActualizados);
+          
+          // Ajustar página si la actual queda vacía
+          const nuevaPaginaActual = Math.ceil(almacenesActualizados.length / almacenesPorPagina);
+          if (paginaActual > nuevaPaginaActual && nuevaPaginaActual > 0) {
+            setPaginaActual(nuevaPaginaActual);
+          }
         } catch (error) {
           console.error('❌ Error al eliminar almacén:', error);
           

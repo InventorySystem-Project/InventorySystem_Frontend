@@ -11,7 +11,6 @@ const Rol = () => {
     const [roles, setRoles] = useState([]);
     const [users, setUsers] = useState([]);  // Nuevo estado para los usuarios
     const [nuevoRol, setNuevoRol] = useState({
-        id: '',
         rol: ''
     });
 
@@ -56,19 +55,29 @@ const Rol = () => {
     };
 
     const handleAgregarRol = async () => {
-        if (!nuevoRol.rol) {
+        if (!nuevoRol.rol || !nuevoRol.rol.trim()) {
             showAlert('Por favor complete los campos obligatorios');
             return;
         }
 
         try {
-            if (rolEditando) {
+            if (rolEditando && rolEditando.id) {
                 // Si estamos editando un rol, lo actualizamos
-                await updateRol(rolEditando.id, nuevoRol);
+                console.log('🔄 ACTUALIZANDO rol con ID:', rolEditando.id);
+                
+                // CRÍTICO: Enviar TODO el objeto nuevoRol con el ID incluido
+                const rolCompleto = {
+                    ...nuevoRol,
+                    id: rolEditando.id  // Asegurar que el ID está presente
+                };
+                
+                console.log('📝 Enviando al backend:', rolCompleto);
+                await updateRol(rolEditando.id, rolCompleto);
                 showSuccess('Rol actualizado correctamente');
             } else {
                 // Si es un nuevo rol, lo agregamos
-                await addRol(nuevoRol);
+                console.log('✨ CREANDO nuevo rol:', { rol: nuevoRol.rol });
+                await addRol({ rol: nuevoRol.rol });
                 showSuccess('Rol creado correctamente');
             }
 
@@ -76,14 +85,15 @@ const Rol = () => {
             const rolesActualizados = await getRoles();
             setRoles(rolesActualizados);
 
+            // Limpiar formulario
             setNuevoRol({
                 rol: ''
             });
 
             setRolEditando(null);
-            setMostrarFormulario(false);  // Cerrar el formulario
+            setMostrarFormulario(false);
         } catch (error) {
-            console.error('Error al agregar o actualizar rol', error);
+            console.error('❌ Error al agregar o actualizar rol:', error);
             showError('Error al guardar el rol. Por favor, intente nuevamente.');
         }
     };
@@ -113,6 +123,12 @@ const Rol = () => {
                     // Recargar la lista completa desde el servidor
                     const rolesActualizados = await getRoles();
                     setRoles(rolesActualizados);
+                    
+                    // Ajustar página si la actual queda vacía
+                    const nuevaPaginaActual = Math.ceil(rolesActualizados.length / rolesPorPagina);
+                    if (paginaActual > nuevaPaginaActual && nuevaPaginaActual > 0) {
+                        setPaginaActual(nuevaPaginaActual);
+                    }
                 } catch (error) {
                     console.error('Error al eliminar rol', error);
                     showError('Error al eliminar el rol. Por favor, intente nuevamente.');

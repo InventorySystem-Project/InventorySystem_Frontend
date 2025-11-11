@@ -133,7 +133,14 @@ const fetchPaises = async () => {
     const handleEliminarEmpresa = async (id) => {
         try {
             await deleteEmpresa(id);
-            setEmpresas(prev => prev.filter(e => e.id !== id));
+            const empresasActualizadas = await getEmpresas();
+            setEmpresas(empresasActualizadas);
+            
+            // Ajustar página si la actual queda vacía
+            const nuevaPaginaActual = Math.ceil(empresasActualizadas.length / empresasPorPagina);
+            if (paginaActual > nuevaPaginaActual && nuevaPaginaActual > 0) {
+                setPaginaActual(nuevaPaginaActual);
+            }
         } catch (error) {
             console.error('Error al eliminar empresa', error);
         }

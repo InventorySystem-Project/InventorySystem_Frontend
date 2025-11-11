@@ -37,7 +37,13 @@ export const getRoles = async () => {
 // Agregar un nuevo rol
 export const addRol = async (role) => {
     try {
-        const response = await axios.post(`${API_URL}/registrar`, role, {
+        // Asegurarse de NO enviar el ID al crear un nuevo rol
+        const { id, ...roleData } = role;
+        const nuevoRol = { rol: roleData.rol };
+        
+        console.log('Creando nuevo rol (sin ID):', nuevoRol);
+        
+        const response = await axios.post(`${API_URL}/registrar`, nuevoRol, {
             headers: getAuthHeaders(),
         });
         return response.data;
@@ -50,15 +56,21 @@ export const addRol = async (role) => {
 // Actualizar un rol existente
 export const updateRol = async (id, role) => {
     try {
-        // Asegurarse de incluir el ID en el objeto role
-        const roleConId = { ...role, id };
-        // IMPORTANTE: El backend espera el ID en la URL
-        const response = await axios.put(`${API_URL}/${id}`, roleConId, {
+        // Enviar el ID en la URL (RESTful) y también en el body
+        const payload = {
+            rol: role.rol  // Solo enviar el campo rol en el body
+        };
+        
+        console.log('📤 PUT /roles/' + id + ' - Payload:', payload);
+        
+        const response = await axios.put(`${API_URL}/${id}`, payload, {
             headers: getAuthHeaders(),
         });
+        
+        console.log('✅ Rol actualizado - Status:', response.status);
         return response.data;
     } catch (error) {
-        console.error('Error al actualizar rol:', error.response || error.message);
+        console.error('❌ Error al actualizar rol:', error.response || error.message);
         throw error;
     }
 };

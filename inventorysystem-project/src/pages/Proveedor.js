@@ -231,31 +231,31 @@ const fetchPaises = async () => {
         setIntentoGuardar(true);
         
         // Validar campos obligatorios
-        if (!nuevoProveedor.nombreEmpresaProveedor || nuevoProveedor.nombreEmpresaProveedor.trim() === '') {
+        if (!nuevoProveedor.nombreEmpresaProveedor || String(nuevoProveedor.nombreEmpresaProveedor).trim() === '') {
             return;
         }
         
-        if (!nuevoProveedor.ruc || nuevoProveedor.ruc.trim() === '') {
+        if (!nuevoProveedor.ruc || String(nuevoProveedor.ruc).trim() === '') {
             return;
         }
         
-        if (!nuevoProveedor.nombreContacto || nuevoProveedor.nombreContacto.trim() === '') {
+        if (!nuevoProveedor.nombreContacto || String(nuevoProveedor.nombreContacto).trim() === '') {
             return;
         }
         
-        if (!nuevoProveedor.telefono || nuevoProveedor.telefono.trim() === '') {
+        if (!nuevoProveedor.telefono || String(nuevoProveedor.telefono).trim() === '') {
             return;
         }
         
-        if (!nuevoProveedor.correo || nuevoProveedor.correo.trim() === '') {
+        if (!nuevoProveedor.correo || String(nuevoProveedor.correo).trim() === '') {
             return;
         }
         
-        if (!nuevoProveedor.pais || nuevoProveedor.pais.trim() === '') {
+        if (!nuevoProveedor.pais || String(nuevoProveedor.pais).trim() === '') {
             return;
         }
         
-        if (!nuevoProveedor.direccion || nuevoProveedor.direccion.trim() === '') {
+        if (!nuevoProveedor.direccion || String(nuevoProveedor.direccion).trim() === '') {
             return;
         }
 
@@ -363,8 +363,15 @@ const fetchPaises = async () => {
         showConfirm('¿Está seguro que desea eliminar este proveedor?', async () => {
             try {
                 await deleteProveedor(id);
-                setProveedores(prev => prev.filter(p => p.id !== id));
+                const proveedoresActualizados = await getProveedores();
+                setProveedores(proveedoresActualizados);
                 showSuccess('Proveedor eliminado correctamente');
+                
+                // Ajustar página si la actual queda vacía
+                const nuevaPaginaActual = Math.ceil(proveedoresActualizados.length / proveedoresPorPagina);
+                if (paginaActual > nuevaPaginaActual && nuevaPaginaActual > 0) {
+                    setPaginaActual(nuevaPaginaActual);
+                }
             } catch (error) {
                 console.error('Error al eliminar el proveedor', error);
             }
@@ -532,9 +539,9 @@ const fetchPaises = async () => {
                         required
                         InputProps={{ inputProps: { min: 0, step: 1 } }}
                         onKeyDown={(e) => { if (e.key === '-' || e.key === 'e' || e.key === 'E' || e.key === '.') e.preventDefault(); }}
-                        error={intentoGuardar && (!nuevoProveedor.ruc || nuevoProveedor.ruc.trim() === '')}
+                        error={intentoGuardar && (!nuevoProveedor.ruc || String(nuevoProveedor.ruc).trim() === '')}
                         helperText={
-                            intentoGuardar && (!nuevoProveedor.ruc || nuevoProveedor.ruc.trim() === '')
+                            intentoGuardar && (!nuevoProveedor.ruc || String(nuevoProveedor.ruc).trim() === '')
                             ? 'Este campo es obligatorio'
                             : 'Solo números positivos'
                         }
@@ -561,9 +568,9 @@ const fetchPaises = async () => {
                         required
                         InputProps={{ inputProps: { min: 0, step: 1 } }}
                         onKeyDown={(e) => { if (e.key === '-' || e.key === 'e' || e.key === 'E' || e.key === '.') e.preventDefault(); }}
-                        error={intentoGuardar && (!nuevoProveedor.telefono || nuevoProveedor.telefono.trim() === '')}
+                        error={intentoGuardar && (!nuevoProveedor.telefono || String(nuevoProveedor.telefono).trim() === '')}
                         helperText={
-                            intentoGuardar && (!nuevoProveedor.telefono || nuevoProveedor.telefono.trim() === '')
+                            intentoGuardar && (!nuevoProveedor.telefono || String(nuevoProveedor.telefono).trim() === '')
                             ? 'Este campo es obligatorio'
                             : 'Solo números positivos'
                         }
@@ -579,14 +586,7 @@ const fetchPaises = async () => {
                         error={intentoGuardar && (!nuevoProveedor.correo || nuevoProveedor.correo.trim() === '')}
                         helperText={intentoGuardar && (!nuevoProveedor.correo || nuevoProveedor.correo.trim() === '') ? 'Este campo es obligatorio' : ''}
                     />
-                    <TextField
-                        sx={{ marginBottom: 2 }}
-                        fullWidth
-                        margin="normal"
-                        required
-                        error={intentoGuardar && (!nuevoProveedor.pais || nuevoProveedor.pais.trim() === '')}
-                        helperText={intentoGuardar && (!nuevoProveedor.pais || nuevoProveedor.pais.trim() === '') ? 'Este campo es obligatorio' : ''}
-                    />
+                    
                     <Autocomplete
                         options={paises}
                         getOptionLabel={option => option.name}

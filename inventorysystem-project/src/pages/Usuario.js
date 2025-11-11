@@ -241,7 +241,14 @@ const Usuario = () => {
                     showSuccess('Usuario eliminado correctamente');
                     
                     // Recargar la lista completa desde el servidor
-                    await fetchUsuarios();
+                    const usuariosActualizados = await getUsuarios();
+                    setUsuarios(usuariosActualizados);
+                    
+                    // Ajustar página si la actual queda vacía
+                    const nuevaPaginaActual = Math.ceil(usuariosActualizados.length / usuariosPorPagina);
+                    if (paginaActual > nuevaPaginaActual && nuevaPaginaActual > 0) {
+                        setPaginaActual(nuevaPaginaActual);
+                    }
                 } catch (error) {
                     console.error('Error al eliminar usuario', error);
                     showError('Error al eliminar el usuario. Por favor, intente nuevamente.');
